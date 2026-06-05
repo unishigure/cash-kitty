@@ -163,7 +163,7 @@ export function ReceiptDetail({
 
 			<div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
 				{/* Image */}
-				<div className="flex min-h-[180px] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white">
+				<div className="flex min-h-45 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white">
 					{imageLoading ? (
 						<span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
 					) : imageUrl ? (
@@ -295,7 +295,7 @@ export function ReceiptDetail({
 						<summary className="cursor-pointer text-sm font-medium text-slate-600">
 							全文を表示
 						</summary>
-						<pre className="mt-2 whitespace-pre-wrap break-words text-xs text-slate-500">
+						<pre className="mt-2 whitespace-pre-wrap wrap-break-word text-xs text-slate-500">
 							{receipt.fullText}
 						</pre>
 					</details>

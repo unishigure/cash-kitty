@@ -160,7 +160,7 @@ export function CaptureTab({
 			<button
 				type="button"
 				onClick={() => fileRef.current?.click()}
-				className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-white text-slate-400 transition active:scale-[0.99]"
+				className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-white text-slate-400 transition active:scale-[0.99]"
 			>
 				{preview ? (
 					<img
