@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./index.css";
 import { TabBar, type TabId } from "./components/TabBar";
 import { useGoogleDrive } from "./hooks/useGoogleDrive";
+import { useReceiptCapture } from "./hooks/useReceiptCapture";
 import { type SettingsApi, useSettings } from "./hooks/useSettings";
 import { CaptureTab } from "./tabs/CaptureTab";
 import { SettingsTab } from "./tabs/SettingsTab";
@@ -33,6 +34,9 @@ function AppShell({ settingsApi }: { settingsApi: SettingsApi }) {
 	const { settings } = settingsApi;
 	const [tab, setTab] = useState<TabId>("capture");
 	const drive = useGoogleDrive(settings.googleClientId);
+	// Held at the shell level so an in-flight OCR analysis (and the form it
+	// fills) survives switching the bottom-nav tab away and back.
+	const capture = useReceiptCapture(settings, drive);
 
 	return (
 		<div className="mx-auto flex min-h-screen w-full max-w-lg flex-col bg-slate-50 text-slate-900">
@@ -49,7 +53,7 @@ function AppShell({ settingsApi }: { settingsApi: SettingsApi }) {
 				{tab === "capture" && (
 					<CaptureTab
 						settings={settings}
-						drive={drive}
+						capture={capture}
 						onGoSettings={() => setTab("settings")}
 					/>
 				)}
