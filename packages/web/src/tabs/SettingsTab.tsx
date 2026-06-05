@@ -34,7 +34,7 @@ export function SettingsTab({
 				<p className="text-xs text-slate-500 px-1 text-center">
 					<span>データはあなたの Google Drive の専用領域に保存されます。</span>
 					<br />
-					<span>他のアプリや Google Drive の通常画面からは見えません。</span>
+					<span>サーバーに保存されることはありません。</span>
 				</p>
 				<p className="px-1 text-center text-xs text-slate-400">
 					データ保存件数: {drive.receipts.length} 件
