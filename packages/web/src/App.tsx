@@ -22,7 +22,7 @@ export function App() {
 	// the right client id.
 	if (!settingsApi.ready) {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-400">
+			<div className="flex min-h-dvh items-center justify-center bg-slate-50 text-slate-400">
 				<span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
 			</div>
 		);
@@ -56,7 +56,7 @@ function AppShell({ settingsApi }: { settingsApi: SettingsApi }) {
 	const isCurrentMonth = statsMonth === currentMonthKey();
 
 	return (
-		<div className="mx-auto flex min-h-screen w-full max-w-lg flex-col bg-slate-50 text-slate-900">
+		<div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-slate-50 text-slate-900">
 			<header className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur pt-[max(0.75rem,env(safe-area-inset-top))]">
 				<h1 className="text-lg font-bold tracking-tight">
 					<span className="text-emerald-600">Money</span> Note
