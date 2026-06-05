@@ -70,11 +70,17 @@ interface StoredToken {
 	expiresAt: number; // epoch ms
 }
 
+// We persist in localStorage (not sessionStorage) so the connection survives a
+// task kill / app restart on mobile. The token itself is short-lived (~1h) and
+// scoped to drive.appdata; an expired entry is simply ignored on read.
 const TOKEN_KEY = "money-note.token";
+// Remembers that the user has connected at least once, so we can silently
+// re-acquire a token on the next launch without showing a consent popup.
+const CONNECTED_KEY = "money-note.connected";
 
 function readStoredToken(): StoredToken | null {
 	try {
-		const raw = sessionStorage.getItem(TOKEN_KEY);
+		const raw = localStorage.getItem(TOKEN_KEY);
 		if (!raw) return null;
 		const t = JSON.parse(raw) as StoredToken;
 		// Keep a 60s safety margin.
@@ -86,8 +92,17 @@ function readStoredToken(): StoredToken | null {
 }
 
 function writeStoredToken(t: StoredToken | null): void {
-	if (t) sessionStorage.setItem(TOKEN_KEY, JSON.stringify(t));
-	else sessionStorage.removeItem(TOKEN_KEY);
+	if (t) localStorage.setItem(TOKEN_KEY, JSON.stringify(t));
+	else localStorage.removeItem(TOKEN_KEY);
+}
+
+/** Whether the user has connected before (persisted across app restarts). */
+export function wasConnected(): boolean {
+	try {
+		return localStorage.getItem(CONNECTED_KEY) === "1";
+	} catch {
+		return false;
+	}
 }
 
 let tokenClient: TokenClient | null = null;
@@ -139,6 +154,11 @@ export async function getAccessToken(
 				expiresAt: Date.now() + (resp.expires_in ?? 3600) * 1000,
 			};
 			writeStoredToken(token);
+			try {
+				localStorage.setItem(CONNECTED_KEY, "1");
+			} catch {
+				/* ignore */
+			}
 			resolve(resp.access_token);
 		};
 		// prompt: "" attempts a silent grant; "consent" forces the popup.
@@ -162,4 +182,9 @@ export function signOut(): void {
 		}
 	}
 	writeStoredToken(null);
+	try {
+		localStorage.removeItem(CONNECTED_KEY);
+	} catch {
+		/* ignore */
+	}
 }

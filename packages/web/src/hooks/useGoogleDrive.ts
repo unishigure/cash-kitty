@@ -12,6 +12,7 @@ import {
 	getAccessToken,
 	signOut as gisSignOut,
 	hasValidToken,
+	wasConnected,
 } from "../lib/googleAuth";
 import { compressImage } from "../lib/image";
 import type { Receipt } from "../lib/types";
@@ -36,7 +37,11 @@ interface UseGoogleDrive {
 
 export function useGoogleDrive(clientId: string): UseGoogleDrive {
 	const [status, setStatus] = useState<DriveStatus>(
-		hasValidToken() ? "connected" : "disconnected",
+		hasValidToken()
+			? "connected"
+			: wasConnected()
+				? "connecting"
+				: "disconnected",
 	);
 	const [receipts, setReceipts] = useState<Receipt[]>([]);
 	const [loading, setLoading] = useState(false);
@@ -162,11 +167,32 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		[withToken],
 	);
 
-	// Auto-load receipts on mount if we already have a token from this session.
+	// Auto-reconnect on mount. If a valid token survived (localStorage persists it
+	// across task kills / restarts), just load. Otherwise, if the user connected
+	// before, try a *silent* token grant (no popup) — this keeps the connection
+	// alive as long as the Google session and prior consent are intact. A silent
+	// failure quietly falls back to disconnected (no error shown).
 	// biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only once on mount.
 	useEffect(() => {
-		if (hasValidToken() && clientId) {
+		if (!clientId) return;
+		if (hasValidToken()) {
 			void refresh();
+			return;
+		}
+		if (wasConnected()) {
+			setStatus("connecting");
+			setLoading(true);
+			void (async () => {
+				try {
+					const data = await withToken((t) => listReceipts(t), false);
+					setReceipts(data);
+					setStatus("connected");
+				} catch {
+					setStatus("disconnected");
+				} finally {
+					setLoading(false);
+				}
+			})();
 		}
 	}, []);
 
