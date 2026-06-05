@@ -18,9 +18,15 @@ const app = (
 	</StrictMode>
 );
 
-// https://bun.com/docs/bundler/hot-reloading#import-meta-hot-data
-import.meta.hot.data.root ??= createRoot(elem);
-import.meta.hot.data.root.render(app);
+// In dev (`bun --hot`) reuse the root across HMR updates so state survives
+// reloads. In production (`bun start`) `import.meta.hot` is undefined, so create
+// the root directly — otherwise accessing `.data` throws and nothing renders.
+if (import.meta.hot) {
+	import.meta.hot.data.root ??= createRoot(elem);
+	import.meta.hot.data.root.render(app);
+} else {
+	createRoot(elem).render(app);
+}
 
 // Register the service worker (PWA install + offline app-shell). Only in
 // production builds — under `bun dev` it would cache the HMR'd assets and serve
