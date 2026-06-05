@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import { categoryColor } from "../lib/categories";
 import {
@@ -17,6 +17,36 @@ export function StatsTab({ drive }: { drive: Drive }) {
 	const [month, setMonth] = useState<string>(currentMonthKey());
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const { receipts, loading, error, status, connect, refresh } = drive;
+
+	// Direction of the last month change, used to pick the slide animation.
+	const [direction, setDirection] = useState<1 | -1>(1);
+
+	const changeMonth = (delta: 1 | -1) => {
+		setDirection(delta);
+		setMonth((m) => shiftMonth(m, delta));
+	};
+
+	// Track horizontal swipe to switch months.
+	const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+	const handleTouchStart = (e: React.TouchEvent) => {
+		const t = e.touches[0];
+		if (!t) return;
+		touchStart.current = { x: t.clientX, y: t.clientY };
+	};
+
+	const handleTouchEnd = (e: React.TouchEvent) => {
+		const start = touchStart.current;
+		touchStart.current = null;
+		const t = e.changedTouches[0];
+		if (!start || !t) return;
+		const dx = t.clientX - start.x;
+		const dy = t.clientY - start.y;
+		// Require a clearly horizontal swipe so vertical scrolling isn't hijacked.
+		if (Math.abs(dx) < 60 || Math.abs(dx) <= Math.abs(dy)) return;
+		// Swipe left → next month, swipe right → previous month.
+		changeMonth(dx < 0 ? 1 : -1);
+	};
 
 	const monthly = useMemo(
 		() => receipts.filter((r) => monthKey(r.date) === month),
@@ -66,12 +96,16 @@ export function StatsTab({ drive }: { drive: Drive }) {
 	}
 
 	return (
-		<div className="space-y-4">
+		<div
+			className="flex flex-1 flex-col space-y-4"
+			onTouchStart={handleTouchStart}
+			onTouchEnd={handleTouchEnd}
+		>
 			{/* Month selector */}
 			<div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-2 py-2">
 				<button
 					type="button"
-					onClick={() => setMonth((m) => shiftMonth(m, -1))}
+					onClick={() => changeMonth(-1)}
 					className="rounded-lg px-3 py-1.5 text-lg text-slate-500 active:bg-slate-100"
 					aria-label="前の月"
 				>
@@ -80,7 +114,7 @@ export function StatsTab({ drive }: { drive: Drive }) {
 				<span className="text-base font-bold">{formatMonthLabel(month)}</span>
 				<button
 					type="button"
-					onClick={() => setMonth((m) => shiftMonth(m, 1))}
+					onClick={() => changeMonth(1)}
 					className="rounded-lg px-3 py-1.5 text-lg text-slate-500 active:bg-slate-100"
 					aria-label="次の月"
 				>
@@ -88,87 +122,95 @@ export function StatsTab({ drive }: { drive: Drive }) {
 				</button>
 			</div>
 
-			{/* Summary */}
-			<div className="rounded-2xl bg-emerald-600 p-5 text-white">
-				<p className="text-xs font-medium text-emerald-100">この月の合計</p>
-				<p className="mt-1 text-3xl font-bold tabular-nums">
-					{formatYen(total)}
-				</p>
-				<p className="mt-1 text-xs text-emerald-100">
-					{monthly.length} 件のレシート
-				</p>
-			</div>
-
-			{loading && (
-				<p className="text-center text-sm text-slate-400">読み込み中…</p>
-			)}
-			{error && (
-				<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-					{error}
-				</p>
-			)}
-
-			{/* Category breakdown */}
-			{byCategory.length > 0 && (
-				<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
-					<h2 className="text-sm font-bold text-slate-700">カテゴリ別</h2>
-					<div className="space-y-2.5">
-						{byCategory.map(({ category, amount }) => {
-							const pct = total > 0 ? (amount / total) * 100 : 0;
-							return (
-								<div key={category}>
-									<div className="mb-1 flex justify-between text-xs">
-										<span className="font-medium text-slate-600">
-											{category}
-										</span>
-										<span className="tabular-nums text-slate-500">
-											{formatYen(amount)}（{pct.toFixed(0)}%）
-										</span>
-									</div>
-									<div className="h-2 overflow-hidden rounded-full bg-slate-100">
-										<div
-											className="h-full rounded-full"
-											style={{
-												width: `${pct}%`,
-												backgroundColor: categoryColor(category),
-											}}
-										/>
-									</div>
-								</div>
-							);
-						})}
-					</div>
-				</section>
-			)}
-
-			{/* Receipt list */}
-			<section className="space-y-2">
-				<div className="flex items-center justify-between px-1">
-					<h2 className="text-sm font-bold text-slate-700">明細</h2>
-					<button
-						type="button"
-						onClick={() => void refresh()}
-						className="text-xs font-medium text-emerald-600"
-					>
-						更新
-					</button>
-				</div>
-				{monthly.length === 0 && !loading ? (
-					<p className="rounded-xl border border-dashed border-slate-200 bg-white py-8 text-center text-sm text-slate-400">
-						この月のレシートはありません
+			{/* Animated month content: re-mounts on month change to replay the slide. */}
+			<div
+				key={month}
+				className={`space-y-4 ${
+					direction === 1 ? "slide-from-right" : "slide-from-left"
+				}`}
+			>
+				{/* Summary */}
+				<div className="rounded-2xl bg-emerald-600 p-5 text-white">
+					<p className="text-xs font-medium text-emerald-100">この月の合計</p>
+					<p className="mt-1 text-3xl font-bold tabular-nums">
+						{formatYen(total)}
 					</p>
-				) : (
-					<ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-						{monthly.map((r) => (
-							<ReceiptRow
-								key={r.id}
-								receipt={r}
-								onOpen={() => setSelectedId(r.id)}
-							/>
-						))}
-					</ul>
+					<p className="mt-1 text-xs text-emerald-100">
+						{monthly.length} 件のレシート
+					</p>
+				</div>
+
+				{loading && (
+					<p className="text-center text-sm text-slate-400">読み込み中…</p>
 				)}
-			</section>
+				{error && (
+					<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+						{error}
+					</p>
+				)}
+
+				{/* Category breakdown */}
+				{byCategory.length > 0 && (
+					<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+						<h2 className="text-sm font-bold text-slate-700">カテゴリ別</h2>
+						<div className="space-y-2.5">
+							{byCategory.map(({ category, amount }) => {
+								const pct = total > 0 ? (amount / total) * 100 : 0;
+								return (
+									<div key={category}>
+										<div className="mb-1 flex justify-between text-xs">
+											<span className="font-medium text-slate-600">
+												{category}
+											</span>
+											<span className="tabular-nums text-slate-500">
+												{formatYen(amount)}（{pct.toFixed(0)}%）
+											</span>
+										</div>
+										<div className="h-2 overflow-hidden rounded-full bg-slate-100">
+											<div
+												className="h-full rounded-full"
+												style={{
+													width: `${pct}%`,
+													backgroundColor: categoryColor(category),
+												}}
+											/>
+										</div>
+									</div>
+								);
+							})}
+						</div>
+					</section>
+				)}
+
+				{/* Receipt list */}
+				<section className="space-y-2">
+					<div className="flex items-center justify-between px-1">
+						<h2 className="text-sm font-bold text-slate-700">明細</h2>
+						<button
+							type="button"
+							onClick={() => void refresh()}
+							className="text-xs font-medium text-emerald-600"
+						>
+							更新
+						</button>
+					</div>
+					{monthly.length === 0 && !loading ? (
+						<p className="rounded-xl border border-dashed border-slate-200 bg-white py-8 text-center text-sm text-slate-400">
+							この月のレシートはありません
+						</p>
+					) : (
+						<ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+							{monthly.map((r) => (
+								<ReceiptRow
+									key={r.id}
+									receipt={r}
+									onOpen={() => setSelectedId(r.id)}
+								/>
+							))}
+						</ul>
+					)}
+				</section>
+			</div>
 
 			{selected && (
 				<ReceiptDetail

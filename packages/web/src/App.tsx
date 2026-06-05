@@ -49,7 +49,7 @@ function AppShell({ settingsApi }: { settingsApi: SettingsApi }) {
 				</h1>
 			</header>
 
-			<main className="flex-1 px-4 pb-24 pt-4">
+			<main className="flex flex-1 flex-col px-4 pb-24 pt-4">
 				{tab === "capture" && (
 					<CaptureTab
 						settings={settings}
