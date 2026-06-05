@@ -11,9 +11,9 @@ import { App } from "./App";
 
 const elem = document.getElementById("root")!;
 const app = (
-  <StrictMode>
-    <App />
-  </StrictMode>
+	<StrictMode>
+		<App />
+	</StrictMode>
 );
 
 // https://bun.com/docs/bundler/hot-reloading#import-meta-hot-data
@@ -23,9 +23,9 @@ const app = (
 // production builds — under `bun dev` it would cache the HMR'd assets and serve
 // them stale. Use `bun start` (production) for installable-PWA testing.
 if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch((err) => {
-      console.warn("Service worker registration failed:", err);
-    });
-  });
+	window.addEventListener("load", () => {
+		navigator.serviceWorker.register("/sw.js").catch((err) => {
+			console.warn("Service worker registration failed:", err);
+		});
+	});
 }

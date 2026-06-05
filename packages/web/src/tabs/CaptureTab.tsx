@@ -1,11 +1,11 @@
 import { useRef, useState } from "react";
-import type { AppSettings } from "../lib/settings";
+import { CheckIcon } from "../components/icons";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
-import { analyzeReceipt } from "../lib/ocr";
 import { CATEGORIES } from "../lib/categories";
 import { newId } from "../lib/id";
+import { analyzeReceipt } from "../lib/ocr";
+import type { AppSettings } from "../lib/settings";
 import type { Receipt } from "../lib/types";
-import { CheckIcon } from "../components/icons";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
 

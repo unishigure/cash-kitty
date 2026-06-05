@@ -1,11 +1,11 @@
 import { useState } from "react";
 import "./index.css";
 import { TabBar, type TabId } from "./components/TabBar";
-import { useSettings, type SettingsApi } from "./hooks/useSettings";
 import { useGoogleDrive } from "./hooks/useGoogleDrive";
+import { type SettingsApi, useSettings } from "./hooks/useSettings";
 import { CaptureTab } from "./tabs/CaptureTab";
-import { StatsTab } from "./tabs/StatsTab";
 import { SettingsTab } from "./tabs/SettingsTab";
+import { StatsTab } from "./tabs/StatsTab";
 
 const TAB_TITLES: Record<TabId, string> = {
 	capture: "レシート取り込み",
