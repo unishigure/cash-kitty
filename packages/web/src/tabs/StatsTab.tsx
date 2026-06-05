@@ -1,30 +1,25 @@
 import { useMemo, useRef, useState } from "react";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import { categoryColor } from "../lib/categories";
-import {
-	currentMonthKey,
-	formatMonthLabel,
-	formatYen,
-	monthKey,
-	shiftMonth,
-} from "../lib/format";
+import { formatMonthLabel, formatYen, monthKey } from "../lib/format";
 import type { Receipt } from "../lib/types";
 import { ReceiptDetail } from "./ReceiptDetail";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
 
-export function StatsTab({ drive }: { drive: Drive }) {
-	const [month, setMonth] = useState<string>(currentMonthKey());
+export function StatsTab({
+	drive,
+	month,
+	direction,
+	onChangeMonth,
+}: {
+	drive: Drive;
+	month: string;
+	direction: 1 | -1;
+	onChangeMonth: (delta: 1 | -1) => void;
+}) {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const { receipts, loading, error, status, connect, refresh } = drive;
-
-	// Direction of the last month change, used to pick the slide animation.
-	const [direction, setDirection] = useState<1 | -1>(1);
-
-	const changeMonth = (delta: 1 | -1) => {
-		setDirection(delta);
-		setMonth((m) => shiftMonth(m, delta));
-	};
 
 	// Track horizontal swipe to switch months.
 	const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -45,7 +40,7 @@ export function StatsTab({ drive }: { drive: Drive }) {
 		// Require a clearly horizontal swipe so vertical scrolling isn't hijacked.
 		if (Math.abs(dx) < 60 || Math.abs(dx) <= Math.abs(dy)) return;
 		// Swipe left → next month, swipe right → previous month.
-		changeMonth(dx < 0 ? 1 : -1);
+		onChangeMonth(dx < 0 ? 1 : -1);
 	};
 
 	const monthly = useMemo(
@@ -105,7 +100,7 @@ export function StatsTab({ drive }: { drive: Drive }) {
 			<div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-2 py-2">
 				<button
 					type="button"
-					onClick={() => changeMonth(-1)}
+					onClick={() => onChangeMonth(-1)}
 					className="rounded-lg px-3 py-1.5 text-lg text-slate-500 active:bg-slate-100"
 					aria-label="前の月"
 				>
@@ -114,7 +109,7 @@ export function StatsTab({ drive }: { drive: Drive }) {
 				<span className="text-base font-bold">{formatMonthLabel(month)}</span>
 				<button
 					type="button"
-					onClick={() => changeMonth(1)}
+					onClick={() => onChangeMonth(1)}
 					className="rounded-lg px-3 py-1.5 text-lg text-slate-500 active:bg-slate-100"
 					aria-label="次の月"
 				>
