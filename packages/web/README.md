@@ -28,12 +28,13 @@ bun dev
 既定では `http://localhost:3000` で起動します\
 スマホから使う場合は同じ LAN 上の PC の IP（例: `http://192.168.x.x:3000`）にアクセスします
 
-## ビルド
+## 本番モードで配信
 
 ```bash
-bun run build   # dist/ に出力
-bun start        # 本番モードで配信
+bun start   # NODE_ENV=production で起動（HMR 無効・Service Worker 有効）
 ```
+
+`bun start` は `src/index.ts` を直接起動し、Bun が HTML/TS/CSS をリクエスト時にバンドルして配信します（事前ビルド不要）。
 
 ## PWA（ホーム画面に追加 / オフライン）
 
