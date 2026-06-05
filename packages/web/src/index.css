@@ -62,6 +62,32 @@
 	animation: slide-in-from-left 0.22s ease-out;
 }
 
+@keyframes detail-slide-in {
+	from {
+		transform: translateX(100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes detail-slide-out {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(100%);
+	}
+}
+
+.detail-enter {
+	animation: detail-slide-in 0.25s ease-out;
+}
+
+.detail-exit {
+	animation: detail-slide-out 0.2s ease-in forwards;
+}
+
 @media (prefers-reduced-motion) {
 	*,
 	::before,

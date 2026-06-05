@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TrashIcon } from "../components/icons";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import { CATEGORIES, categoryColor } from "../lib/categories";
@@ -48,6 +48,48 @@ export function ReceiptDetail({
 
 	const setField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
 		setForm((f) => ({ ...f, [key]: value }));
+
+	// Play a slide-out before unmounting; `onClose` fires when it finishes.
+	const [closing, setClosing] = useState(false);
+
+	const requestClose = () => {
+		// Reduced-motion users get no animation (and thus no animationend), so
+		// close immediately instead of waiting for an event that never fires.
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			onClose();
+			return;
+		}
+		setClosing(true);
+	};
+
+	const handleAnimationEnd = (e: React.AnimationEvent) => {
+		if (closing && e.target === e.currentTarget) onClose();
+	};
+
+	// Track horizontal swipe to close the detail (swipe right → back).
+	const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+	const handleTouchStart = (e: React.TouchEvent) => {
+		// Don't risk discarding edits or hijacking interactions while editing.
+		if (editing) return;
+		const t = e.touches[0];
+		if (!t) return;
+		touchStart.current = { x: t.clientX, y: t.clientY };
+	};
+
+	const handleTouchEnd = (e: React.TouchEvent) => {
+		const start = touchStart.current;
+		touchStart.current = null;
+		if (editing) return;
+		const t = e.changedTouches[0];
+		if (!start || !t) return;
+		const dx = t.clientX - start.x;
+		const dy = t.clientY - start.y;
+		// Require a clearly horizontal, rightward swipe so vertical scrolling and
+		// left swipes aren't hijacked.
+		if (dx < 60 || dx <= Math.abs(dy)) return;
+		requestClose();
+	};
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: re-run only when the image changes, not on every `drive`/`receipt` identity change.
 	useEffect(() => {
@@ -137,12 +179,19 @@ export function ReceiptDetail({
 	};
 
 	return (
-		<div className="fixed inset-0 z-40 flex flex-col bg-slate-50">
+		<div
+			className={`fixed inset-0 z-40 flex flex-col bg-slate-50 ${
+				closing ? "detail-exit" : "detail-enter"
+			}`}
+			onAnimationEnd={handleAnimationEnd}
+			onTouchStart={handleTouchStart}
+			onTouchEnd={handleTouchEnd}
+		>
 			{/* Header */}
 			<header className="sticky top-0 flex items-center gap-2 border-b border-slate-200 bg-white/95 px-2 py-3 backdrop-blur pt-[max(0.75rem,env(safe-area-inset-top))]">
 				<button
 					type="button"
-					onClick={editing ? cancelEdit : onClose}
+					onClick={editing ? cancelEdit : requestClose}
 					className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-emerald-600 active:bg-slate-100"
 				>
 					{editing ? "キャンセル" : "‹ 戻る"}
