@@ -154,23 +154,20 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 
 	const loadImageUrl = useCallback(
 		async (receipt: Receipt): Promise<string | null> => {
-			if (!receipt.imageFileId) return null;
-			const blob = await withToken(
-				(t) => getFileBlob(t, receipt.imageFileId!),
-				false,
-			);
+			const { imageFileId } = receipt;
+			if (!imageFileId) return null;
+			const blob = await withToken((t) => getFileBlob(t, imageFileId), false);
 			return URL.createObjectURL(blob);
 		},
 		[withToken],
 	);
 
 	// Auto-load receipts on mount if we already have a token from this session.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only once on mount.
 	useEffect(() => {
 		if (hasValidToken() && clientId) {
 			void refresh();
 		}
-		// Only run once on mount.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return {

@@ -30,7 +30,9 @@
 	*,
 	::before,
 	::after {
+		/* biome-ignore lint/complexity/noImportantStyles: must override animations declared with any specificity. */
 		animation: none !important;
+		/* biome-ignore lint/complexity/noImportantStyles: must override transitions declared with any specificity. */
 		transition: none !important;
 	}
 }

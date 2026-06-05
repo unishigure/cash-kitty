@@ -296,6 +296,7 @@ function Field({
 	children: React.ReactNode;
 }) {
 	return (
+		// biome-ignore lint/a11y/noLabelWithoutControl: the form control is supplied via `children`.
 		<label className="block">
 			<span className="mb-1 block text-xs font-medium text-slate-500">
 				{label}

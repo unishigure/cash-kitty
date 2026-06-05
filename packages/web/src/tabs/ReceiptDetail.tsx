@@ -49,6 +49,7 @@ export function ReceiptDetail({
 	const setField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
 		setForm((f) => ({ ...f, [key]: value }));
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: re-run only when the image changes, not on every `drive`/`receipt` identity change.
 	useEffect(() => {
 		if (!receipt.imageFileId) return;
 		let url: string | null = null;
@@ -75,7 +76,6 @@ export function ReceiptDetail({
 			active = false;
 			if (url) URL.revokeObjectURL(url);
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [receipt.imageFileId]);
 
 	const startEdit = () => {

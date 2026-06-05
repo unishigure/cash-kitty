@@ -1,6 +1,6 @@
 /** Format an integer amount as JPY, e.g. 4251 -> "¥4,251". */
 export function formatYen(amount: number): string {
-	return "¥" + Math.round(amount).toLocaleString("ja-JP");
+	return `¥${Math.round(amount).toLocaleString("ja-JP")}`;
 }
 
 /** Today as an ISO `YYYY-MM-DD` string in local time. */
@@ -29,8 +29,8 @@ export function formatMonthLabel(key: string): string {
 
 /** Shift a `YYYY-MM` key by `delta` months. */
 export function shiftMonth(key: string, delta: number): string {
-	const [y, m] = key.split("-").map(Number);
-	const d = new Date(y!, m! - 1 + delta, 1);
+	const [y = 0, m = 1] = key.split("-").map(Number);
+	const d = new Date(y, m - 1 + delta, 1);
 	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 

@@ -76,7 +76,7 @@ self.addEventListener("fetch", (event) => {
 		caches.match(request).then((cached) => {
 			const network = fetch(request)
 				.then((res) => {
-					if (res && res.ok) {
+					if (res?.ok) {
 						const copy = res.clone();
 						caches.open(CACHE_VERSION).then((c) => c.put(request, copy));
 					}
