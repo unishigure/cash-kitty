@@ -25,12 +25,16 @@ export function StatsTab({
 	const touchStart = useRef<{ x: number; y: number } | null>(null);
 
 	const handleTouchStart = (e: React.TouchEvent) => {
+		// The detail overlay renders inside this container, so its touches bubble
+		// up here — ignore swipes while it's open.
+		if (selectedId) return;
 		const t = e.touches[0];
 		if (!t) return;
 		touchStart.current = { x: t.clientX, y: t.clientY };
 	};
 
 	const handleTouchEnd = (e: React.TouchEvent) => {
+		if (selectedId) return;
 		const start = touchStart.current;
 		touchStart.current = null;
 		const t = e.changedTouches[0];
