@@ -1,7 +1,7 @@
 {
 	"name": "cash-kitty",
 	"scripts": {
-		"start:api": "cd packages/api && uv run -m uvicorn app.main:app --host 0.0.0.0 --port 8000",
+		"start:api": "cd packages/api && uv run -m uvicorn app.main:app --host 0.0.0.0 --port 8495",
 		"start:web": "cd packages/web && bun run start"
 	}
 }
