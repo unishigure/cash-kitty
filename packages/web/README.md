@@ -39,6 +39,31 @@ bun run start   # build してから dist/ をローカルで静的配信（本�
 
 `bun dev` だけが TS/CSS をオンザフライでバンドルする開発サーバー（HMR 付き、[src/index.ts](src/index.ts)）です。`bun start` は本番ビルドを作って [serve.ts](serve.ts) で `dist/` をそのまま配るだけ — 実際の静的ホストと同じ挙動で、API もプロキシもありません（OCR を試すなら `bun dev` を使ってください）。
 
+### Cloudflare Pages で `packages/web` だけ配信する
+
+Cloudflare Pages には **`packages/web` だけ**をデプロイできます。Bun の静的ビルドだけで完結するため、Functions は不要です。
+
+- Root directory: `packages/web`
+- Build command: `bun run build`
+- Build output directory: `dist`
+- Production branch: 任意（例 `main`）
+
+Pages では `BUN_PUBLIC_*` を**ビルド環境変数**として設定します。
+
+- `BUN_PUBLIC_GOOGLE_CLIENT_ID`: 必須。Google OAuth の Web クライアント ID
+- `BUN_PUBLIC_OCR_API_URL`: 任意。OCR API を Pages とは別ホストで公開するなら、その HTTPS URL を設定
+
+例:
+
+```text
+BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
+```
+
+`BUN_PUBLIC_OCR_API_URL` を未設定にすると、本番ビルドは相対パス `/api/...` を使います。これは **web と API を同一オリジンで配信するときだけ**正しく、`packages/web` だけを Pages に置く構成では OCR 用に到達可能な別 URL を設定してください。
+
+`public/_redirects` と `public/_headers` はビルド時に `dist/` へコピーされます。これにより Cloudflare Pages 上でも、SPA の直接アクセス時に `index.html` へフォールバックし、`sw.js` と `manifest.webmanifest` は再検証付きで配信されます。
+
 | | `bun dev`（開発） | `bun start` / 本番ホスト |
 | --- | --- | --- |
 | ファイル配信 | オンザフライでバンドル + HMR | ビルド済み `dist/` を静的配信 |
@@ -57,6 +82,8 @@ bun run start   # build してから dist/ をローカルで静的配信（本�
   ```
 
 - `.env.production`（本番・git 管理下）: `bun run build`（`NODE_ENV=production`）で `.env` を上書きし、OCR を**同一オリジン**にする
+
+   `packages/web` だけを Cloudflare Pages に置く場合は、この値を Pages の `BUN_PUBLIC_OCR_API_URL` 環境変数で**上書き**してください。
 
   ```bash
   BUN_PUBLIC_OCR_API_URL=   # 空 = SPA は自分のオリジンの /api を叩く
