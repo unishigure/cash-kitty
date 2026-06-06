@@ -12,6 +12,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Money Note" />
     <title>Money Note — レシート家計簿</title>
+    <!-- Apply the saved color scheme before first paint to avoid a flash. -->
+    <script>
+      try {
+        const t = localStorage.getItem("money-note.theme");
+        const dark =
+          t === "dark" ||
+          ((!t || t === "system") &&
+            matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.classList.add("dark");
+      } catch {}
+    </script>
     <!--
       PWA manifest & icons are injected at runtime rather than written as static
       <link> tags: Bun's HTML bundler would otherwise try to resolve these

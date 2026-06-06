@@ -1,51 +1,94 @@
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
+import type { ThemeApi } from "../hooks/useTheme";
 import type { AppSettings } from "../lib/settings";
+import type { Theme } from "../lib/theme";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
 
 const STATUS_LABEL: Record<Drive["status"], { text: string; dot: string }> = {
-	disconnected: { text: "未接続", dot: "bg-slate-300" },
+	disconnected: { text: "未接続", dot: "bg-slate-300 dark:bg-slate-600" },
 	connecting: { text: "接続中…", dot: "bg-amber-400" },
 	connected: { text: "接続済み", dot: "bg-emerald-500" },
 	error: { text: "エラー", dot: "bg-red-500" },
 };
 
+const THEME_OPTIONS: { value: Theme; label: string }[] = [
+	{ value: "light", label: "ライト" },
+	{ value: "dark", label: "ダーク" },
+	{ value: "system", label: "システム" },
+];
+
 export function SettingsTab({
 	settings,
 	drive,
+	themeApi,
 }: {
 	settings: AppSettings;
 	drive: Drive;
+	themeApi: ThemeApi;
 }) {
 	const status = STATUS_LABEL[drive.status];
 
 	return (
 		<div className="space-y-5">
+			{/* Appearance */}
+			<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+				<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
+					外観
+				</h2>
+				<div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-900">
+					{THEME_OPTIONS.map(({ value, label }) => {
+						const active = themeApi.theme === value;
+						return (
+							<button
+								key={value}
+								type="button"
+								aria-pressed={active}
+								onClick={() => themeApi.setTheme(value)}
+								className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${
+									active
+										? "bg-white text-emerald-700 shadow-sm dark:bg-slate-700 dark:text-emerald-300"
+										: "text-slate-500 active:bg-slate-200 dark:text-slate-400 dark:active:bg-slate-800"
+								}`}
+							>
+								{label}
+							</button>
+						);
+					})}
+				</div>
+			</section>
+
 			{/* Google Drive connection */}
-			<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+			<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
 				<div className="flex items-center justify-between">
-					<h2 className="text-sm font-bold text-slate-700">Google Drive</h2>
-					<span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+					<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
+						Google Drive
+					</h2>
+					<span className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
 						<span className={`h-2 w-2 rounded-full ${status.dot}`} />
 						{status.text}
 					</span>
 				</div>
 
-				<p className="text-xs text-slate-500 px-1 text-center">
+				<p className="text-xs text-slate-500 px-1 text-center dark:text-slate-400">
 					<span>データはあなたの Google Drive の専用領域に保存されます。</span>
 					<br />
 					<span>サーバーに保存されることはありません。</span>
 				</p>
-				<p className="px-1 text-center text-xs text-slate-400">
+				<p className="px-1 text-center text-xs text-slate-400 dark:text-slate-500">
 					データ保存件数: {drive.receipts.length} 件
 				</p>
-				{drive.error && <p className="text-xs text-red-600">{drive.error}</p>}
+				{drive.error && (
+					<p className="text-xs text-red-600 dark:text-red-400">
+						{drive.error}
+					</p>
+				)}
 				<div className="flex gap-2">
 					{drive.status === "connected" ? (
 						<button
 							type="button"
 							onClick={drive.disconnect}
-							className="flex-1 rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-600 active:bg-slate-50"
+							className="flex-1 rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-600 active:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:active:bg-slate-600"
 						>
 							切断
 						</button>

@@ -16,7 +16,7 @@ export function TabBar({
 	onChange: (tab: TabId) => void;
 }) {
 	return (
-		<nav className="fixed bottom-0 inset-x-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
+		<nav className="fixed bottom-0 inset-x-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur pb-[env(safe-area-inset-bottom)] dark:border-slate-800 dark:bg-slate-900/95">
 			<div className="mx-auto flex max-w-lg">
 				{TABS.map(({ id, label, Icon }) => {
 					const isActive = id === active;
@@ -26,7 +26,9 @@ export function TabBar({
 							type="button"
 							onClick={() => onChange(id)}
 							className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors ${
-								isActive ? "text-emerald-600" : "text-slate-400"
+								isActive
+									? "text-emerald-600 dark:text-emerald-400"
+									: "text-slate-400 dark:text-slate-500"
 							}`}
 							aria-current={isActive ? "page" : undefined}
 						>

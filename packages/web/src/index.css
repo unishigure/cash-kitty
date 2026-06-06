@@ -1,14 +1,27 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: `dark:` utilities apply when <html> has the `dark`
+ * class (toggled by useTheme), instead of Tailwind's default media query. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
 	:root {
-		@apply font-sans text-slate-900;
+		@apply font-sans;
 		-webkit-text-size-adjust: 100%;
 	}
 
 	html,
 	body {
-		@apply m-0 min-h-dvh bg-slate-100;
+		@apply m-0 min-h-dvh bg-slate-100 text-slate-900;
+	}
+
+	html.dark {
+		/* Render native controls (date picker, scrollbars) in dark. */
+		color-scheme: dark;
+	}
+
+	html.dark body {
+		@apply bg-slate-950 text-slate-100;
 	}
 
 	/* Always reserve the scrollbar gutter so the centered layout doesn't shift
@@ -29,6 +42,7 @@
 @layer components {
 	.input {
 		@apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100;
+		@apply dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40;
 	}
 }
 

@@ -180,7 +180,7 @@ export function ReceiptDetail({
 
 	return (
 		<div
-			className={`fixed inset-0 z-40 flex flex-col bg-slate-50 ${
+			className={`fixed inset-0 z-40 flex flex-col bg-slate-50 dark:bg-slate-950 ${
 				closing ? "detail-exit" : "detail-enter"
 			}`}
 			onAnimationEnd={handleAnimationEnd}
@@ -188,22 +188,22 @@ export function ReceiptDetail({
 			onTouchEnd={handleTouchEnd}
 		>
 			{/* Header */}
-			<header className="sticky top-0 flex items-center gap-2 border-b border-slate-200 bg-white/95 px-2 py-3 backdrop-blur pt-[max(0.75rem,env(safe-area-inset-top))]">
+			<header className="sticky top-0 flex items-center gap-2 border-b border-slate-200 bg-white/95 px-2 py-3 backdrop-blur pt-[max(0.75rem,env(safe-area-inset-top))] dark:border-slate-800 dark:bg-slate-900/95">
 				<button
 					type="button"
 					onClick={editing ? cancelEdit : requestClose}
-					className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-emerald-600 active:bg-slate-100"
+					className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-emerald-600 active:bg-slate-100 dark:text-emerald-400 dark:active:bg-slate-800"
 				>
 					{editing ? "キャンセル" : "‹ 戻る"}
 				</button>
-				<span className="flex-1 text-sm font-bold text-slate-700">
+				<span className="flex-1 text-sm font-bold text-slate-700 dark:text-slate-200">
 					{editing ? "レシートを編集" : "レシート詳細"}
 				</span>
 				{!editing && (
 					<button
 						type="button"
 						onClick={startEdit}
-						className="rounded-lg px-3 py-1 text-sm font-medium text-emerald-600 active:bg-slate-100"
+						className="rounded-lg px-3 py-1 text-sm font-medium text-emerald-600 active:bg-slate-100 dark:text-emerald-400 dark:active:bg-slate-800"
 					>
 						編集
 					</button>
@@ -212,7 +212,7 @@ export function ReceiptDetail({
 
 			<div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
 				{/* Image */}
-				<div className="flex min-h-45 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white">
+				<div className="flex min-h-45 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
 					{imageLoading ? (
 						<span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
 					) : imageUrl ? (
@@ -222,7 +222,7 @@ export function ReceiptDetail({
 							className="max-h-[70vh] w-full object-contain"
 						/>
 					) : (
-						<p className="px-6 py-10 text-center text-sm text-slate-400">
+						<p className="px-6 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
 							{imageError
 								? `画像を読み込めませんでした: ${imageError}`
 								: "このレシートには画像がありません"}
@@ -232,7 +232,7 @@ export function ReceiptDetail({
 
 				{editing ? (
 					/* Edit form */
-					<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+					<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
 						<Field label="店名">
 							<input
 								type="text"
@@ -273,7 +273,7 @@ export function ReceiptDetail({
 										className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
 											form.category === c
 												? "bg-emerald-600 text-white"
-												: "bg-slate-100 text-slate-600 active:bg-slate-200"
+												: "bg-slate-100 text-slate-600 active:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:active:bg-slate-600"
 										}`}
 									>
 										{c}
@@ -293,7 +293,7 @@ export function ReceiptDetail({
 						</Field>
 
 						{saveError && (
-							<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+							<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
 								{saveError}
 							</p>
 						)}
@@ -311,7 +311,7 @@ export function ReceiptDetail({
 								type="button"
 								onClick={cancelEdit}
 								disabled={saving}
-								className="flex-1 rounded-xl border border-slate-300 bg-white py-3 text-sm font-medium text-slate-600"
+								className="flex-1 rounded-xl border border-slate-300 bg-white py-3 text-sm font-medium text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
 							>
 								キャンセル
 							</button>
@@ -319,7 +319,7 @@ export function ReceiptDetail({
 					</div>
 				) : (
 					/* Read-only fields */
-					<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+					<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
 						<Row label="店名" value={receipt.storeName || "（店名なし）"} />
 						<Row label="金額" value={formatYen(receipt.totalAmount)} strong />
 						<Row label="日付" value={receipt.date || "—"} />
@@ -340,11 +340,11 @@ export function ReceiptDetail({
 				)}
 
 				{!editing && receipt.fullText && (
-					<details className="rounded-2xl border border-slate-200 bg-white p-4">
-						<summary className="cursor-pointer text-sm font-medium text-slate-600">
+					<details className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+						<summary className="cursor-pointer text-sm font-medium text-slate-600 dark:text-slate-300">
 							全文を表示
 						</summary>
-						<pre className="mt-2 whitespace-pre-wrap wrap-break-word text-xs text-slate-500">
+						<pre className="mt-2 whitespace-pre-wrap wrap-break-word text-xs text-slate-500 dark:text-slate-400">
 							{receipt.fullText}
 						</pre>
 					</details>
@@ -353,7 +353,7 @@ export function ReceiptDetail({
 				{!editing && (
 					<>
 						{deleteError && (
-							<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+							<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
 								{deleteError}
 							</p>
 						)}
@@ -371,7 +371,7 @@ export function ReceiptDetail({
 									type="button"
 									onClick={() => setConfirming(false)}
 									disabled={deleting}
-									className="flex-1 rounded-xl border border-slate-300 bg-white py-3 text-sm font-medium text-slate-600"
+									className="flex-1 rounded-xl border border-slate-300 bg-white py-3 text-sm font-medium text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
 								>
 									キャンセル
 								</button>
@@ -380,7 +380,7 @@ export function ReceiptDetail({
 							<button
 								type="button"
 								onClick={() => setConfirming(true)}
-								className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-white py-3 text-sm font-bold text-red-600 active:bg-red-50"
+								className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-white py-3 text-sm font-bold text-red-600 active:bg-red-50 dark:border-red-900 dark:bg-slate-800 dark:text-red-400 dark:active:bg-red-950"
 							>
 								<TrashIcon className="h-4 w-4" /> このレシートを削除
 							</button>
@@ -403,7 +403,7 @@ function Field({
 }) {
 	return (
 		<div className="block">
-			<span className="mb-1 block text-xs font-medium text-slate-500">
+			<span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
 				{label}
 				{required && <span className="ml-0.5 text-red-500">*</span>}
 			</span>
@@ -423,11 +423,11 @@ function Row({
 }) {
 	return (
 		<div className="flex items-start justify-between gap-4">
-			<span className="shrink-0 text-xs font-medium text-slate-400">
+			<span className="shrink-0 text-xs font-medium text-slate-400 dark:text-slate-500">
 				{label}
 			</span>
 			<span
-				className={`text-right ${strong ? "text-base font-bold text-slate-900" : "text-sm text-slate-700"}`}
+				className={`text-right ${strong ? "text-base font-bold text-slate-900 dark:text-slate-100" : "text-sm text-slate-700 dark:text-slate-200"}`}
 			>
 				{value}
 			</span>

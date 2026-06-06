@@ -74,14 +74,16 @@ export function StatsTab({
 
 	if (status !== "connected" && receipts.length === 0) {
 		return (
-			<div className="mt-8 space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-center">
-				<p className="text-base font-bold text-slate-800">
+			<div className="mt-8 space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-800">
+				<p className="text-base font-bold text-slate-800 dark:text-slate-100">
 					Google Drive に未接続です
 				</p>
-				<p className="text-sm text-slate-500">
+				<p className="text-sm text-slate-500 dark:text-slate-400">
 					保存したレシートを表示するには Google Drive に接続してください。
 				</p>
-				{error && <p className="text-xs text-red-600">{error}</p>}
+				{error && (
+					<p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+				)}
 				<button
 					type="button"
 					onClick={() => void connect()}
@@ -101,11 +103,11 @@ export function StatsTab({
 			onTouchEnd={handleTouchEnd}
 		>
 			{/* Month selector */}
-			<div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-2 py-2">
+			<div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-2 py-2 dark:border-slate-700 dark:bg-slate-800">
 				<button
 					type="button"
 					onClick={() => onChangeMonth(-1)}
-					className="rounded-lg px-3 py-1.5 text-lg text-slate-500 active:bg-slate-100"
+					className="rounded-lg px-3 py-1.5 text-lg text-slate-500 active:bg-slate-100 dark:text-slate-400 dark:active:bg-slate-700"
 					aria-label="前の月"
 				>
 					‹
@@ -114,7 +116,7 @@ export function StatsTab({
 				<button
 					type="button"
 					onClick={() => onChangeMonth(1)}
-					className="rounded-lg px-3 py-1.5 text-lg text-slate-500 active:bg-slate-100"
+					className="rounded-lg px-3 py-1.5 text-lg text-slate-500 active:bg-slate-100 dark:text-slate-400 dark:active:bg-slate-700"
 					aria-label="次の月"
 				>
 					›
@@ -140,32 +142,36 @@ export function StatsTab({
 				</div>
 
 				{loading && (
-					<p className="text-center text-sm text-slate-400">読み込み中…</p>
+					<p className="text-center text-sm text-slate-400 dark:text-slate-500">
+						読み込み中…
+					</p>
 				)}
 				{error && (
-					<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+					<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
 						{error}
 					</p>
 				)}
 
 				{/* Category breakdown */}
 				{byCategory.length > 0 && (
-					<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
-						<h2 className="text-sm font-bold text-slate-700">カテゴリ別</h2>
+					<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+						<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
+							カテゴリ別
+						</h2>
 						<div className="space-y-2.5">
 							{byCategory.map(({ category, amount }) => {
 								const pct = total > 0 ? (amount / total) * 100 : 0;
 								return (
 									<div key={category}>
 										<div className="mb-1 flex justify-between text-xs">
-											<span className="font-medium text-slate-600">
+											<span className="font-medium text-slate-600 dark:text-slate-300">
 												{category}
 											</span>
-											<span className="tabular-nums text-slate-500">
+											<span className="tabular-nums text-slate-500 dark:text-slate-400">
 												{formatYen(amount)}（{pct.toFixed(0)}%）
 											</span>
 										</div>
-										<div className="h-2 overflow-hidden rounded-full bg-slate-100">
+										<div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
 											<div
 												className="h-full rounded-full"
 												style={{
@@ -184,21 +190,23 @@ export function StatsTab({
 				{/* Receipt list */}
 				<section className="space-y-2">
 					<div className="flex items-center justify-between px-1">
-						<h2 className="text-sm font-bold text-slate-700">明細</h2>
+						<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
+							明細
+						</h2>
 						<button
 							type="button"
 							onClick={() => void refresh()}
-							className="text-xs font-medium text-emerald-600"
+							className="text-xs font-medium text-emerald-600 dark:text-emerald-400"
 						>
 							更新
 						</button>
 					</div>
 					{monthly.length === 0 && !loading ? (
-						<p className="rounded-xl border border-dashed border-slate-200 bg-white py-8 text-center text-sm text-slate-400">
+						<p className="rounded-xl border border-dashed border-slate-200 bg-white py-8 text-center text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
 							この月のレシートはありません
 						</p>
 					) : (
-						<ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+						<ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800">
 							{monthly.map((r) => (
 								<ReceiptRow
 									key={r.id}
@@ -234,30 +242,33 @@ function ReceiptRow({
 			<button
 				type="button"
 				onClick={onOpen}
-				className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-slate-50"
+				className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-slate-50 dark:active:bg-slate-700"
 			>
 				<span
 					className="h-9 w-1.5 shrink-0 rounded-full"
 					style={{ backgroundColor: categoryColor(receipt.category) }}
 				/>
 				<div className="min-w-0 flex-1">
-					<p className="truncate text-sm font-medium text-slate-800">
+					<p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
 						{receipt.storeName || "（店名なし）"}
 					</p>
-					<p className="text-xs text-slate-400">
+					<p className="text-xs text-slate-400 dark:text-slate-500">
 						{receipt.date} · {receipt.category}
 						{receipt.memo ? ` · ${receipt.memo}` : ""}
 					</p>
 				</div>
 				{receipt.imageFileId && (
-					<span className="shrink-0 text-xs text-slate-300" title="画像あり">
+					<span
+						className="shrink-0 text-xs text-slate-300 dark:text-slate-500"
+						title="画像あり"
+					>
 						🖼
 					</span>
 				)}
-				<span className="shrink-0 tabular-nums text-sm font-semibold text-slate-800">
+				<span className="shrink-0 tabular-nums text-sm font-semibold text-slate-800 dark:text-slate-100">
 					{formatYen(receipt.totalAmount)}
 				</span>
-				<span className="shrink-0 text-slate-300">›</span>
+				<span className="shrink-0 text-slate-300 dark:text-slate-600">›</span>
 			</button>
 		</li>
 	);

@@ -69,7 +69,7 @@ export function CaptureTab({
 			<button
 				type="button"
 				onClick={() => fileRef.current?.click()}
-				className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-white text-slate-400 transition active:scale-[0.99]"
+				className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-white text-slate-400 transition active:scale-[0.99] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-500"
 			>
 				{preview ? (
 					<img
@@ -91,32 +91,32 @@ export function CaptureTab({
 				<button
 					type="button"
 					onClick={() => fileRef.current?.click()}
-					className="w-full rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-600 active:bg-slate-50"
+					className="w-full rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-600 active:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:active:bg-slate-700"
 				>
 					撮り直す
 				</button>
 			)}
 
 			{analyzing && (
-				<div className="flex items-center justify-center gap-2 rounded-lg bg-emerald-50 py-3 text-sm font-medium text-emerald-700">
+				<div className="flex items-center justify-center gap-2 rounded-lg bg-emerald-50 py-3 text-sm font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
 					<Spinner /> レシートを解析中…
 				</div>
 			)}
 
 			{error && (
-				<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+				<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
 					{error}
 				</p>
 			)}
 
 			{done && (
-				<p className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-50 py-3 text-sm font-medium text-emerald-700">
+				<p className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-50 py-3 text-sm font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
 					<CheckIcon className="h-4 w-4" /> Google Drive に保存しました
 				</p>
 			)}
 
 			{/* Edit form */}
-			<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+			<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
 				<Field label="店名">
 					<input
 						type="text"
@@ -157,7 +157,7 @@ export function CaptureTab({
 								className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
 									form.category === c
 										? "bg-emerald-600 text-white"
-										: "bg-slate-100 text-slate-600 active:bg-slate-200"
+										: "bg-slate-100 text-slate-600 active:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:active:bg-slate-600"
 								}`}
 							>
 								{c}
@@ -207,7 +207,7 @@ function Field({
 	return (
 		// biome-ignore lint/a11y/noLabelWithoutControl: the form control is supplied via `children`.
 		<label className="block">
-			<span className="mb-1 block text-xs font-medium text-slate-500">
+			<span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
 				{label}
 				{required && <span className="ml-0.5 text-red-500">*</span>}
 			</span>
@@ -234,9 +234,11 @@ function NoticeCard({
 	onAction: () => void;
 }) {
 	return (
-		<div className="mt-8 space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-center">
-			<p className="text-base font-bold text-slate-800">{title}</p>
-			<p className="text-sm text-slate-500">{body}</p>
+		<div className="mt-8 space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-800">
+			<p className="text-base font-bold text-slate-800 dark:text-slate-100">
+				{title}
+			</p>
+			<p className="text-sm text-slate-500 dark:text-slate-400">{body}</p>
 			<button
 				type="button"
 				onClick={onAction}

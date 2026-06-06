@@ -4,6 +4,7 @@ import { TabBar, type TabId } from "./components/TabBar";
 import { useGoogleDrive } from "./hooks/useGoogleDrive";
 import { useReceiptCapture } from "./hooks/useReceiptCapture";
 import { type SettingsApi, useSettings } from "./hooks/useSettings";
+import { type ThemeApi, useTheme } from "./hooks/useTheme";
 import { currentMonthKey, shiftMonth } from "./lib/format";
 import { CaptureTab } from "./tabs/CaptureTab";
 import { SettingsTab } from "./tabs/SettingsTab";
@@ -17,21 +18,28 @@ const TAB_TITLES: Record<TabId, string> = {
 
 export function App() {
 	const settingsApi = useSettings();
+	const themeApi = useTheme();
 
 	// Wait until server config (.env) has loaded so the Drive client mounts with
 	// the right client id.
 	if (!settingsApi.ready) {
 		return (
-			<div className="flex min-h-dvh items-center justify-center bg-slate-50 text-slate-400">
+			<div className="flex min-h-dvh items-center justify-center bg-slate-50 text-slate-400 dark:bg-slate-950 dark:text-slate-500">
 				<span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
 			</div>
 		);
 	}
 
-	return <AppShell settingsApi={settingsApi} />;
+	return <AppShell settingsApi={settingsApi} themeApi={themeApi} />;
 }
 
-function AppShell({ settingsApi }: { settingsApi: SettingsApi }) {
+function AppShell({
+	settingsApi,
+	themeApi,
+}: {
+	settingsApi: SettingsApi;
+	themeApi: ThemeApi;
+}) {
 	const { settings } = settingsApi;
 	const [tab, setTab] = useState<TabId>("capture");
 	const drive = useGoogleDrive(settings.googleClientId);
@@ -56,11 +64,12 @@ function AppShell({ settingsApi }: { settingsApi: SettingsApi }) {
 	const isCurrentMonth = statsMonth === currentMonthKey();
 
 	return (
-		<div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-slate-50 text-slate-900">
-			<header className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur pt-[max(0.75rem,env(safe-area-inset-top))]">
+		<div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+			<header className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur pt-[max(0.75rem,env(safe-area-inset-top))] dark:border-slate-800 dark:bg-slate-900/95">
 				<h1 className="text-lg font-bold tracking-tight">
-					<span className="text-emerald-600">Money</span> Note
-					<span className="ml-2 text-sm font-normal text-slate-400">
+					<span className="text-emerald-600 dark:text-emerald-400">Money</span>{" "}
+					Note
+					<span className="ml-2 text-sm font-normal text-slate-400 dark:text-slate-500">
 						{TAB_TITLES[tab]}
 					</span>
 				</h1>
@@ -68,7 +77,7 @@ function AppShell({ settingsApi }: { settingsApi: SettingsApi }) {
 					<button
 						type="button"
 						onClick={goToCurrentMonth}
-						className="shrink-0 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 active:bg-emerald-100"
+						className="shrink-0 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 active:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:active:bg-emerald-900"
 					>
 						今月に戻る
 					</button>
@@ -92,7 +101,7 @@ function AppShell({ settingsApi }: { settingsApi: SettingsApi }) {
 					/>
 				)}
 				{tab === "settings" && (
-					<SettingsTab settings={settings} drive={drive} />
+					<SettingsTab settings={settings} drive={drive} themeApi={themeApi} />
 				)}
 			</main>
 
