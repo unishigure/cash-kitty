@@ -1,6 +1,6 @@
 # cash-kitty-api
 
-`yomitoku` を使ったレシート OCR API です。
+[YomiToku](https://github.com/kotaro-kinoshita/yomitoku) を使ったレシート OCR API です。
 
 ## Setup
 
