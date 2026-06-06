@@ -11,7 +11,7 @@
 アプリサーバーには一切送信・保存されません
 
 OCR API へは**ブラウザが直接アクセス**します（接続先は `BUN_PUBLIC_OCR_API_URL`）。Web サーバはプロキシも設定 API（`/api/*`）も持たず、SPA と PWA 資産を配信するだけです\
-そのため OCR は接続先が到達可能なとき（ローカル API を起動している／トンネルが開いている）だけ動作します。OCR API 側は配信元オリジンを CORS で許可してください（既定は `CORS_ALLOW_ORIGINS=*`）
+そのため OCR は接続先が到達可能なとき（ローカル API を起動している／トンネルが開いている）だけ動作します。OCR API 側は配信元オリジンを CORS で許可してください（既定は開発用の `http://localhost:3000`。本番は API の `.env` の `CORS_ALLOW_ORIGINS` に配信オリジンを設定）
 
 ## Setup
 
@@ -90,7 +90,7 @@ BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
 
    ※ `BUN_PUBLIC_OCR_API_URL` はブラウザから到達できる HTTPS URL を設定してください。
 
-> 配信先 URL は Google の **承認済み JavaScript 生成元** に登録してください。OCR を別オリジンに置く場合のみ、API 側で CORS の許可が必要です（既定は `CORS_ALLOW_ORIGINS=*`）。
+> 配信先 URL は Google の **承認済み JavaScript 生成元** に登録してください。OCR を別オリジンから呼ぶ場合は、API 側 `.env` の `CORS_ALLOW_ORIGINS` にその配信オリジン（固定 HTTPS URL）を設定してください（既定は開発用の `http://localhost:3000`）。
 
 ## PWA（ホーム画面に追加 / オフライン）
 

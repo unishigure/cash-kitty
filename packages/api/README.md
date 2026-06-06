@@ -20,6 +20,10 @@ Server: `http://localhost:8000`
 
 ## Environment Variables
 
+`.env.example` を `packages/api/.env` にコピーして値を設定します（`.env` は git 管理外。起動時に自動で読み込まれ、ホスト側の実環境変数が優先されます）。
+
+- `CORS_ALLOW_ORIGINS` (default: `http://localhost:3000`)
+  - SPA のオリジンをカンマ区切りで指定します。**本番では到達可能なため `*` を避け、固定 HTTPS オリジンのみ**を設定してください（例: `https://cashkitty.example.com`）。
 - `APP_NAME` (default: `cash-kitty-api`)
 - `APP_VERSION` (default: `0.1.0`)
 - `OCR_DEVICE` (default: `cuda`)
