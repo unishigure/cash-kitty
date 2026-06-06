@@ -5,3 +5,12 @@
 /manifest.webmanifest
   Cache-Control: no-cache
   Content-Type: application/manifest+json; charset=utf-8
+
+/icon-*.png
+  Cache-Control: no-cache
+
+/apple-touch-icon.png
+  Cache-Control: no-cache
+
+/favicon-32.png
+  Cache-Control: no-cache
