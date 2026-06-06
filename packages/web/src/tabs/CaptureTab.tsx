@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { CheckIcon } from "../components/icons";
+import { CheckIcon, RefreshIcon } from "../components/icons";
 import { useOcrHealth } from "../hooks/useOcrHealth";
 import type { ReceiptCapture } from "../hooks/useReceiptCapture";
 import { CATEGORIES } from "../lib/categories";
@@ -225,9 +225,11 @@ export function CaptureTab({
 					type="button"
 					onClick={onReset}
 					disabled={saving || analyzing}
-					className="shrink-0 rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-base font-bold text-slate-600 transition active:scale-[0.99] disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+					aria-label="リセット"
+					title="リセット"
+					className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-600 transition active:scale-[0.99] disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
 				>
-					リセット
+					<RefreshIcon className="h-5 w-5" />
 				</button>
 				<button
 					type="button"
