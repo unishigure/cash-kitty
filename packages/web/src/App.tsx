@@ -30,8 +30,14 @@ function AppShell({
 	themeApi: ThemeApi;
 }) {
 	const { settings } = settingsApi;
-	const [tab, setTab] = useState<TabId>("capture");
 	const drive = useGoogleDrive(settings.googleClientId);
+	// Open on stats when Drive is already (or about to be) connected; otherwise
+	// land on capture so a first-time user starts where the setup flow is.
+	const [tab, setTab] = useState<TabId>(() =>
+		drive.status === "connected" || drive.status === "connecting"
+			? "stats"
+			: "capture",
+	);
 	// Held at the shell level so an in-flight OCR analysis (and the form it
 	// fills) survives switching the bottom-nav tab away and back.
 	const capture = useReceiptCapture(settings, drive);
