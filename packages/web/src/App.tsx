@@ -56,8 +56,8 @@ function AppShell({
 		<div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
 			<header className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur pt-[max(0.75rem,env(safe-area-inset-top))] dark:border-slate-800 dark:bg-slate-900/95">
 				<h1 className="text-lg font-bold tracking-tight">
-					<span className="text-emerald-600 dark:text-emerald-400">Money</span>{" "}
-					Note
+					<span className="text-emerald-600 dark:text-emerald-400">Cash</span>{" "}
+					Kitty
 					<span className="ml-2 text-sm font-normal text-slate-400 dark:text-slate-500">
 						{TAB_TITLES[tab]}
 					</span>

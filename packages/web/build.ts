@@ -1,5 +1,5 @@
 /**
- * Static-site build for the Money Note web app.
+ * Static-site build for the Cash Kitty web app.
  *
  * Produces a fully static `dist/` (HTML + hashed JS/CSS + PWA assets) that can
  * be hosted on any static host (Cloudflare Pages / Netlify / Vercel) served at

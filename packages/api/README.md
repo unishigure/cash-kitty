@@ -1,4 +1,4 @@
-# money-note-api
+# cash-kitty-api
 
 `yomitoku` を使ったレシート OCR API です。
 
@@ -20,7 +20,7 @@ Server: `http://localhost:8000`
 
 ## Environment Variables
 
-- `APP_NAME` (default: `money-note-api`)
+- `APP_NAME` (default: `cash-kitty-api`)
 - `APP_VERSION` (default: `0.1.0`)
 - `OCR_DEVICE` (default: `cuda`)
 - `MAX_UPLOAD_SIZE_BYTES` (default: `10485760`)

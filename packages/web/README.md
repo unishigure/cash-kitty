@@ -1,4 +1,4 @@
-# money-note-web
+# cash-kitty-web
 
 レシートを撮影 → OCR 解析 → Google Drive のアプリ専用領域に保存し、月ごとの統計を表示する SPA です\
 スマホでの利用を前提にしています
@@ -96,8 +96,8 @@ BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
 web と API を 1 つのドメインに同居させます：
 
 ```text
-moneynote.example.com/        → 静的サイト（dist/）
-moneynote.example.com/api/*   → ローカル FastAPI（Cloudflare Tunnel 経由）
+cashkitty.example.com/        → 静的サイト（dist/）
+cashkitty.example.com/api/*   → ローカル FastAPI（Cloudflare Tunnel 経由）
 ```
 
 こうすると `BUN_PUBLIC_OCR_API_URL` を空にでき、SPA は相対パス `/api/ocr/analyze` を叩きます。**CORS も混在コンテンツも無く、スマホからも OCR が動作**します。API のルートは元から `/api/*`（[../api/app/main.py](../api/app/main.py)）なので、ゲートウェイは `/api` を剥がさずそのまま転送するだけで一致します。
@@ -137,7 +137,7 @@ Google Drive へ保存するため、Google Cloud Console で OAuth クライア
 4. 「認証情報」→「認証情報を作成」→「OAuth クライアント ID」→ アプリの種類 **ウェブアプリケーション**
 5. **承認済みの JavaScript 生成元** に、このアプリを開く URL を追加
    - PC 用: `http://localhost:3000`
-   - スマホ用: 下記の Cloudflare Tunnel で発行する公開 URL（例 `https://moneynote.example.com`）
+   - スマホ用: 下記の Cloudflare Tunnel で発行する公開 URL（例 `https://cashkitty.example.com`）
 6. 発行された **クライアント ID**（`xxxx.apps.googleusercontent.com`）を `.env` の `BUN_PUBLIC_GOOGLE_CLIENT_ID` に設定
 
 ### 3. `.env` で設定を一元管理
@@ -155,7 +155,7 @@ Google の OAuth は **セキュアコンテキスト（HTTPS か `localhost`）
 ルーティングや公開ホスト名はすべて [Zero Trust ダッシュボード](https://one.dash.cloudflare.com/) で管理され、PC 側はコネクタを常駐させるだけです（`config.yml` 不要）。
 
 1. ダッシュボード → **Networks → Tunnels → Create a tunnel** → **Cloudflared** を選択
-2. 名前（例 `money-note`）を付けて保存
+2. 名前（例 `cash-kitty`）を付けて保存
 3. 表示される「コネクタのインストール」画面で OS = **Windows** を選択。cloudflared 未導入なら先に入れる:
 
    ```powershell
@@ -170,12 +170,12 @@ Google の OAuth は **セキュアコンテキスト（HTTPS か `localhost`）
 
 4. コネクタが **Connected** になったら次へ
 5. **Public Hostname** タブ → **Add a public hostname**
-   - Subdomain: `moneynote`（任意）／ Domain: 自分のドメイン
+   - Subdomain: `cashkitty`（任意）／ Domain: 自分のドメイン
    - Service: Type = **HTTP**、URL = `localhost:3000`
    - 保存（DNS レコードは自動作成）
 6. ローカルで `bun dev` を起動（`localhost:3000`）
-7. `https://moneynote.example.com` を Google の **承認済み JavaScript 生成元** に登録（一度きり。URL は固定）
-8. スマホのブラウザで `https://moneynote.example.com` を開く → Drive 接続・保存が動作します
+7. `https://cashkitty.example.com` を Google の **承認済み JavaScript 生成元** に登録（一度きり。URL は固定）
+8. スマホのブラウザで `https://cashkitty.example.com` を開く → Drive 接続・保存が動作します
 
 > OCR をスマホからも使う場合は、ブラウザが OCR API を直接呼ぶため `BUN_PUBLIC_OCR_API_URL` を **スマホから到達できる URL**（例: トンネルで公開した OCR API、または Bun サーバーと同じトンネル URL）にして起動 / ビルドしてください。`http://localhost:8000` のままだと「localhost = スマホ自身」になり OCR は失敗します（PC 上で開いたときのみ動作）。
 

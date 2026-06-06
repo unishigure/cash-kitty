@@ -1,5 +1,5 @@
 {
-	"name": "money-note",
+	"name": "cash-kitty",
 	"scripts": {
 		"start:api": "cd packages/api && uv run main.py",
 		"start:web": "cd packages/web && bun run start"

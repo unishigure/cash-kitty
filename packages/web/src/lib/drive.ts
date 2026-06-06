@@ -241,7 +241,7 @@ function multipartBody(
 	metadata: object,
 	json: object,
 ): { body: Blob; boundary: string } {
-	const boundary = "money-note-boundary-x7f3a";
+	const boundary = "cash-kitty-boundary-x7f3a";
 	const parts =
 		`--${boundary}\r\n` +
 		"Content-Type: application/json; charset=UTF-8\r\n\r\n" +
@@ -333,7 +333,7 @@ export async function uploadFile(
 	blob: Blob,
 	mimeType: string,
 ): Promise<string> {
-	const boundary = "money-note-bin-boundary-q9k2";
+	const boundary = "cash-kitty-bin-boundary-q9k2";
 	const metadata = { name, parents: ["appDataFolder"], mimeType };
 	const body = new Blob([
 		`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`,

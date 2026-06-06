@@ -1,5 +1,5 @@
 /**
- * Service Worker for Money Note (PWA).
+ * Service Worker for Cash Kitty (PWA).
  *
  * Goals:
  *  - Make the app installable and give it a basic offline app-shell.
@@ -12,7 +12,7 @@
  *  - Everything else           -> straight to the network (no caching).
  */
 
-const CACHE_VERSION = "money-note-v3";
+const CACHE_VERSION = "cash-kitty-v1";
 const SHELL_URL = "/";
 
 // Pre-cache the bare app shell so a cold offline launch still renders.

@@ -1,13 +1,16 @@
 /** Color-scheme preference, persisted to localStorage (separate from AppSettings). */
 export type Theme = "light" | "dark" | "system";
 
-const STORAGE_KEY = "money-note.theme";
+const STORAGE_KEY = "cash-kitty.theme";
+const LEGACY_STORAGE_KEY = "money-note.theme";
 
 export const DEFAULT_THEME: Theme = "system";
 
 export function loadTheme(): Theme {
 	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
+		const raw =
+			localStorage.getItem(STORAGE_KEY) ??
+			localStorage.getItem(LEGACY_STORAGE_KEY);
 		if (raw === "light" || raw === "dark" || raw === "system") return raw;
 	} catch {
 		// ignore

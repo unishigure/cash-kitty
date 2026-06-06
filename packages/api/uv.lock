@@ -446,7 +446,7 @@ wheels = [
 ]
 
 [[package]]
-name = "money-note-api"
+name = "cash-kitty-api"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

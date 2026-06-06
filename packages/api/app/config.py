@@ -4,7 +4,7 @@ import os
 
 @dataclass(frozen=True)
 class Settings:
-    app_name: str = os.getenv("APP_NAME", "money-note-api")
+    app_name: str = os.getenv("APP_NAME", "cash-kitty-api")
     app_version: str = os.getenv("APP_VERSION", "0.1.0")
     ocr_device: str = os.getenv("OCR_DEVICE", "cuda")
     max_upload_size_bytes: int = int(os.getenv("MAX_UPLOAD_SIZE_BYTES", "10485760"))

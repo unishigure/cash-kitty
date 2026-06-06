@@ -10,12 +10,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Money Note" />
-    <title>Money Note — レシート家計簿</title>
+    <meta name="apple-mobile-web-app-title" content="Cash Kitty" />
+    <title>Cash Kitty — レシート家計簿</title>
     <!-- Apply the saved color scheme before first paint to avoid a flash. -->
     <script>
       try {
-        const t = localStorage.getItem("money-note.theme");
+        const t =
+          localStorage.getItem("cash-kitty.theme") ??
+          localStorage.getItem("money-note.theme");
         const dark =
           t === "dark" ||
           ((!t || t === "system") &&

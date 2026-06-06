@@ -6,7 +6,8 @@ export interface AppSettings {
 	googleClientId: string;
 }
 
-const STORAGE_KEY = "money-note.settings";
+const STORAGE_KEY = "cash-kitty.settings";
+const LEGACY_STORAGE_KEY = "money-note.settings";
 
 export const DEFAULT_SETTINGS: AppSettings = {
 	// OCR API base URL. The browser calls it directly (no server-side proxy), so
@@ -19,7 +20,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
 
 export function loadSettings(): AppSettings {
 	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
+		const raw =
+			localStorage.getItem(STORAGE_KEY) ??
+			localStorage.getItem(LEGACY_STORAGE_KEY);
 		if (!raw) return { ...DEFAULT_SETTINGS };
 		const parsed = JSON.parse(raw) as Partial<AppSettings>;
 		return { ...DEFAULT_SETTINGS, ...parsed };

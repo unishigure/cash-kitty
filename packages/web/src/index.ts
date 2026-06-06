@@ -51,7 +51,7 @@ const server = serve({
 });
 
 const port = server.port;
-console.log(`🚀 Money Note web running (listening on 0.0.0.0:${port})`);
+console.log(`🚀 Cash Kitty web running (listening on 0.0.0.0:${port})`);
 console.log(`   このPCから:   http://localhost:${port}/`);
 console.log(
 	`   公開URL:      Cloudflare Tunnel 経由 (cloudflared tunnel run ...)`,

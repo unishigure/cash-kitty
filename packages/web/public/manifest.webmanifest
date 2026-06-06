@@ -1,6 +1,6 @@
 {
-	"name": "Money Note — レシート家計簿",
-	"short_name": "Money Note",
+	"name": "Cash Kitty — レシート家計簿",
+	"short_name": "Cash Kitty",
 	"description": "レシートを撮影して OCR 解析し、Google Drive に保存・月別集計する家計簿アプリ",
 	"lang": "ja",
 	"dir": "ltr",
