@@ -15,9 +15,7 @@
     <!-- Apply the saved color scheme before first paint to avoid a flash. -->
     <script>
       try {
-        const t =
-          localStorage.getItem("cash-kitty.theme") ??
-          localStorage.getItem("money-note.theme");
+        const t = localStorage.getItem("cash-kitty.theme");
         const dark =
           t === "dark" ||
           ((!t || t === "system") &&
