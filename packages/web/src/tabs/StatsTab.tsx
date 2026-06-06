@@ -137,7 +137,7 @@ export function StatsTab({
 				}`}
 			>
 				{/* Summary */}
-				<div className="rounded-2xl bg-emerald-600 p-5 text-white">
+				<div className="relative rounded-2xl bg-emerald-600 p-5 text-white">
 					<p className="text-xs font-medium text-emerald-100">この月の合計</p>
 					<p className="mt-1 text-3xl font-bold tabular-nums">
 						{formatYen(total)}
@@ -145,13 +145,13 @@ export function StatsTab({
 					<p className="mt-1 text-xs text-emerald-100">
 						{monthly.length} 件のレシート
 					</p>
+					{loading && (
+						<div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-emerald-600/60">
+							<span className="inline-block h-7 w-7 animate-spin rounded-full border-2 border-white border-t-transparent" />
+						</div>
+					)}
 				</div>
 
-				{loading && (
-					<p className="text-center text-sm text-slate-400 dark:text-slate-500">
-						読み込み中…
-					</p>
-				)}
 				{error && (
 					<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
 						{error}
