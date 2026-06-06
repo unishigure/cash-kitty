@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import type { ThemeApi } from "../hooks/useTheme";
 import type { AppSettings } from "../lib/settings";
 import type { Theme } from "../lib/theme";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
+
+type BeforeInstallPromptEvent = Event & {
+	prompt: () => Promise<void>;
+	userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+};
 
 const STATUS_LABEL: Record<Drive["status"], { text: string; dot: string }> = {
 	disconnected: { text: "未接続", dot: "bg-slate-300 dark:bg-slate-600" },
@@ -30,6 +35,45 @@ export function SettingsTab({
 }) {
 	const status = STATUS_LABEL[drive.status];
 	const [migrateMsg, setMigrateMsg] = useState<string | null>(null);
+	const [installPrompt, setInstallPrompt] =
+		useState<BeforeInstallPromptEvent | null>(null);
+	const [isInstalled, setIsInstalled] = useState<boolean>(false);
+	const [installMsg, setInstallMsg] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+
+		const checkInstalled = () => {
+			const standalone = window.matchMedia("(display-mode: standalone)").matches;
+			const safariStandalone = Boolean(
+				(navigator as Navigator & { standalone?: boolean }).standalone,
+			);
+			setIsInstalled(standalone || safariStandalone);
+		};
+
+		const onBeforeInstallPrompt = (event: Event) => {
+			event.preventDefault();
+			setInstallPrompt(event as BeforeInstallPromptEvent);
+		};
+
+		const onInstalled = () => {
+			setIsInstalled(true);
+			setInstallPrompt(null);
+			setInstallMsg("アプリをホーム画面に追加しました。");
+		};
+
+		checkInstalled();
+		window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+		window.addEventListener("appinstalled", onInstalled);
+
+		return () => {
+			window.removeEventListener(
+				"beforeinstallprompt",
+				onBeforeInstallPrompt,
+			);
+			window.removeEventListener("appinstalled", onInstalled);
+		};
+	}, []);
 
 	const onMigrate = async () => {
 		setMigrateMsg(null);
@@ -39,6 +83,25 @@ export function SettingsTab({
 		} catch {
 			// Failure is surfaced via drive.error below.
 		}
+	};
+
+	const onInstall = async () => {
+		if (!installPrompt) {
+			setInstallMsg(
+				"この端末ではブラウザの共有メニューから「ホーム画面に追加」を選択してください。",
+			);
+			return;
+		}
+
+		setInstallMsg(null);
+		await installPrompt.prompt();
+		const choice = await installPrompt.userChoice;
+		if (choice.outcome === "accepted") {
+			setInstallMsg("インストールを開始しました。");
+		} else {
+			setInstallMsg("インストールをキャンセルしました。");
+		}
+		setInstallPrompt(null);
 	};
 
 	return (
@@ -138,6 +201,30 @@ export function SettingsTab({
 					</p>
 				)}
 			</section>
+
+			{/* PWA install */}
+			{!isInstalled && (
+				<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+					<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
+						ホーム画面に追加
+					</h2>
+					<p className="text-xs text-center text-slate-500 dark:text-slate-400">
+						ホーム画面に追加して、アプリのように使えます。
+					</p>
+					<button
+						type="button"
+						onClick={() => void onInstall()}
+						className="w-full rounded-lg bg-emerald-600 py-2 text-sm font-bold text-white"
+					>
+						ホーム画面に追加
+					</button>
+					{installMsg && (
+						<p className="text-center text-xs text-slate-500 dark:text-slate-400">
+							{installMsg}
+						</p>
+					)}
+				</section>
+			)}
 		</div>
 	);
 }
