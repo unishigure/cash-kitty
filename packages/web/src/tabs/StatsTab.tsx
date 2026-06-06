@@ -20,6 +20,7 @@ export function StatsTab({
 	onChangeMonth: (delta: 1 | -1) => void;
 }) {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
+	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 	const { receiptsByMonth, loading, error, status, connect, loadMonth } = drive;
 
 	// (Re)fetch this month from Drive whenever the month changes or we (re)connect.
@@ -27,6 +28,15 @@ export function StatsTab({
 	useEffect(() => {
 		if (status === "connected") void loadMonth(month);
 	}, [month, status, loadMonth]);
+
+	// Clear the category filter when switching months — the categories differ
+	// per month, so a stale filter could leave the list empty. Adjusting state
+	// during render (vs. an effect) avoids a flash of the stale filtered list.
+	const prevMonth = useRef(month);
+	if (prevMonth.current !== month) {
+		prevMonth.current = month;
+		setSelectedCategory(null);
+	}
 
 	// Track horizontal swipe to switch months.
 	const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -73,6 +83,15 @@ export function StatsTab({
 			.map(([category, amount]) => ({ category, amount }))
 			.sort((a, b) => b.amount - a.amount);
 	}, [monthly]);
+
+	// The receipt list honors the active category filter (tap a category to set).
+	const filtered = useMemo(
+		() =>
+			selectedCategory
+				? monthly.filter((r) => r.category === selectedCategory)
+				: monthly,
+		[monthly, selectedCategory],
+	);
 
 	// Derive from the live list so the detail reflects the latest data.
 	const selected = selectedId
@@ -168,8 +187,19 @@ export function StatsTab({
 						<div className="space-y-2.5">
 							{byCategory.map(({ category, amount }) => {
 								const pct = total > 0 ? (amount / total) * 100 : 0;
+								const active = selectedCategory === category;
 								return (
-									<div key={category}>
+									<button
+										key={category}
+										type="button"
+										onClick={() =>
+											setSelectedCategory(active ? null : category)
+										}
+										aria-pressed={active}
+										className={`block w-full rounded-lg px-2 py-1.5 text-left transition-colors active:bg-slate-100 dark:active:bg-slate-700 ${
+											active ? "bg-slate-100 dark:bg-slate-700" : ""
+										}`}
+									>
 										<div className="mb-1 flex justify-between text-xs">
 											<span className="font-medium text-slate-600 dark:text-slate-300">
 												{category}
@@ -187,7 +217,7 @@ export function StatsTab({
 												}}
 											/>
 										</div>
-									</div>
+									</button>
 								);
 							})}
 						</div>
@@ -197,9 +227,22 @@ export function StatsTab({
 				{/* Receipt list */}
 				<section className="space-y-2">
 					<div className="flex items-center justify-between px-1">
-						<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
-							明細
-						</h2>
+						<div className="flex items-center gap-2">
+							<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
+								明細
+							</h2>
+							{selectedCategory && (
+								<button
+									type="button"
+									onClick={() => setSelectedCategory(null)}
+									aria-label={`${selectedCategory} の絞り込みを解除`}
+									className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 active:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:active:bg-emerald-900"
+								>
+									<span>{selectedCategory}</span>
+									<span aria-hidden="true">✕</span>
+								</button>
+							)}
+						</div>
 						<button
 							type="button"
 							onClick={() => void loadMonth(month)}
@@ -210,13 +253,15 @@ export function StatsTab({
 							<RefreshIcon className="h-4 w-4" />
 						</button>
 					</div>
-					{monthly.length === 0 && !loading ? (
+					{filtered.length === 0 && !loading ? (
 						<p className="rounded-xl border border-dashed border-slate-200 bg-white py-8 text-center text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
-							この月のレシートはありません
+							{selectedCategory
+								? "このカテゴリのレシートはありません"
+								: "この月のレシートはありません"}
 						</p>
 					) : (
 						<ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800">
-							{monthly.map((r) => (
+							{filtered.map((r) => (
 								<ReceiptRow
 									key={r.id}
 									receipt={r}
