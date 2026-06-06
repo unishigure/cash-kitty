@@ -22,7 +22,9 @@ export function CaptureTab({
 		done,
 		form,
 		setField,
+		setError,
 		analyze,
+		reset,
 		save,
 	} = capture;
 	const fileRef = useRef<HTMLInputElement>(null);
@@ -44,6 +46,11 @@ export function CaptureTab({
 	const onSave = async () => {
 		const ok = await save();
 		if (ok) window.scrollTo({ top: 0, behavior: "smooth" });
+	};
+
+	const onReset = () => {
+		reset();
+		setError(null);
 	};
 
 	if (!settings.googleClientId) {
@@ -209,20 +216,30 @@ export function CaptureTab({
 				</Field>
 			</div>
 
-			<button
-				type="button"
-				onClick={onSave}
-				disabled={
-					saving ||
-					analyzing ||
-					!form.totalAmount.trim() ||
-					!form.date ||
-					!form.category
-				}
-				className="w-full rounded-xl bg-emerald-600 py-3.5 text-base font-bold text-white shadow-sm transition active:scale-[0.99] disabled:opacity-50"
-			>
-				{saving ? "保存中…" : "保存する"}
-			</button>
+			<div className="flex gap-3">
+				<button
+					type="button"
+					onClick={onReset}
+					disabled={saving || analyzing}
+					className="shrink-0 rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-base font-bold text-slate-600 transition active:scale-[0.99] disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+				>
+					リセット
+				</button>
+				<button
+					type="button"
+					onClick={onSave}
+					disabled={
+						saving ||
+						analyzing ||
+						!form.totalAmount.trim() ||
+						!form.date ||
+						!form.category
+					}
+					className="flex-1 rounded-xl bg-emerald-600 py-3.5 text-base font-bold text-white shadow-sm transition active:scale-[0.99] disabled:opacity-50"
+				>
+					{saving ? "保存中…" : "保存する"}
+				</button>
+			</div>
 		</div>
 	);
 }
