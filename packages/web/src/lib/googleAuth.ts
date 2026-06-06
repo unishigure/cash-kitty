@@ -133,23 +133,8 @@ function getTokenClient(clientId: string): TokenClient {
 	return tokenClient;
 }
 
-/**
- * Return a valid access token, prompting the user only when necessary.
- * @param clientId Google OAuth Web client id.
- * @param interactive If true, a consent/account popup may be shown.
- */
-export async function getAccessToken(
-	clientId: string,
-	interactive: boolean,
-): Promise<string> {
-	if (!clientId) throw new Error("Google クライアント ID が設定されていません");
-
-	const cached = readStoredToken();
-	if (cached) return cached.accessToken;
-
-	await loadGsi();
-	const client = getTokenClient(clientId);
-
+/** Issue a single token request with the given GIS `prompt` and persist it. */
+function requestToken(client: TokenClient, prompt: string): Promise<string> {
 	return new Promise<string>((resolve, reject) => {
 		client.callback = (resp: TokenResponse) => {
 			if (resp.error || !resp.access_token) {
@@ -174,8 +159,40 @@ export async function getAccessToken(
 			resolve(resp.access_token);
 		};
 		// prompt: "" attempts a silent grant; "consent" forces the popup.
-		client.requestAccessToken({ prompt: interactive ? "consent" : "" });
+		client.requestAccessToken({ prompt });
 	});
+}
+
+/**
+ * Return a valid access token, prompting the user only when necessary.
+ *
+ * Always attempts a *silent* grant first (`prompt: ""`). As long as the user's
+ * Google session and prior consent are intact, this succeeds without any popup,
+ * so the connection survives access-token expiry (~1h) indefinitely. Only when
+ * the silent grant fails *and* the caller allows interaction do we fall back to
+ * a consent popup.
+ *
+ * @param clientId Google OAuth Web client id.
+ * @param interactive If true, a consent/account popup may be shown on fallback.
+ */
+export async function getAccessToken(
+	clientId: string,
+	interactive: boolean,
+): Promise<string> {
+	if (!clientId) throw new Error("Google クライアント ID が設定されていません");
+
+	const cached = readStoredToken();
+	if (cached) return cached.accessToken;
+
+	await loadGsi();
+	const client = getTokenClient(clientId);
+
+	try {
+		return await requestToken(client, "");
+	} catch (e) {
+		if (!interactive) throw e;
+		return requestToken(client, "consent");
+	}
 }
 
 /** Whether we currently hold a non-expired token. */
