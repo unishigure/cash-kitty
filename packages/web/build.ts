@@ -120,11 +120,14 @@ async function injectCsp(): Promise<void> {
 		"object-src 'none'",
 		"frame-ancestors 'none'",
 		"form-action 'self'",
-		`script-src 'self' ${scriptHashes.join(" ")} https://accounts.google.com/gsi/client`,
+		// Cloudflare Pages auto-injects its Web Analytics beacon
+		// (static.cloudflareinsights.com/beacon.min.js), which posts RUM data to
+		// cloudflareinsights.com — both are whitelisted below.
+		`script-src 'self' ${scriptHashes.join(" ")} https://accounts.google.com/gsi/client https://static.cloudflareinsights.com`,
 		"style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
 		"img-src 'self' blob: data:",
 		"font-src 'self'",
-		`connect-src 'self' https://www.googleapis.com https://accounts.google.com/gsi/${ocrConnectSrc}`,
+		`connect-src 'self' https://www.googleapis.com https://accounts.google.com/gsi/ https://cloudflareinsights.com${ocrConnectSrc}`,
 		"frame-src https://accounts.google.com/gsi/",
 		"worker-src 'self'",
 		"manifest-src 'self'",
