@@ -20,6 +20,12 @@ export interface Receipt {
 	/** ISO timestamps. */
 	createdAt: string;
 	updatedAt: string;
+	/**
+	 * Drive file's `modifiedTime`, attached at fetch time. Runtime-only — used to
+	 * skip re-downloading unchanged files during an incremental sync; it is
+	 * stripped before writing back to Drive.
+	 */
+	driveModifiedTime?: string;
 }
 
 /** Result of the OCR `/api/ocr/analyze` endpoint. */

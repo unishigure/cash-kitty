@@ -62,6 +62,8 @@ export class UnauthorizedError extends Error {
 interface DriveFile {
 	id: string;
 	name: string;
+	/** Drive's last-modified timestamp; used to detect changed files on sync. */
+	modifiedTime: string;
 }
 
 /**
@@ -79,7 +81,7 @@ async function listReceiptFiles(
 	do {
 		const params = new URLSearchParams({
 			spaces: "appDataFolder",
-			fields: "files(id,name),nextPageToken",
+			fields: "files(id,name,modifiedTime),nextPageToken",
 			pageSize: "1000",
 			q: `name contains '${prefix}'`,
 		});
@@ -106,7 +108,7 @@ async function getReceiptContent(
 	);
 	try {
 		const raw = (await res.json()) as Partial<Receipt>;
-		return normalizeReceipt(raw, file.id);
+		return normalizeReceipt(raw, file.id, file.modifiedTime);
 	} catch {
 		return null;
 	}
@@ -117,7 +119,11 @@ async function getReceiptContent(
  * missing fields. This protects the UI from older or hand-edited files that may
  * lack `date`, `category`, etc.
  */
-function normalizeReceipt(raw: Partial<Receipt>, fileId: string): Receipt {
+function normalizeReceipt(
+	raw: Partial<Receipt>,
+	fileId: string,
+	modifiedTime: string,
+): Receipt {
 	const created = typeof raw.createdAt === "string" ? raw.createdAt : "";
 	// Best-effort date: explicit date -> createdAt's date -> empty.
 	const date =
@@ -142,26 +148,40 @@ function normalizeReceipt(raw: Partial<Receipt>, fileId: string): Receipt {
 		fullText: typeof raw.fullText === "string" ? raw.fullText : undefined,
 		createdAt: created,
 		updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : created,
+		driveModifiedTime: modifiedTime,
 	};
 }
 
+function byDateDesc(a: Receipt, b: Receipt): number {
+	return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
+}
+
 /**
- * Load receipts from the appDataFolder. Pass a `YYYY-MM` `month` to fetch only
- * that month's files; omit it to load everything. Results are sorted by date
- * descending.
+ * Incrementally load one month's receipts, reusing `cached` entries to avoid
+ * re-downloading content. Only the file list (cheap metadata) is always
+ * fetched; content is downloaded only for files that are new or whose
+ * `modifiedTime` changed since they were cached. Files no longer present on
+ * Drive are dropped. Pass `cached: []` for a full load. Sorted by date desc.
  */
-export async function listReceipts(
+export async function syncReceipts(
 	token: string,
-	month?: string,
+	month: string,
+	cached: Receipt[],
 ): Promise<Receipt[]> {
-	const prefix = month ? `${RECEIPT_PREFIX}${month}-` : RECEIPT_PREFIX;
+	const prefix = `${RECEIPT_PREFIX}${month}-`;
 	const files = await listReceiptFiles(token, prefix);
-	const receipts = await Promise.all(
-		files.map((f) => getReceiptContent(token, f)),
+	const byFileId = new Map(
+		cached.filter((r) => r.fileId).map((r) => [r.fileId, r]),
 	);
-	return receipts
-		.filter((r): r is Receipt => r !== null)
-		.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+	const receipts = await Promise.all(
+		files.map((f) => {
+			const hit = byFileId.get(f.id);
+			// Reuse the cached receipt when its file is unchanged.
+			if (hit && hit.driveModifiedTime === f.modifiedTime) return hit;
+			return getReceiptContent(token, f);
+		}),
+	);
+	return receipts.filter((r): r is Receipt => r !== null).sort(byDateDesc);
 }
 
 /** Rename a Drive file (metadata-only patch). */
@@ -211,6 +231,12 @@ export async function migrateReceiptFiles(token: string): Promise<number> {
 	return migrated;
 }
 
+/** Strip runtime-only fields so they aren't persisted into the Drive file. */
+function toStored(receipt: Receipt): Omit<Receipt, "driveModifiedTime"> {
+	const { driveModifiedTime: _omit, ...stored } = receipt;
+	return stored;
+}
+
 function multipartBody(
 	metadata: object,
 	json: object,
@@ -237,18 +263,22 @@ export async function createReceipt(
 		parents: ["appDataFolder"],
 		mimeType: "application/json",
 	};
-	const { body, boundary } = multipartBody(metadata, receipt);
+	const { body, boundary } = multipartBody(metadata, toStored(receipt));
 	const res = await driveFetch(
 		token,
-		`${UPLOAD_API}/files?uploadType=multipart&fields=id`,
+		`${UPLOAD_API}/files?uploadType=multipart&fields=id,modifiedTime`,
 		{
 			method: "POST",
 			headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
 			body,
 		},
 	);
-	const created = (await res.json()) as { id: string };
-	return { ...receipt, fileId: created.id };
+	const created = (await res.json()) as { id: string; modifiedTime: string };
+	return {
+		...receipt,
+		fileId: created.id,
+		driveModifiedTime: created.modifiedTime,
+	};
 }
 
 /**
@@ -263,18 +293,19 @@ export async function updateReceipt(
 	if (!receipt.fileId) return createReceipt(token, receipt);
 	const { body, boundary } = multipartBody(
 		{ name: fileName(receipt) },
-		receipt,
+		toStored(receipt),
 	);
-	await driveFetch(
+	const res = await driveFetch(
 		token,
-		`${UPLOAD_API}/files/${receipt.fileId}?uploadType=multipart`,
+		`${UPLOAD_API}/files/${receipt.fileId}?uploadType=multipart&fields=id,modifiedTime`,
 		{
 			method: "PATCH",
 			headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
 			body,
 		},
 	);
-	return receipt;
+	const updated = (await res.json()) as { modifiedTime: string };
+	return { ...receipt, driveModifiedTime: updated.modifiedTime };
 }
 
 /** Delete a file by id. A 404 (already gone) is treated as success. */

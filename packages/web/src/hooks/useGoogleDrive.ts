@@ -4,8 +4,8 @@ import {
 	createReceipt,
 	deleteFile,
 	getFileBlob,
-	listReceipts,
 	migrateReceiptFiles,
+	syncReceipts,
 	UnauthorizedError,
 	updateReceipt,
 	uploadFile,
@@ -64,6 +64,11 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 	const [receiptsByMonth, setReceiptsByMonth] = useState<
 		Record<string, Receipt[]>
 	>({});
+	// Mirror the cache in a ref so `loadMonth` can read the latest months without
+	// listing them as deps (which would change its identity and re-trigger the
+	// StatsTab fetch effect on every cache update — an infinite loop).
+	const cacheRef = useRef(receiptsByMonth);
+	cacheRef.current = receiptsByMonth;
 	const [totalCount, setTotalCount] = useState(0);
 	const [legacyCount, setLegacyCount] = useState(0);
 	const [loading, setLoading] = useState(false);
@@ -103,7 +108,13 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 			setLoading(true);
 			setError(null);
 			try {
-				const data = await withToken((t) => listReceipts(t, month), false);
+				// Incremental: reuse already-fetched receipts, download only new or
+				// changed files.
+				const cached = cacheRef.current[month] ?? [];
+				const data = await withToken(
+					(t) => syncReceipts(t, month, cached),
+					false,
+				);
 				setReceiptsByMonth((prev) => ({ ...prev, [month]: data }));
 				setStatus("connected");
 			} catch (e) {
