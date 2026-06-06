@@ -48,6 +48,28 @@ if (!result.success) {
 // Bun server at runtime; a static host needs them copied to the site root.
 await cp(join(root, "public"), outdir, { recursive: true });
 
+// Ensure the production HTML contains static manifest/icon links.
+// Some platforms are picky about links injected only via runtime script.
+const distIndexPath = join(outdir, "index.html");
+const distIndex = Bun.file(distIndexPath);
+if (await distIndex.exists()) {
+	const html = await distIndex.text();
+	const staticPwaLinks = [
+		'<link rel="manifest" href="/manifest.webmanifest" />',
+		'<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />',
+		'<link rel="shortcut icon" type="image/png" href="/favicon-32.png" />',
+		'<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />',
+		'<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />',
+		'<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />',
+	].join("\n    ");
+
+	const injectionAnchor = "<title>Cash Kitty — レシート家計簿</title>";
+	const withLinks = html.includes('<link rel="manifest"')
+		? html
+		: html.replace(injectionAnchor, `${injectionAnchor}\n    ${staticPwaLinks}`);
+	await Bun.write(distIndexPath, withLinks);
+}
+
 console.log(`✅ Built static site → ${outdir}`);
 console.log(
 	`   Client ID:   ${process.env.BUN_PUBLIC_GOOGLE_CLIENT_ID ? "set" : "(unset — Drive disabled)"}`,
