@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { CheckIcon, RefreshIcon } from "../components/icons";
-import { useOcrHealth } from "../hooks/useOcrHealth";
+import type { OcrHealthApi } from "../hooks/useOcrHealth";
 import type { ReceiptCapture } from "../hooks/useReceiptCapture";
 import { CATEGORIES } from "../lib/categories";
 import type { AppSettings } from "../lib/settings";
@@ -8,10 +8,12 @@ import type { AppSettings } from "../lib/settings";
 export function CaptureTab({
 	settings,
 	capture,
+	ocrHealth,
 	onGoSettings,
 }: {
 	settings: AppSettings;
 	capture: ReceiptCapture;
+	ocrHealth: OcrHealthApi;
 	onGoSettings: () => void;
 }) {
 	const {
@@ -28,8 +30,7 @@ export function CaptureTab({
 		save,
 	} = capture;
 	const fileRef = useRef<HTMLInputElement>(null);
-	const { status: ocrStatus, recheck } = useOcrHealth(settings.apiBaseUrl);
-	const ocrOnline = ocrStatus === "online";
+	const ocrOnline = ocrHealth.status === "online";
 
 	// Keep the native file input in sync with the (shell-held) capture state:
 	// once the form is cleared the input must be emptied too, otherwise picking
@@ -75,32 +76,10 @@ export function CaptureTab({
 				onChange={onPickImage}
 			/>
 
-			{/* OCR connection status: capture is blocked while the API is unreachable. */}
-			{!ocrOnline && (
-				<div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-900 dark:bg-amber-950/40">
-					{ocrStatus === "checking" ? (
-						<>
-							<Spinner />
-							<span className="text-sm text-amber-800 dark:text-amber-200">
-								OCR サーバーへの接続を確認中…
-							</span>
-						</>
-					) : (
-						<>
-							<span className="flex-1 text-sm text-amber-800 dark:text-amber-200">
-								OCR サーバーに接続できません。
-							</span>
-							<button
-								type="button"
-								onClick={recheck}
-								className="shrink-0 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white active:bg-amber-700"
-							>
-								再試行
-							</button>
-						</>
-					)}
-				</div>
-			)}
+			{/*
+			 * OCR connection status (checking / offline + retry) lives in the
+			 * header; capture is blocked here while the API is unreachable.
+			 */}
 
 			{/* Capture / preview area */}
 			{ocrOnline && (

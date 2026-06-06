@@ -1,7 +1,9 @@
 import { useState } from "react";
 import "./index.css";
+import { RefreshIcon } from "./components/icons";
 import { TabBar, type TabId } from "./components/TabBar";
 import { useGoogleDrive } from "./hooks/useGoogleDrive";
+import { useOcrHealth } from "./hooks/useOcrHealth";
 import { useReceiptCapture } from "./hooks/useReceiptCapture";
 import { type SettingsApi, useSettings } from "./hooks/useSettings";
 import { type ThemeApi, useTheme } from "./hooks/useTheme";
@@ -41,6 +43,9 @@ function AppShell({
 	// Held at the shell level so an in-flight OCR analysis (and the form it
 	// fills) survives switching the bottom-nav tab away and back.
 	const capture = useReceiptCapture(settings, drive);
+	// Lifted so the header can host the "connecting" indicator while CaptureTab
+	// still uses the status to gate image capture.
+	const ocrHealth = useOcrHealth(settings.apiBaseUrl);
 
 	// Stats month lives here so the header can host a "return to current month"
 	// button while StatsTab drives the month with arrows/swipe.
@@ -77,6 +82,28 @@ function AppShell({
 						今月に戻る
 					</button>
 				)}
+				{tab === "capture" && ocrHealth.status === "checking" && (
+					<span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-slate-500">
+						<span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-transparent dark:border-slate-600 dark:border-t-transparent" />
+						接続中…
+					</span>
+				)}
+				{tab === "capture" && ocrHealth.status === "offline" && (
+					<div className="flex shrink-0 items-center gap-2">
+						<span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+							取込不可
+						</span>
+						<button
+							type="button"
+							onClick={ocrHealth.recheck}
+							aria-label="再試行"
+							title="再試行"
+							className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-300 text-slate-500 active:bg-slate-100 dark:border-slate-600 dark:text-slate-400 dark:active:bg-slate-800"
+						>
+							<RefreshIcon className="h-4 w-4" />
+						</button>
+					</div>
+				)}
 			</header>
 
 			<main className="flex flex-1 flex-col px-4 pb-24 pt-4">
@@ -84,6 +111,7 @@ function AppShell({
 					<CaptureTab
 						settings={settings}
 						capture={capture}
+						ocrHealth={ocrHealth}
 						onGoSettings={() => setTab("settings")}
 					/>
 				)}
