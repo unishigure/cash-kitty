@@ -103,37 +103,37 @@ export function CaptureTab({
 			)}
 
 			{/* Capture / preview area */}
-			<button
-				type="button"
-				onClick={() => fileRef.current?.click()}
-				disabled={!ocrOnline}
-				className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-white text-slate-400 transition active:scale-[0.99] disabled:opacity-60 disabled:active:scale-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-500"
-			>
-				{preview ? (
-					<img
-						src={preview}
-						alt="レシート"
-						className="h-full w-full object-contain"
-					/>
-				) : (
-					<div className="flex flex-col items-center gap-2 px-6 text-center">
-						<span className="text-4xl">{ocrOnline ? "📷" : "🚫"}</span>
-						<span className="text-sm font-medium">
-							{ocrOnline ? "タップして撮影 / 画像を選択" : "OCR 接続待ち"}
-						</span>
-					</div>
-				)}
-			</button>
+			{ocrOnline && (
+				<>
+					<button
+						type="button"
+						onClick={() => fileRef.current?.click()}
+						className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-white text-slate-400 transition active:scale-[0.99] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-500"
+					>
+						{preview ? (
+							<img
+								src={preview}
+								alt="レシート"
+								className="h-full w-full object-contain"
+							/>
+						) : (
+							<div className="flex flex-col items-center gap-2 px-6 text-center">
+								<span className="text-4xl">📷</span>
+								<span className="text-sm font-medium">タップして撮影 / 画像を選択</span>
+							</div>
+						)}
+					</button>
 
-			{preview && (
-				<button
-					type="button"
-					onClick={() => fileRef.current?.click()}
-					disabled={!ocrOnline}
-					className="w-full rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-600 active:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:active:bg-slate-700"
-				>
-					撮り直す
-				</button>
+					{preview && (
+						<button
+							type="button"
+							onClick={() => fileRef.current?.click()}
+							className="w-full rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-600 active:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:active:bg-slate-700"
+						>
+							撮り直す
+						</button>
+					)}
+				</>
 			)}
 
 			{analyzing && (
