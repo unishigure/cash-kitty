@@ -1,16 +1,25 @@
 /**
  * Google Drive REST client scoped to the application data folder
  * (`appDataFolder`). Each receipt is stored as one JSON file named
- * `receipt-<id>.json`. This folder is hidden from the user's normal Drive UI
- * and is only accessible by this app.
+ * `receipt-<YYYY-MM>-<id>.json`. Embedding the month in the file name lets us
+ * list (and re-fetch) a single month without downloading every receipt. This
+ * folder is hidden from the user's normal Drive UI and is only accessible by
+ * this app.
  */
+import { monthKey } from "./format";
 import type { Receipt } from "./types";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 
-function fileName(id: string): string {
-	return `receipt-${id}.json`;
+/** Receipt file names start with this; a month-scoped prefix appends `<month>-`. */
+const RECEIPT_PREFIX = "receipt-";
+/** Matches the new month-stamped file name, e.g. `receipt-2026-06-<id>.json`. */
+const MONTH_STAMPED = /^receipt-\d{4}-\d{2}-/;
+
+/** The Drive file name for a receipt, e.g. `receipt-2026-06-<id>.json`. */
+function fileName(receipt: Receipt): string {
+	return `${RECEIPT_PREFIX}${monthKey(receipt.date)}-${receipt.id}.json`;
 }
 
 async function driveFetch(
@@ -55,8 +64,16 @@ interface DriveFile {
 	name: string;
 }
 
-/** List all receipt files in the appDataFolder. */
-async function listReceiptFiles(token: string): Promise<DriveFile[]> {
+/**
+ * List receipt files in the appDataFolder. With no `prefix`, lists every
+ * receipt; with `receipt-<month>-` it lists only that month's files. The Drive
+ * `name contains` query does prefix matching, but we re-filter by `startsWith`
+ * so the result is exact regardless of how Drive interprets the query.
+ */
+async function listReceiptFiles(
+	token: string,
+	prefix: string = RECEIPT_PREFIX,
+): Promise<DriveFile[]> {
 	const files: DriveFile[] = [];
 	let pageToken: string | undefined;
 	do {
@@ -64,7 +81,7 @@ async function listReceiptFiles(token: string): Promise<DriveFile[]> {
 			spaces: "appDataFolder",
 			fields: "files(id,name),nextPageToken",
 			pageSize: "1000",
-			q: "name contains 'receipt-'",
+			q: `name contains '${prefix}'`,
 		});
 		if (pageToken) params.set("pageToken", pageToken);
 		const res = await driveFetch(token, `${DRIVE_API}/files?${params}`);
@@ -75,7 +92,7 @@ async function listReceiptFiles(token: string): Promise<DriveFile[]> {
 		files.push(...(body.files ?? []));
 		pageToken = body.nextPageToken;
 	} while (pageToken);
-	return files.filter((f) => f.name.startsWith("receipt-"));
+	return files.filter((f) => f.name.startsWith(prefix));
 }
 
 /** Fetch and parse the JSON content of a single Drive file. */
@@ -128,15 +145,70 @@ function normalizeReceipt(raw: Partial<Receipt>, fileId: string): Receipt {
 	};
 }
 
-/** Load every receipt from the appDataFolder. */
-export async function listReceipts(token: string): Promise<Receipt[]> {
-	const files = await listReceiptFiles(token);
+/**
+ * Load receipts from the appDataFolder. Pass a `YYYY-MM` `month` to fetch only
+ * that month's files; omit it to load everything. Results are sorted by date
+ * descending.
+ */
+export async function listReceipts(
+	token: string,
+	month?: string,
+): Promise<Receipt[]> {
+	const prefix = month ? `${RECEIPT_PREFIX}${month}-` : RECEIPT_PREFIX;
+	const files = await listReceiptFiles(token, prefix);
 	const receipts = await Promise.all(
 		files.map((f) => getReceiptContent(token, f)),
 	);
 	return receipts
 		.filter((r): r is Receipt => r !== null)
 		.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+}
+
+/** Rename a Drive file (metadata-only patch). */
+async function renameFile(
+	token: string,
+	fileId: string,
+	name: string,
+): Promise<void> {
+	await driveFetch(token, `${DRIVE_API}/files/${fileId}`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json; charset=UTF-8" },
+		body: JSON.stringify({ name }),
+	});
+}
+
+/**
+ * Cheap, metadata-only census of stored receipts: the total count and how many
+ * still use the legacy `receipt-<id>.json` name (detectable by name alone, no
+ * content fetch). A non-zero `legacy` means a migration is available.
+ */
+export async function countReceipts(
+	token: string,
+): Promise<{ total: number; legacy: number }> {
+	const files = await listReceiptFiles(token);
+	const legacy = files.filter((f) => !MONTH_STAMPED.test(f.name)).length;
+	return { total: files.length, legacy };
+}
+
+/**
+ * Migrate legacy `receipt-<id>.json` files to the month-stamped
+ * `receipt-<YYYY-MM>-<id>.json` scheme so they show up in month-scoped queries.
+ * This reads each legacy file's content (to derive its month) and renames it,
+ * so it can be slow with many files — run it explicitly, not on every connect.
+ * Idempotent: already-stamped files are skipped. Returns the number migrated.
+ */
+export async function migrateReceiptFiles(token: string): Promise<number> {
+	const files = await listReceiptFiles(token);
+	const legacy = files.filter((f) => !MONTH_STAMPED.test(f.name));
+	let migrated = 0;
+	for (const f of legacy) {
+		const receipt = await getReceiptContent(token, f);
+		// Skip files with no derivable month — renaming would just orphan them.
+		if (!receipt || !monthKey(receipt.date)) continue;
+		await renameFile(token, f.id, fileName(receipt));
+		migrated++;
+	}
+	return migrated;
 }
 
 function multipartBody(
@@ -161,7 +233,7 @@ export async function createReceipt(
 	receipt: Receipt,
 ): Promise<Receipt> {
 	const metadata = {
-		name: fileName(receipt.id),
+		name: fileName(receipt),
 		parents: ["appDataFolder"],
 		mimeType: "application/json",
 	};
@@ -179,19 +251,27 @@ export async function createReceipt(
 	return { ...receipt, fileId: created.id };
 }
 
-/** Overwrite an existing receipt file's content. */
+/**
+ * Overwrite an existing receipt file's content. Also keeps the file name in
+ * sync with the receipt's month (a multipart patch updates name + content in
+ * one request), so editing a receipt's date moves it to the correct month.
+ */
 export async function updateReceipt(
 	token: string,
 	receipt: Receipt,
 ): Promise<Receipt> {
 	if (!receipt.fileId) return createReceipt(token, receipt);
+	const { body, boundary } = multipartBody(
+		{ name: fileName(receipt) },
+		receipt,
+	);
 	await driveFetch(
 		token,
-		`${UPLOAD_API}/files/${receipt.fileId}?uploadType=media`,
+		`${UPLOAD_API}/files/${receipt.fileId}?uploadType=multipart`,
 		{
 			method: "PATCH",
-			headers: { "Content-Type": "application/json; charset=UTF-8" },
-			body: JSON.stringify(receipt),
+			headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
+			body,
 		},
 	);
 	return receipt;

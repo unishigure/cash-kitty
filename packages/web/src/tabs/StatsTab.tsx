@@ -1,7 +1,7 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import { categoryColor } from "../lib/categories";
-import { formatMonthLabel, formatYen, monthKey } from "../lib/format";
+import { formatMonthLabel, formatYen } from "../lib/format";
 import type { Receipt } from "../lib/types";
 import { ReceiptDetail } from "./ReceiptDetail";
 
@@ -19,7 +19,13 @@ export function StatsTab({
 	onChangeMonth: (delta: 1 | -1) => void;
 }) {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
-	const { receipts, loading, error, status, connect, refresh } = drive;
+	const { receiptsByMonth, loading, error, status, connect, loadMonth } = drive;
+
+	// (Re)fetch this month from Drive whenever the month changes or we (re)connect.
+	// Manual retry after an error is handled by the "更新" button.
+	useEffect(() => {
+		if (status === "connected") void loadMonth(month);
+	}, [month, status, loadMonth]);
 
 	// Track horizontal swipe to switch months.
 	const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -48,8 +54,8 @@ export function StatsTab({
 	};
 
 	const monthly = useMemo(
-		() => receipts.filter((r) => monthKey(r.date) === month),
-		[receipts, month],
+		() => receiptsByMonth[month] ?? [],
+		[receiptsByMonth, month],
 	);
 
 	const total = useMemo(
@@ -69,10 +75,10 @@ export function StatsTab({
 
 	// Derive from the live list so the detail reflects the latest data.
 	const selected = selectedId
-		? (receipts.find((r) => r.id === selectedId) ?? null)
+		? (monthly.find((r) => r.id === selectedId) ?? null)
 		: null;
 
-	if (status !== "connected" && receipts.length === 0) {
+	if (status !== "connected" && monthly.length === 0) {
 		return (
 			<div className="mt-8 space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-800">
 				<p className="text-base font-bold text-slate-800 dark:text-slate-100">
@@ -195,7 +201,7 @@ export function StatsTab({
 						</h2>
 						<button
 							type="button"
-							onClick={() => void refresh()}
+							onClick={() => void loadMonth(month)}
 							className="text-xs font-medium text-emerald-600 dark:text-emerald-400"
 						>
 							更新
