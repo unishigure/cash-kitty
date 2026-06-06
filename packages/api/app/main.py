@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
@@ -32,7 +32,12 @@ async def value_error_handler(_request, exc: ValueError):
     return JSONResponse(status_code=400, content=body)
 
 
-@app.get("/api/health", response_model=HealthResponse)
+# All endpoints live under /api so the SPA can be served same-origin and the
+# gateway/tunnel can route `<host>/api/*` straight here without rewriting paths.
+api = APIRouter(prefix="/api")
+
+
+@api.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
     return HealthResponse(
         status="ok",
@@ -42,8 +47,8 @@ async def health() -> HealthResponse:
     )
 
 
-@app.post(
-    "/api/ocr/analyze",
+@api.post(
+    "/ocr/analyze",
     response_model=AnalyzeResponse,
     responses={400: {"model": ErrorResponse}, 415: {"model": ErrorResponse}},
 )
@@ -80,3 +85,6 @@ async def analyze(image: UploadFile = File(...)) -> AnalyzeResponse:
         ),
         processing_time_ms=elapsed_ms,
     )
+
+
+app.include_router(api)
