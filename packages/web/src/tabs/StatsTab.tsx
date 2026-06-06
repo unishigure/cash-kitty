@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { RefreshIcon } from "../components/icons";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import { categoryColor } from "../lib/categories";
 import { formatMonthLabel, formatYen } from "../lib/format";
@@ -202,9 +203,11 @@ export function StatsTab({
 						<button
 							type="button"
 							onClick={() => void loadMonth(month)}
-							className="text-xs font-medium text-emerald-600 dark:text-emerald-400"
+							disabled={loading}
+							aria-label="更新"
+							className="rounded-lg p-1.5 text-emerald-600 active:bg-emerald-50 disabled:opacity-50 dark:text-emerald-400 dark:active:bg-emerald-950"
 						>
-							更新
+							<RefreshIcon className="h-4 w-4" />
 						</button>
 					</div>
 					{monthly.length === 0 && !loading ? (

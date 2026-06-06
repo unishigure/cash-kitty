@@ -53,3 +53,12 @@ export function CheckIcon(props: SVGProps<SVGSVGElement>) {
 		</svg>
 	);
 }
+
+export function RefreshIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg {...base} {...props} aria-hidden="true">
+			<path d="M21 12a9 9 0 1 1-2.64-6.36" />
+			<path d="M21 3v6h-6" />
+		</svg>
+	);
+}
