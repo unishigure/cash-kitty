@@ -1,23 +1,18 @@
-/** Config provided by the web server, sourced from its `.env` file. */
-export interface ServerConfig {
+/** Shape of the app's externally-supplied configuration. */
+export interface AppConfig {
 	googleClientId: string;
 	apiBaseUrl: string;
 }
 
 /**
- * Fetch server-side config from `/api/config`. Empty/missing values are
- * dropped so callers can fall back to localStorage / defaults. Never throws.
+ * Config baked into the bundle from `BUN_PUBLIC_*` env vars.
+ *
+ * Bun inlines `process.env.BUN_PUBLIC_*` as literals when bundling — both the
+ * dev server (`bun dev`, via `bunfig.toml`'s `[serve.static] env`) and the
+ * static build (`bun run build`). This is the only source of server-supplied
+ * config; anything unset here falls back to the user's localStorage settings.
  */
-export async function fetchServerConfig(): Promise<Partial<ServerConfig>> {
-	try {
-		const res = await fetch("/api/config");
-		if (!res.ok) return {};
-		const body = (await res.json()) as Partial<ServerConfig>;
-		const out: Partial<ServerConfig> = {};
-		if (body.googleClientId) out.googleClientId = body.googleClientId;
-		if (body.apiBaseUrl) out.apiBaseUrl = body.apiBaseUrl;
-		return out;
-	} catch {
-		return {};
-	}
-}
+export const BUILD_CONFIG: Partial<AppConfig> = {
+	googleClientId: process.env.BUN_PUBLIC_GOOGLE_CLIENT_ID || "",
+	apiBaseUrl: process.env.BUN_PUBLIC_OCR_API_URL || "",
+};

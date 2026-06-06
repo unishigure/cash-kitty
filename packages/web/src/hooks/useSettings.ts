@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { fetchServerConfig, type ServerConfig } from "../lib/config";
+import { useCallback, useState } from "react";
+import { type AppConfig, BUILD_CONFIG } from "../lib/config";
 import {
 	type AppSettings,
 	loadSettings,
@@ -7,37 +7,22 @@ import {
 } from "../lib/settings";
 
 export interface SettingsApi {
-	/** Effective settings: server (.env) values take precedence over localStorage. */
+	/** Effective settings: build-time (`BUN_PUBLIC_*`) values win over localStorage. */
 	settings: AppSettings;
-	/** Which fields are fixed by the server's .env (and thus not user-editable). */
-	serverManaged: Record<keyof ServerConfig, boolean>;
-	/** True once the server config has been fetched. */
-	ready: boolean;
-	/** Persist user overrides (ignored for server-managed fields). */
+	/** Which fields are fixed at build time (and thus not user-editable). */
+	managed: Record<keyof AppConfig, boolean>;
+	/** Persist user overrides (ignored for build-managed fields). */
 	update: (patch: Partial<AppSettings>) => void;
 }
 
 /**
- * Settings come from two sources:
- *  - the web server's `.env` (via `/api/config`) — authoritative when present
- *  - the browser's localStorage — user fallback for anything not set on the server
+ * Settings come from two sources, in order of precedence:
+ *  - build-time `BUN_PUBLIC_*` values baked into the bundle — authoritative
+ *    when set (see `lib/config.ts`)
+ *  - the browser's localStorage — user fallback for anything not baked in
  */
 export function useSettings(): SettingsApi {
 	const [stored, setStored] = useState<AppSettings>(() => loadSettings());
-	const [server, setServer] = useState<Partial<ServerConfig>>({});
-	const [ready, setReady] = useState(false);
-
-	useEffect(() => {
-		let active = true;
-		void fetchServerConfig().then((cfg) => {
-			if (!active) return;
-			setServer(cfg);
-			setReady(true);
-		});
-		return () => {
-			active = false;
-		};
-	}, []);
 
 	const update = useCallback((patch: Partial<AppSettings>) => {
 		setStored((prev) => {
@@ -48,14 +33,14 @@ export function useSettings(): SettingsApi {
 	}, []);
 
 	const settings: AppSettings = {
-		apiBaseUrl: server.apiBaseUrl || stored.apiBaseUrl,
-		googleClientId: server.googleClientId || stored.googleClientId,
+		apiBaseUrl: BUILD_CONFIG.apiBaseUrl || stored.apiBaseUrl,
+		googleClientId: BUILD_CONFIG.googleClientId || stored.googleClientId,
 	};
 
-	const serverManaged = {
-		apiBaseUrl: Boolean(server.apiBaseUrl),
-		googleClientId: Boolean(server.googleClientId),
+	const managed = {
+		apiBaseUrl: Boolean(BUILD_CONFIG.apiBaseUrl),
+		googleClientId: Boolean(BUILD_CONFIG.googleClientId),
 	};
 
-	return { settings, serverManaged, ready, update };
+	return { settings, managed, update };
 }

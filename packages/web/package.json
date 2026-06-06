@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bun --hot src/index.ts",
-		"start": "NODE_ENV=production bun src/index.ts",
+		"build": "NODE_ENV=production bun run build.ts",
+		"start": "bun run build && bun run serve.ts",
 		"check": "biome check --write ."
 	},
 	"dependencies": {

@@ -3,8 +3,8 @@
  *
  * Goals:
  *  - Make the app installable and give it a basic offline app-shell.
- *  - NEVER interfere with dynamic/data requests: the OCR proxy (`/api/*`),
- *    the runtime config, Google OAuth / Drive, etc. always go to the network.
+ *  - NEVER interfere with dynamic/data requests: the runtime config (`/api/*`),
+ *    the OCR API, Google OAuth / Drive, etc. always go to the network.
  *
  * Strategy:
  *  - Navigations (HTML)        -> network-first, fall back to cached shell.

@@ -9,8 +9,10 @@ export interface AppSettings {
 const STORAGE_KEY = "money-note.settings";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-	// Empty = same-origin: the web server proxies /api/ocr/* to the OCR API.
-	// This keeps the SPA working over HTTPS (no mixed content) and from phones.
+	// OCR API base URL. The browser calls it directly (no server-side proxy), so
+	// OCR works only while this endpoint is reachable. Supplied at build time via
+	// BUN_PUBLIC_OCR_API_URL. Empty means same-origin (`/api/...` on the SPA's own
+	// origin) — correct for the one-origin production deploy.
 	apiBaseUrl: "",
 	googleClientId: "",
 };

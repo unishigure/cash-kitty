@@ -5,13 +5,13 @@
 
 - **取り込み** タブ: カメラで撮影 / 画像選択 → OCR で解析 → 内容を編集して保存
 - **統計** タブ: 月別の合計・カテゴリ別内訳・明細（タップで詳細 → 画像表示・編集・削除）
-- **設定** タブ: Google Drive 接続（Google クライアント ID は `.env` で設定）
+- **設定** タブ: Google Drive 接続（Google クライアント ID は `.env` の `BUN_PUBLIC_GOOGLE_CLIENT_ID` で設定）
 
 データは閲覧者自身の Google Drive の `appDataFolder`（アプリ専用の隠し領域）に、レシート 1 件＝ JSON 1 ファイル（`receipt-<id>.json`）＋画像ファイル（`image-<id>`）として保存されます\
-アプリサーバーには一切送信・保存されません（OCR は下記のとおりプロキシ経由で解析するだけ）
+アプリサーバーには一切送信・保存されません
 
-OCR API へはブラウザから直接アクセスせず、**Web サーバが `/api/ocr/*` をプロキシ**します\
-これにより SPA は常に同一オリジンで通信でき、HTTPS 配信時の混在コンテンツや CORS を回避できます
+OCR API へは**ブラウザが直接アクセス**します（接続先は `BUN_PUBLIC_OCR_API_URL`）。Web サーバはプロキシも設定 API（`/api/*`）も持たず、SPA と PWA 資産を配信するだけです\
+そのため OCR は接続先が到達可能なとき（ローカル API を起動している／トンネルが開いている）だけ動作します。OCR API 側は配信元オリジンを CORS で許可してください（既定は `CORS_ALLOW_ORIGINS=*`）
 
 ## Setup
 
@@ -28,21 +28,64 @@ bun dev
 既定では `http://localhost:3000` で起動します\
 スマホから使う場合は同じ LAN 上の PC の IP（例: `http://192.168.x.x:3000`）にアクセスします
 
-## 本番モードで配信
+## 静的サイトとしてビルド / 配信
+
+本番は **ビルド済みの静的ファイル** を配信します。`bun run build` で `dist/` に HTML・ハッシュ付き JS/CSS・PWA 資産が出力され、任意の静的ホスト（Cloudflare Pages / Netlify / Vercel など、**サイトのルート**で配信）にそのまま置けます。
 
 ```bash
-bun start   # NODE_ENV=production で起動（HMR 無効・Service Worker 有効）
+bun run build   # → dist/ を生成（NODE_ENV=production、設定を埋め込み）
+bun run start   # build してから dist/ をローカルで静的配信（本番プレビュー / PWA 確認）
 ```
 
-`bun start` は `src/index.ts` を直接起動し、Bun が HTML/TS/CSS をリクエスト時にバンドルして配信します（事前ビルド不要）。
+`bun dev` だけが TS/CSS をオンザフライでバンドルする開発サーバー（HMR 付き、[src/index.ts](src/index.ts)）です。`bun start` は本番ビルドを作って [serve.ts](serve.ts) で `dist/` をそのまま配るだけ — 実際の静的ホストと同じ挙動で、API もプロキシもありません（OCR を試すなら `bun dev` を使ってください）。
+
+| | `bun dev`（開発） | `bun start` / 本番ホスト |
+| --- | --- | --- |
+| ファイル配信 | オンザフライでバンドル + HMR | ビルド済み `dist/` を静的配信 |
+| 設定・OCR 接続先 | `BUN_PUBLIC_*`（`.env`、`localhost:8000`） | `BUN_PUBLIC_*`（`.env.production`、同一オリジン） |
+| OCR / Drive / 統計 / 手入力 | ブラウザ側で完結 | ブラウザ側で完結 |
+
+### 設定の埋め込み（`BUN_PUBLIC_*`）
+
+設定はビルド時にバンドルへ焼き込みます（Google クライアント ID は公開前提の値なので埋め込んで問題ありません）。OCR の接続先だけ、ローカル開発と本番で異なります。
+
+- `.env`（開発・git 管理外）: 開発時は web(:3000) と API(:8000) が別オリジンなので API を直接指す
+
+  ```bash
+  BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+  BUN_PUBLIC_OCR_API_URL=http://localhost:8000
+  ```
+
+- `.env.production`（本番・git 管理下）: `bun run build`（`NODE_ENV=production`）で `.env` を上書きし、OCR を**同一オリジン**にする
+
+  ```bash
+  BUN_PUBLIC_OCR_API_URL=   # 空 = SPA は自分のオリジンの /api を叩く
+  ```
+
+  ※ ホスト（Cloudflare Pages 等）でビルドする場合は `BUN_PUBLIC_GOOGLE_CLIENT_ID` をビルド環境変数で渡します（`.env` は git 管理外のため）。
+
+### 同一オリジン配信（推奨）と OCR
+
+web と API を 1 つのドメインに同居させます：
+
+```text
+moneynote.example.com/        → 静的サイト（dist/）
+moneynote.example.com/api/*   → ローカル FastAPI（Cloudflare Tunnel 経由）
+```
+
+こうすると `BUN_PUBLIC_OCR_API_URL` を空にでき、SPA は相対パス `/api/ocr/analyze` を叩きます。**CORS も混在コンテンツも無く、スマホからも OCR が動作**します。API のルートは元から `/api/*`（[../api/app/main.py](../api/app/main.py)）なので、ゲートウェイは `/api` を剥がさずそのまま転送するだけで一致します。
+
+OCR は `<host>/api` が到達可能なとき（＝ローカル API とトンネルが起動しているとき）だけ動作し、落ちていれば「OCR サーバーに接続できませんでした」表示になり手入力で保存できます。
+
+> 配信先 URL は Google の **承認済み JavaScript 生成元** に登録してください。OCR を別オリジンに置く場合のみ、API 側で CORS の許可が必要です（既定は `CORS_ALLOW_ORIGINS=*`）。
 
 ## PWA（ホーム画面に追加 / オフライン）
 
 このアプリは PWA です。スマホのブラウザで開くと「ホーム画面に追加」でき、ネイティブアプリのように起動できます（アドレスバーなしの全画面）。
 
-- マニフェスト・アイコン・Service Worker は `public/` にあり、サーバーがルート直下（`/manifest.webmanifest`、`/sw.js`、`/icon-*.png`）で配信します
-- Service Worker は **本番モードでのみ登録**されます（`bun dev` では HMR と競合するため無効）。インストール可能な PWA として確認するときは `bun start`（必要なら Cloudflare Tunnel 経由）で開いてください
-- オフライン時はアプリのシェル（画面）を表示します。OCR・Google Drive・`/api/*` は常にネットワークを使うため、保存や解析にはオンライン接続が必要です
+- マニフェスト・アイコン・Service Worker は `public/` にあり、ルート直下（`/manifest.webmanifest`、`/sw.js`、`/icon-*.png`）で配信されます（サーバー配信時は Bun サーバー、静的配信時は `bun run build` が `dist/` にコピー）
+- Service Worker は **本番モードでのみ登録**されます（`bun dev` では HMR と競合するため無効）。インストール可能な PWA として確認するときは `bun start` か静的ビルド（必要なら Cloudflare Tunnel 経由）で開いてください
+- オフライン時はアプリのシェル（画面）を表示します。OCR・Google Drive は常にネットワークを使うため、保存や解析にはオンライン接続が必要です
 - アイコンを差し替えるときは `public/` の各 PNG を入れ替えてください（`icon-192` / `icon-512` / `icon-maskable-512` / `apple-touch-icon` / `favicon-32`）
 
 ## 必要な外部設定
@@ -68,7 +111,7 @@ Google Drive へ保存するため、Google Cloud Console で OAuth クライア
 5. **承認済みの JavaScript 生成元** に、このアプリを開く URL を追加
    - PC 用: `http://localhost:3000`
    - スマホ用: 下記の Cloudflare Tunnel で発行する公開 URL（例 `https://moneynote.example.com`）
-6. 発行された **クライアント ID**（`xxxx.apps.googleusercontent.com`）を `.env` の `GOOGLE_CLIENT_ID` に設定
+6. 発行された **クライアント ID**（`xxxx.apps.googleusercontent.com`）を `.env` の `BUN_PUBLIC_GOOGLE_CLIENT_ID` に設定
 
 ### 3. `.env` で設定を一元管理
 
@@ -105,7 +148,9 @@ Google の OAuth は **セキュアコンテキスト（HTTPS か `localhost`）
    - 保存（DNS レコードは自動作成）
 6. ローカルで `bun dev` を起動（`localhost:3000`）
 7. `https://moneynote.example.com` を Google の **承認済み JavaScript 生成元** に登録（一度きり。URL は固定）
-8. スマホのブラウザで `https://moneynote.example.com` を開く → Drive 接続・保存・OCR がすべて動作します
+8. スマホのブラウザで `https://moneynote.example.com` を開く → Drive 接続・保存が動作します
+
+> OCR をスマホからも使う場合は、ブラウザが OCR API を直接呼ぶため `BUN_PUBLIC_OCR_API_URL` を **スマホから到達できる URL**（例: トンネルで公開した OCR API、または Bun サーバーと同じトンネル URL）にして起動 / ビルドしてください。`http://localhost:8000` のままだと「localhost = スマホ自身」になり OCR は失敗します（PC 上で開いたときのみ動作）。
 
 公開ホスト名やサービス先（`localhost:3000`）を後から変えたいときも、ダッシュボードの該当トンネルの **Public Hostname** を編集するだけです。
 

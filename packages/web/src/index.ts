@@ -18,58 +18,11 @@ function servePublic(file: string, contentType?: string): Response {
 	return new Response(f, { headers });
 }
 
-// Upstream OCR API (FastAPI). The browser never talks to it directly — we proxy
-// it below so the SPA always uses its own (same) origin. This avoids mixed-content
-// blocking when the SPA is served over HTTPS, and CORS entirely.
-const OCR_UPSTREAM = (
-	process.env.OCR_API_URL ?? "http://localhost:8000"
-).replace(/\/+$/, "");
-
-/** Forward a request to the OCR upstream and stream the response back. */
-async function proxyToOcr(req: Request, path: string): Promise<Response> {
-	const target = `${OCR_UPSTREAM}${path}`;
-	const init: RequestInit = { method: req.method };
-	if (req.method !== "GET" && req.method !== "HEAD") {
-		init.body = await req.arrayBuffer();
-		const ct = req.headers.get("content-type");
-		if (ct) init.headers = { "content-type": ct };
-	}
-	try {
-		const res = await fetch(target, init);
-		const headers = new Headers();
-		const ct = res.headers.get("content-type");
-		if (ct) headers.set("content-type", ct);
-		return new Response(res.body, { status: res.status, headers });
-	} catch {
-		return Response.json(
-			{
-				success: false,
-				code: "OCR_UPSTREAM_UNREACHABLE",
-				message: `OCR API に接続できませんでした (${target})。OCR サーバーが起動しているか確認してください。`,
-			},
-			{ status: 502 },
-		);
-	}
-}
-
 const server = serve({
 	// Listen on all interfaces so phones on the same LAN can reach the dev server.
 	hostname: "0.0.0.0",
 	port: Number(process.env.PORT ?? 3000),
 	routes: {
-		// Expose server-side config (read from .env) to the SPA.
-		"/api/config": {
-			GET() {
-				return Response.json({
-					googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
-				});
-			},
-		},
-
-		// Proxy the OCR API so the SPA stays same-origin (works over HTTPS, no CORS).
-		"/api/ocr/analyze": { POST: (req) => proxyToOcr(req, "/api/ocr/analyze") },
-		"/api/health": { GET: (req) => proxyToOcr(req, "/api/health") },
-
 		// PWA static assets (served from ../public at the site root).
 		"/manifest.webmanifest": () =>
 			servePublic(
@@ -103,4 +56,3 @@ console.log(`   このPCから:   http://localhost:${port}/`);
 console.log(
 	`   公開URL:      Cloudflare Tunnel 経由 (cloudflared tunnel run ...)`,
 );
-console.log(`   OCR upstream: ${OCR_UPSTREAM}`);

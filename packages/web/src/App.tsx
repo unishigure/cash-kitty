@@ -19,17 +19,6 @@ const TAB_TITLES: Record<TabId, string> = {
 export function App() {
 	const settingsApi = useSettings();
 	const themeApi = useTheme();
-
-	// Wait until server config (.env) has loaded so the Drive client mounts with
-	// the right client id.
-	if (!settingsApi.ready) {
-		return (
-			<div className="flex min-h-dvh items-center justify-center bg-slate-50 text-slate-400 dark:bg-slate-950 dark:text-slate-500">
-				<span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-			</div>
-		);
-	}
-
 	return <AppShell settingsApi={settingsApi} themeApi={themeApi} />;
 }
 
