@@ -14,8 +14,6 @@ const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 
 /** Receipt file names start with this; a month-scoped prefix appends `<month>-`. */
 const RECEIPT_PREFIX = "receipt-";
-/** Matches the new month-stamped file name, e.g. `receipt-2026-06-<id>.json`. */
-const MONTH_STAMPED = /^receipt-\d{4}-\d{2}-/;
 
 /** The Drive file name for a receipt, e.g. `receipt-2026-06-<id>.json`. */
 function fileName(receipt: Receipt): string {
@@ -184,51 +182,10 @@ export async function syncReceipts(
 	return receipts.filter((r): r is Receipt => r !== null).sort(byDateDesc);
 }
 
-/** Rename a Drive file (metadata-only patch). */
-async function renameFile(
-	token: string,
-	fileId: string,
-	name: string,
-): Promise<void> {
-	await driveFetch(token, `${DRIVE_API}/files/${fileId}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json; charset=UTF-8" },
-		body: JSON.stringify({ name }),
-	});
-}
-
-/**
- * Cheap, metadata-only census of stored receipts: the total count and how many
- * still use the legacy `receipt-<id>.json` name (detectable by name alone, no
- * content fetch). A non-zero `legacy` means a migration is available.
- */
-export async function countReceipts(
-	token: string,
-): Promise<{ total: number; legacy: number }> {
+/** Cheap, metadata-only count of stored receipts (no content fetch). */
+export async function countReceipts(token: string): Promise<number> {
 	const files = await listReceiptFiles(token);
-	const legacy = files.filter((f) => !MONTH_STAMPED.test(f.name)).length;
-	return { total: files.length, legacy };
-}
-
-/**
- * Migrate legacy `receipt-<id>.json` files to the month-stamped
- * `receipt-<YYYY-MM>-<id>.json` scheme so they show up in month-scoped queries.
- * This reads each legacy file's content (to derive its month) and renames it,
- * so it can be slow with many files — run it explicitly, not on every connect.
- * Idempotent: already-stamped files are skipped. Returns the number migrated.
- */
-export async function migrateReceiptFiles(token: string): Promise<number> {
-	const files = await listReceiptFiles(token);
-	const legacy = files.filter((f) => !MONTH_STAMPED.test(f.name));
-	let migrated = 0;
-	for (const f of legacy) {
-		const receipt = await getReceiptContent(token, f);
-		// Skip files with no derivable month — renaming would just orphan them.
-		if (!receipt || !monthKey(receipt.date)) continue;
-		await renameFile(token, f.id, fileName(receipt));
-		migrated++;
-	}
-	return migrated;
+	return files.length;
 }
 
 /** Strip runtime-only fields so they aren't persisted into the Drive file. */

@@ -34,7 +34,6 @@ export function SettingsTab({
 	themeApi: ThemeApi;
 }) {
 	const status = STATUS_LABEL[drive.status];
-	const [migrateMsg, setMigrateMsg] = useState<string | null>(null);
 	const [installPrompt, setInstallPrompt] =
 		useState<BeforeInstallPromptEvent | null>(null);
 	const [isInstalled, setIsInstalled] = useState<boolean>(false);
@@ -73,16 +72,6 @@ export function SettingsTab({
 			window.removeEventListener("appinstalled", onInstalled);
 		};
 	}, []);
-
-	const onMigrate = async () => {
-		setMigrateMsg(null);
-		try {
-			const migrated = await drive.migrate();
-			setMigrateMsg(`${migrated} 件のデータを移行しました。`);
-		} catch {
-			// Failure is surfaced via drive.error below.
-		}
-	};
 
 	const onInstall = async () => {
 		if (!installPrompt) {
@@ -176,29 +165,6 @@ export function SettingsTab({
 						</button>
 					)}
 				</div>
-
-				{/* Legacy data migration */}
-				{drive.status === "connected" && drive.legacyCount > 0 && (
-					<div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/40">
-						<p className="flex flex-col text-center text-xs text-amber-800 dark:text-amber-200">
-							<span>旧形式のデータが {drive.legacyCount} 件あります。</span>
-							<span>取得するには新形式へ移行してください。</span>
-						</p>
-						<button
-							type="button"
-							onClick={() => void onMigrate()}
-							disabled={drive.migrating}
-							className="w-full rounded-lg bg-amber-600 py-2 text-sm font-bold text-white disabled:opacity-50"
-						>
-							{drive.migrating ? "移行中…" : "データを移行する"}
-						</button>
-					</div>
-				)}
-				{migrateMsg && (
-					<p className="text-center text-xs text-emerald-600 dark:text-emerald-400">
-						{migrateMsg}
-					</p>
-				)}
 			</section>
 
 			{/* PWA install */}

@@ -4,7 +4,6 @@ import {
 	createReceipt,
 	deleteFile,
 	getFileBlob,
-	migrateReceiptFiles,
 	syncReceipts,
 	UnauthorizedError,
 	updateReceipt,
@@ -33,19 +32,13 @@ interface UseGoogleDrive {
 	receiptsByMonth: Record<string, Receipt[]>;
 	/** Total saved receipts across all months (cheap metadata-only count). */
 	totalCount: number;
-	/** Receipts still using the legacy file name; > 0 means a migration is available. */
-	legacyCount: number;
 	loading: boolean;
-	/** True while an explicit migration is running. */
-	migrating: boolean;
 	error: string | null;
 	/** Connect (interactive consent if needed). */
 	connect: () => Promise<void>;
 	disconnect: () => void;
 	/** (Re)fetch a single month's receipts from Drive. */
 	loadMonth: (month: string) => Promise<void>;
-	/** Migrate legacy files to the month-stamped scheme. Returns the count migrated. */
-	migrate: () => Promise<number>;
 	/** Save a receipt, optionally uploading its image (on first save). */
 	saveReceipt: (receipt: Receipt, image?: Blob) => Promise<void>;
 	removeReceipt: (receipt: Receipt) => Promise<void>;
@@ -70,9 +63,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 	const cacheRef = useRef(receiptsByMonth);
 	cacheRef.current = receiptsByMonth;
 	const [totalCount, setTotalCount] = useState(0);
-	const [legacyCount, setLegacyCount] = useState(0);
 	const [loading, setLoading] = useState(false);
-	const [migrating, setMigrating] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const clientIdRef = useRef(clientId);
 	clientIdRef.current = clientId;
@@ -133,9 +124,8 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		setError(null);
 		try {
 			// Interactive op to drive consent; also seeds the receipt census.
-			const { total, legacy } = await withToken((t) => countReceipts(t), true);
+			const total = await withToken((t) => countReceipts(t), true);
 			setTotalCount(total);
-			setLegacyCount(legacy);
 			setStatus("connected");
 		} catch (e) {
 			setError(e instanceof Error ? e.message : String(e));
@@ -145,31 +135,10 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		}
 	}, [withToken]);
 
-	const migrate = useCallback(async (): Promise<number> => {
-		setMigrating(true);
-		setError(null);
-		try {
-			const migrated = await withToken((t) => migrateReceiptFiles(t), true);
-			// Re-census and drop the month cache so re-opened months pick up the
-			// now-renamed files.
-			const { total, legacy } = await withToken((t) => countReceipts(t), false);
-			setTotalCount(total);
-			setLegacyCount(legacy);
-			setReceiptsByMonth({});
-			return migrated;
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-			throw e;
-		} finally {
-			setMigrating(false);
-		}
-	}, [withToken]);
-
 	const disconnect = useCallback(() => {
 		gisSignOut();
 		setReceiptsByMonth({});
 		setTotalCount(0);
-		setLegacyCount(0);
 		setStatus("disconnected");
 		setError(null);
 	}, []);
@@ -257,12 +226,8 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		else setStatus("connecting");
 		void (async () => {
 			try {
-				const { total, legacy } = await withToken(
-					(t) => countReceipts(t),
-					false,
-				);
+				const total = await withToken((t) => countReceipts(t), false);
 				setTotalCount(total);
-				setLegacyCount(legacy);
 				setStatus("connected");
 			} catch {
 				setStatus("disconnected");
@@ -274,14 +239,11 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		status,
 		receiptsByMonth,
 		totalCount,
-		legacyCount,
 		loading,
-		migrating,
 		error,
 		connect,
 		disconnect,
 		loadMonth,
-		migrate,
 		saveReceipt,
 		removeReceipt,
 		loadImageUrl,
