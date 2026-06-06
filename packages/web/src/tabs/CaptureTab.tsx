@@ -186,7 +186,11 @@ export function CaptureTab({
 					/>
 				</Field>
 
-				<Field label="カテゴリ" required>
+				<div className="block">
+					<span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+						カテゴリ
+						<span className="ml-0.5 text-red-500">*</span>
+					</span>
 					<div className="flex flex-wrap gap-2">
 						{CATEGORIES.map((c) => (
 							<button
@@ -203,7 +207,7 @@ export function CaptureTab({
 							</button>
 						))}
 					</div>
-				</Field>
+				</div>
 
 				<Field label="メモ">
 					<input
