@@ -1,5 +1,11 @@
 import type { OcrResult } from "./types";
 
+// Bound how long we wait for the OCR API. Without this, a request that never
+// settles (e.g. a gateway holding the connection open while the API is down)
+// would leave the UI stuck on "解析中…" forever.
+const ANALYZE_TIMEOUT_MS = 60_000;
+const HEALTH_TIMEOUT_MS = 10_000;
+
 interface AnalyzeResponseBody {
 	success: boolean;
 	data?: {
@@ -29,8 +35,14 @@ export async function analyzeReceipt(
 		res = await fetch(`${base}/api/ocr/analyze`, {
 			method: "POST",
 			body: form,
+			signal: AbortSignal.timeout(ANALYZE_TIMEOUT_MS),
 		});
-	} catch {
+	} catch (err) {
+		if (err instanceof DOMException && err.name === "TimeoutError") {
+			throw new Error(
+				"OCR サーバーが時間内に応答しませんでした。OCR サーバーが起動しているか確認してください。",
+			);
+		}
 		throw new Error(
 			"OCR サーバーに接続できませんでした。OCR サーバーが起動しているか確認してください。",
 		);
@@ -63,7 +75,9 @@ export async function analyzeReceipt(
 /** Check the OCR API health endpoint. Returns the device string or throws. */
 export async function checkOcrHealth(apiBaseUrl: string): Promise<string> {
 	const base = apiBaseUrl.replace(/\/+$/, "");
-	const res = await fetch(`${base}/api/health`);
+	const res = await fetch(`${base}/api/health`, {
+		signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
+	});
 	if (!res.ok) throw new Error(`HTTP ${res.status}`);
 	const body = (await res.json()) as { device?: string };
 	return body.device ?? "unknown";

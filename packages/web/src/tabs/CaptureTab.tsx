@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { CheckIcon } from "../components/icons";
+import { useOcrHealth } from "../hooks/useOcrHealth";
 import type { ReceiptCapture } from "../hooks/useReceiptCapture";
 import { CATEGORIES } from "../lib/categories";
 import type { AppSettings } from "../lib/settings";
@@ -25,6 +26,8 @@ export function CaptureTab({
 		save,
 	} = capture;
 	const fileRef = useRef<HTMLInputElement>(null);
+	const { status: ocrStatus, recheck } = useOcrHealth(settings.apiBaseUrl);
+	const ocrOnline = ocrStatus === "online";
 
 	// Keep the native file input in sync with the (shell-held) capture state:
 	// once the form is cleared the input must be emptied too, otherwise picking
@@ -65,11 +68,39 @@ export function CaptureTab({
 				onChange={onPickImage}
 			/>
 
+			{/* OCR connection status: capture is blocked while the API is unreachable. */}
+			{!ocrOnline && (
+				<div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-900 dark:bg-amber-950/40">
+					{ocrStatus === "checking" ? (
+						<>
+							<Spinner />
+							<span className="text-sm text-amber-800 dark:text-amber-200">
+								OCR サーバーへの接続を確認中…
+							</span>
+						</>
+					) : (
+						<>
+							<span className="flex-1 text-sm text-amber-800 dark:text-amber-200">
+								OCR サーバーに接続できません。
+							</span>
+							<button
+								type="button"
+								onClick={recheck}
+								className="shrink-0 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white active:bg-amber-700"
+							>
+								再試行
+							</button>
+						</>
+					)}
+				</div>
+			)}
+
 			{/* Capture / preview area */}
 			<button
 				type="button"
 				onClick={() => fileRef.current?.click()}
-				className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-white text-slate-400 transition active:scale-[0.99] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-500"
+				disabled={!ocrOnline}
+				className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-white text-slate-400 transition active:scale-[0.99] disabled:opacity-60 disabled:active:scale-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-500"
 			>
 				{preview ? (
 					<img
@@ -79,9 +110,9 @@ export function CaptureTab({
 					/>
 				) : (
 					<div className="flex flex-col items-center gap-2 px-6 text-center">
-						<span className="text-4xl">📷</span>
+						<span className="text-4xl">{ocrOnline ? "📷" : "🚫"}</span>
 						<span className="text-sm font-medium">
-							タップして撮影 / 画像を選択
+							{ocrOnline ? "タップして撮影 / 画像を選択" : "OCR 接続待ち"}
 						</span>
 					</div>
 				)}
@@ -91,7 +122,8 @@ export function CaptureTab({
 				<button
 					type="button"
 					onClick={() => fileRef.current?.click()}
-					className="w-full rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-600 active:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:active:bg-slate-700"
+					disabled={!ocrOnline}
+					className="w-full rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-600 active:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:active:bg-slate-700"
 				>
 					撮り直す
 				</button>
