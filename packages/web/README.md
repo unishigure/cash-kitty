@@ -51,7 +51,7 @@ Cloudflare Pages には **`packages/web` だけ**をデプロイできます。B
 Pages では `BUN_PUBLIC_*` を**ビルド環境変数**として設定します。
 
 - `BUN_PUBLIC_GOOGLE_CLIENT_ID`: 必須。Google OAuth の Web クライアント ID
-- `BUN_PUBLIC_OCR_API_URL`: 任意。OCR API を Pages とは別ホストで公開するなら、その HTTPS URL を設定
+- `BUN_PUBLIC_OCR_API_URL`: 必須。OCR API の HTTPS URL（例: `https://cash-api.example.com`）
 
 例:
 
@@ -60,19 +60,19 @@ BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
 BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
 ```
 
-`BUN_PUBLIC_OCR_API_URL` を未設定にすると、本番ビルドは相対パス `/api/...` を使います。これは **web と API を同一オリジンで配信するときだけ**正しく、`packages/web` だけを Pages に置く構成では OCR 用に到達可能な別 URL を設定してください。
+`packages/web` を単体で配信する構成では、`BUN_PUBLIC_OCR_API_URL` を未設定にしないでください。未設定だと `/api/...` を叩くため、OCR が失敗します。
 
 `public/_redirects` と `public/_headers` はビルド時に `dist/` へコピーされます。これにより Cloudflare Pages 上でも、SPA の直接アクセス時に `index.html` へフォールバックし、`sw.js` と `manifest.webmanifest` は再検証付きで配信されます。
 
 | | `bun dev`（開発） | `bun start` / 本番ホスト |
 | --- | --- | --- |
 | ファイル配信 | オンザフライでバンドル + HMR | ビルド済み `dist/` を静的配信 |
-| 設定・OCR 接続先 | `BUN_PUBLIC_*`（`.env`、`localhost:8000`） | `BUN_PUBLIC_*`（`.env.production`、同一オリジン） |
+| 設定・OCR 接続先 | `BUN_PUBLIC_*`（`.env`、`http://localhost:8000`） | `BUN_PUBLIC_*`（ホストの環境変数、`https://cash-api...`） |
 | OCR / Drive / 統計 / 手入力 | ブラウザ側で完結 | ブラウザ側で完結 |
 
 ### 設定の埋め込み（`BUN_PUBLIC_*`）
 
-設定はビルド時にバンドルへ焼き込みます（Google クライアント ID は公開前提の値なので埋め込んで問題ありません）。OCR の接続先だけ、ローカル開発と本番で異なります。
+設定はビルド時にバンドルへ焼き込みます（Google クライアント ID は公開前提の値なので埋め込んで問題ありません）。
 
 - `.env`（開発・git 管理外）: 開発時は web(:3000) と API(:8000) が別オリジンなので API を直接指す
 
@@ -81,28 +81,14 @@ BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
   BUN_PUBLIC_OCR_API_URL=http://localhost:8000
   ```
 
-- `.env.production`（本番・git 管理下）: `bun run build`（`NODE_ENV=production`）で `.env` を上書きし、OCR を**同一オリジン**にする
+- 本番（Cloudflare Pages など）: ダッシュボードの Build environment variables で設定
 
-   `packages/web` だけを Cloudflare Pages に置く場合は、この値を Pages の `BUN_PUBLIC_OCR_API_URL` 環境変数で**上書き**してください。
+   ```bash
+   BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+   BUN_PUBLIC_OCR_API_URL=https://cash-api.example.com
+   ```
 
-  ```bash
-  BUN_PUBLIC_OCR_API_URL=   # 空 = SPA は自分のオリジンの /api を叩く
-  ```
-
-  ※ ホスト（Cloudflare Pages 等）でビルドする場合は `BUN_PUBLIC_GOOGLE_CLIENT_ID` をビルド環境変数で渡します（`.env` は git 管理外のため）。
-
-### 同一オリジン配信（推奨）と OCR
-
-web と API を 1 つのドメインに同居させます：
-
-```text
-cashkitty.example.com/        → 静的サイト（dist/）
-cashkitty.example.com/api/*   → ローカル FastAPI（Cloudflare Tunnel 経由）
-```
-
-こうすると `BUN_PUBLIC_OCR_API_URL` を空にでき、SPA は相対パス `/api/ocr/analyze` を叩きます。**CORS も混在コンテンツも無く、スマホからも OCR が動作**します。API のルートは元から `/api/*`（[../api/app/main.py](../api/app/main.py)）なので、ゲートウェイは `/api` を剥がさずそのまま転送するだけで一致します。
-
-OCR は `<host>/api` が到達可能なとき（＝ローカル API とトンネルが起動しているとき）だけ動作し、落ちていれば「OCR サーバーに接続できませんでした」表示になり手入力で保存できます。
+   ※ `BUN_PUBLIC_OCR_API_URL` はブラウザから到達できる HTTPS URL を設定してください。
 
 > 配信先 URL は Google の **承認済み JavaScript 生成元** に登録してください。OCR を別オリジンに置く場合のみ、API 側で CORS の許可が必要です（既定は `CORS_ALLOW_ORIGINS=*`）。
 

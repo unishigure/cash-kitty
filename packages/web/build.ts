@@ -53,5 +53,5 @@ console.log(
 	`   Client ID:   ${process.env.BUN_PUBLIC_GOOGLE_CLIENT_ID ? "set" : "(unset — Drive disabled)"}`,
 );
 console.log(
-	`   OCR API URL: ${process.env.BUN_PUBLIC_OCR_API_URL || "(empty — same-origin /api)"}`,
+	`   OCR API URL: ${process.env.BUN_PUBLIC_OCR_API_URL || "(unset — set BUN_PUBLIC_OCR_API_URL)"}`,
 );

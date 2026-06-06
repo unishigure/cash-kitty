@@ -12,8 +12,7 @@ const LEGACY_STORAGE_KEY = "money-note.settings";
 export const DEFAULT_SETTINGS: AppSettings = {
 	// OCR API base URL. The browser calls it directly (no server-side proxy), so
 	// OCR works only while this endpoint is reachable. Supplied at build time via
-	// BUN_PUBLIC_OCR_API_URL. Empty means same-origin (`/api/...` on the SPA's own
-	// origin) — correct for the one-origin production deploy.
+	// BUN_PUBLIC_OCR_API_URL.
 	apiBaseUrl: "",
 	googleClientId: "",
 };
