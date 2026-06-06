@@ -15,6 +15,18 @@ from yomitoku import DocumentAnalyzer
 
 pillow_heif.register_heif_opener()
 
+# Cap the decoded image size to defend against decompression bombs: a small
+# compressed file (notably PNG) can expand to an enormous pixel buffer and
+# exhaust memory. ~40 MP decoded as BGR is ~120 MB and covers any real
+# phone-camera receipt photo with wide margin (the web client downscales to
+# 2000 px before upload, so legitimate uploads are far smaller).
+MAX_IMAGE_PIXELS = 40_000_000
+
+# Make PIL raise instead of merely warning once an image exceeds the cap (the
+# header probe below already rejects oversized images; this guards the HEIC
+# fallback path, which fully decodes via PIL).
+Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
+
 
 @dataclass
 class OCRResult:
@@ -69,6 +81,24 @@ class OCRService:
 
     @staticmethod
     def _decode_image(content: bytes) -> np.ndarray:
+        # Defend against decompression bombs: inspect the image header (cheap,
+        # no full pixel decode) and reject anything whose declared dimensions
+        # would expand to an oversized buffer *before* we allocate one. All
+        # accepted formats (jpeg/png/webp/heic/heif) are readable by PIL.
+        try:
+            with Image.open(io.BytesIO(content)) as probe:
+                width, height = probe.size
+        except Exception:
+            raise ValueError("Failed to decode image bytes")
+
+        if width <= 0 or height <= 0:
+            raise ValueError("Failed to decode image bytes")
+        if width * height > MAX_IMAGE_PIXELS:
+            raise ValueError(
+                f"Image is too large to process ({width}x{height} px). "
+                f"Maximum is {MAX_IMAGE_PIXELS} pixels."
+            )
+
         np_buffer = np.frombuffer(content, dtype=np.uint8)
         image = cv2.imdecode(np_buffer, cv2.IMREAD_COLOR)
         if image is not None:
