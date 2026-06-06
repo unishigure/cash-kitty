@@ -44,7 +44,9 @@ export function SettingsTab({
 		if (typeof window === "undefined") return;
 
 		const checkInstalled = () => {
-			const standalone = window.matchMedia("(display-mode: standalone)").matches;
+			const standalone = window.matchMedia(
+				"(display-mode: standalone)",
+			).matches;
 			const safariStandalone = Boolean(
 				(navigator as Navigator & { standalone?: boolean }).standalone,
 			);
@@ -67,10 +69,7 @@ export function SettingsTab({
 		window.addEventListener("appinstalled", onInstalled);
 
 		return () => {
-			window.removeEventListener(
-				"beforeinstallprompt",
-				onBeforeInstallPrompt,
-			);
+			window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
 			window.removeEventListener("appinstalled", onInstalled);
 		};
 	}, []);

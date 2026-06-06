@@ -83,8 +83,7 @@ const LEGACY_CONNECTED_KEY = "money-note.connected";
 function readStoredToken(): StoredToken | null {
 	try {
 		const raw =
-			localStorage.getItem(TOKEN_KEY) ??
-			localStorage.getItem(LEGACY_TOKEN_KEY);
+			localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem(LEGACY_TOKEN_KEY);
 		if (!raw) return null;
 		const t = JSON.parse(raw) as StoredToken;
 		// Keep a 60s safety margin.

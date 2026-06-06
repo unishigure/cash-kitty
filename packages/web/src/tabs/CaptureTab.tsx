@@ -119,7 +119,9 @@ export function CaptureTab({
 						) : (
 							<div className="flex flex-col items-center gap-2 px-6 text-center">
 								<span className="text-4xl">📷</span>
-								<span className="text-sm font-medium">タップして撮影 / 画像を選択</span>
+								<span className="text-sm font-medium">
+									タップして撮影 / 画像を選択
+								</span>
 							</div>
 						)}
 					</button>
