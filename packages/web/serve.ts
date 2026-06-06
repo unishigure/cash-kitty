@@ -20,6 +20,24 @@ if (!(await Bun.file(INDEX).exists())) {
 	process.exit(1);
 }
 
+/**
+ * Mirror the static security headers a real host applies via public/_headers.
+ * HSTS and the build-time CSP are intentionally omitted here — HSTS is
+ * https-only (this preview is plain http) and the CSP is generated into
+ * dist/_headers by build.ts, which this preview server does not read.
+ */
+function applySecurityHeaders(res: Response): Response {
+	res.headers.set("X-Content-Type-Options", "nosniff");
+	res.headers.set("X-Frame-Options", "DENY");
+	res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+	res.headers.set("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+	res.headers.set(
+		"Permissions-Policy",
+		"camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+	);
+	return res;
+}
+
 /** Set content type / caching for files Bun doesn't infer or that must revalidate. */
 function withHeaders(path: string, res: Response): Response {
 	if (path.endsWith(".webmanifest")) {
@@ -29,7 +47,7 @@ function withHeaders(path: string, res: Response): Response {
 	if (path.endsWith("sw.js") || path.endsWith(".webmanifest")) {
 		res.headers.set("cache-control", "no-cache");
 	}
-	return res;
+	return applySecurityHeaders(res);
 }
 
 const server = serve({
@@ -50,9 +68,11 @@ const server = serve({
 			req.method === "GET" &&
 			req.headers.get("accept")?.includes("text/html")
 		) {
-			return new Response(Bun.file(INDEX), {
-				headers: { "content-type": "text/html; charset=utf-8" },
-			});
+			return applySecurityHeaders(
+				new Response(Bun.file(INDEX), {
+					headers: { "content-type": "text/html; charset=utf-8" },
+				}),
+			);
 		}
 		return new Response("Not Found", { status: 404 });
 	},

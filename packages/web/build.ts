@@ -15,6 +15,7 @@
  *                                   API). OCR works only while that endpoint is
  *                                   reachable, so it is effectively local-only.
  */
+import { createHash } from "node:crypto";
 import { cp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import tailwind from "bun-plugin-tailwind";
@@ -66,8 +67,80 @@ if (await distIndex.exists()) {
 	const injectionAnchor = "<title>Cash Kitty — レシート家計簿</title>";
 	const withLinks = html.includes('<link rel="manifest"')
 		? html
-		: html.replace(injectionAnchor, `${injectionAnchor}\n    ${staticPwaLinks}`);
+		: html.replace(
+				injectionAnchor,
+				`${injectionAnchor}\n    ${staticPwaLinks}`,
+			);
 	await Bun.write(distIndexPath, withLinks);
+}
+
+// --- Content-Security-Policy --------------------------------------------------
+// Injected into the `/*` block of dist/_headers rather than written statically,
+// because it depends on build-time values:
+//   - connect-src must include the configured OCR API origin.
+//   - script-src whitelists the exact inline <script> blocks in index.html by
+//     their SHA-256 hash, so we never need 'unsafe-inline' for scripts.
+// Google Identity Services origins follow Google's published CSP guidance
+// (https://developers.google.com/identity/gsi/web/guides/csp).
+await injectCsp();
+
+async function injectCsp(): Promise<void> {
+	const headersPath = join(outdir, "_headers");
+	if (!(await Bun.file(headersPath).exists())) {
+		console.warn("⚠️  dist/_headers not found — CSP not injected.");
+		return;
+	}
+
+	// Hash every attribute-less inline <script> (the module script has a `src`,
+	// so it is served same-origin and covered by 'self'). The hash is computed
+	// over the exact text the browser sees between the tags, read back from the
+	// final dist HTML so any build-time transform is already applied.
+	const finalHtml = await Bun.file(distIndexPath).text();
+	const scriptHashes = [
+		...finalHtml.matchAll(/<script>([\s\S]*?)<\/script>/g),
+	].map(
+		(m) =>
+			`'sha256-${createHash("sha256").update(m[1] ?? "", "utf8").digest("base64")}'`,
+	);
+
+	// Allow the SPA to reach the configured OCR API origin (scheme://host:port).
+	let ocrConnectSrc = "";
+	const ocrUrl = process.env.BUN_PUBLIC_OCR_API_URL;
+	if (ocrUrl) {
+		try {
+			ocrConnectSrc = ` ${new URL(ocrUrl).origin}`;
+		} catch {
+			console.warn(`⚠️  BUN_PUBLIC_OCR_API_URL is not a valid URL: ${ocrUrl}`);
+		}
+	}
+
+	const csp = [
+		"default-src 'self'",
+		"base-uri 'self'",
+		"object-src 'none'",
+		"frame-ancestors 'none'",
+		"form-action 'self'",
+		`script-src 'self' ${scriptHashes.join(" ")} https://accounts.google.com/gsi/client`,
+		"style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
+		"img-src 'self' blob: data:",
+		"font-src 'self'",
+		`connect-src 'self' https://www.googleapis.com https://accounts.google.com/gsi/${ocrConnectSrc}`,
+		"frame-src https://accounts.google.com/gsi/",
+		"worker-src 'self'",
+		"manifest-src 'self'",
+	].join("; ");
+
+	// Insert the CSP as a header line directly under the existing `/*` rule.
+	const headersText = await Bun.file(headersPath).text();
+	const injected = headersText.replace(
+		/^\/\*[^\S\n]*$/m,
+		`/*\n  Content-Security-Policy: ${csp}`,
+	);
+	if (injected === headersText) {
+		console.warn("⚠️  No `/*` rule in dist/_headers — CSP not injected.");
+		return;
+	}
+	await Bun.write(headersPath, injected);
 }
 
 console.log(`✅ Built static site → ${outdir}`);

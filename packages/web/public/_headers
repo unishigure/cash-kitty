@@ -1,3 +1,18 @@
+# Security headers for every route.
+#
+# NOTE: the Content-Security-Policy is NOT listed here — it is injected into the
+# `/*` block below at build time by build.ts, because it must include both the
+# configured OCR API origin (BUN_PUBLIC_OCR_API_URL) and the SHA-256 hashes of
+# the inline <script> blocks in index.html (so we avoid 'unsafe-inline' for
+# scripts). See build.ts.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Strict-Transport-Security: max-age=31536000
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+
 /sw.js
   Cache-Control: no-cache
   Content-Type: text/javascript; charset=utf-8
