@@ -27,29 +27,3 @@ if (import.meta.hot) {
 } else {
 	createRoot(elem).render(app);
 }
-
-// The app used to ship a service worker (PWA offline app-shell). It was dropped
-// because the app is useless offline anyway — OCR and Google Drive both require
-// the network. Actively tear down any SW + caches a previous version installed,
-// so returning users stop running the stale worker. Safe to run unconditionally:
-// there is nothing to unregister on a fresh install or in dev.
-if ("serviceWorker" in navigator) {
-	window.addEventListener("load", () => {
-		navigator.serviceWorker
-			.getRegistrations()
-			.then((regs) => Promise.all(regs.map((r) => r.unregister())))
-			.catch(() => {});
-		if ("caches" in window) {
-			caches
-				.keys()
-				.then((keys) =>
-					Promise.all(
-						keys
-							.filter((k) => k.startsWith("cash-kitty-"))
-							.map((k) => caches.delete(k)),
-					),
-				)
-				.catch(() => {});
-		}
-	});
-}
