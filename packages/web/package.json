@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "bun --hot src/index.ts",
 		"build": "NODE_ENV=production bun run build.ts",
+		"splash": "bun run scripts/generate-splash.ts",
 		"start": "bun run build && bun run serve.ts",
 		"check": "biome check --write ."
 	},
