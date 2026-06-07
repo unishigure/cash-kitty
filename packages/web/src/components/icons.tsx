@@ -62,3 +62,13 @@ export function RefreshIcon(props: SVGProps<SVGSVGElement>) {
 		</svg>
 	);
 }
+
+export function ImageIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg {...base} {...props} aria-hidden="true">
+			<rect x="3" y="3" width="18" height="18" rx="2" />
+			<circle cx="9" cy="9" r="2" />
+			<path d="m21 15-4.5-4.5L5 21" />
+		</svg>
+	);
+}

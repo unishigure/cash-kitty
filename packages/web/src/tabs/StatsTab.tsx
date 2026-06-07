@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RefreshIcon } from "../components/icons";
+import { ImageIcon, RefreshIcon } from "../components/icons";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import { categoryColor } from "../lib/categories";
 import { formatMonthLabel, formatYen } from "../lib/format";
@@ -313,10 +313,10 @@ function ReceiptRow({
 				</div>
 				{receipt.imageFileId && (
 					<span
-						className="shrink-0 text-xs text-slate-300 dark:text-slate-500"
+						className="shrink-0 text-slate-300 dark:text-slate-500"
 						title="画像あり"
 					>
-						🖼
+						<ImageIcon className="size-4" />
 					</span>
 				)}
 				<span className="shrink-0 tabular-nums text-sm font-semibold text-slate-800 dark:text-slate-100">
