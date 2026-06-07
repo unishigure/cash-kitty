@@ -62,7 +62,7 @@ BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
 
 `packages/web` を単体で配信する構成では、`BUN_PUBLIC_OCR_API_URL` を未設定にしないでください。未設定だと `/api/...` を叩くため、OCR が失敗します。
 
-`public/_redirects` と `public/_headers` はビルド時に `dist/` へコピーされます。これにより Cloudflare Pages 上でも、SPA の直接アクセス時に `index.html` へフォールバックし、`sw.js` と `manifest.webmanifest` は再検証付きで配信されます。
+`public/_redirects` と `public/_headers` はビルド時に `dist/` へコピーされます。これにより Cloudflare Pages 上でも、SPA の直接アクセス時に `index.html` へフォールバックし、`manifest.webmanifest` は再検証付きで配信されます。
 
 `public/_headers` には全ルート向けのセキュリティヘッダ（`X-Content-Type-Options` / `X-Frame-Options` / `Referrer-Policy` / `Cross-Origin-Opener-Policy` / `Strict-Transport-Security` / `Permissions-Policy`）を定義しています。`Content-Security-Policy` は静的に書かず、`build.ts` が `dist/_headers` の `/*` ブロックへ**ビルド時に注入**します（`connect-src` に `BUN_PUBLIC_OCR_API_URL` のオリジンを含める必要があり、またインライン `<script>` を `'unsafe-inline'` なしで許可するため各スクリプトの SHA-256 ハッシュを算出するため）。Google Identity Services は公式ガイダンスに従い `https://accounts.google.com/gsi/*` のみ許可しています。OCR API を別オリジンに置く場合は、その HTTPS オリジンが自動で `connect-src` に入ります。`bun start`（[serve.ts](serve.ts)）はローカル確認用に CSP 以外の同等ヘッダを付与します（HSTS は https 専用のため、CSP は生成物のため除外）。
 
@@ -94,13 +94,12 @@ BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
 
 > 配信先 URL は Google の **承認済み JavaScript 生成元** に登録してください。OCR を別オリジンから呼ぶ場合は、API 側 `.env` の `CORS_ALLOW_ORIGINS` にその配信オリジン（固定 HTTPS URL）を設定してください（既定は開発用の `http://localhost:3000`）。
 
-## PWA（ホーム画面に追加 / オフライン）
+## PWA（ホーム画面に追加）
 
-このアプリは PWA です。スマホのブラウザで開くと「ホーム画面に追加」でき、ネイティブアプリのように起動できます（アドレスバーなしの全画面）。
+このアプリは「ホーム画面に追加」でき、ネイティブアプリのように全画面（アドレスバーなし）で起動できます。マニフェストとアイコン、iOS 用の起動画像で実現しており、**Service Worker は使っていません**。
 
-- マニフェスト・アイコン・Service Worker は `public/` にあり、ルート直下（`/manifest.webmanifest`、`/sw.js`、`/icon-*.png`）で配信されます（サーバー配信時は Bun サーバー、静的配信時は `bun run build` が `dist/` にコピー）
-- Service Worker は **本番モードでのみ登録**されます（`bun dev` では HMR と競合するため無効）。インストール可能な PWA として確認するときは `bun start` か静的ビルド（必要なら Cloudflare Tunnel 経由）で開いてください
-- オフライン時はアプリのシェル（画面）を表示します。OCR・Google Drive は常にネットワークを使うため、保存や解析にはオンライン接続が必要です
+- OCR・Google Drive はどちらも常にネットワークを使うため、このアプリはオフラインでは何もできません。そのため「オフライン用 app-shell」を提供する Service Worker は廃止しました（白画面リスクと保守コストだけが残るため）。以前のバージョンを開いていた端末では、次回アクセス時に [frontend.tsx](src/frontend.tsx) が登録済み SW とキャッシュを自動で解除します
+- マニフェスト・アイコンは `public/` にあり、ルート直下（`/manifest.webmanifest`、`/icon-*.png`）で配信されます（サーバー配信時は Bun サーバー、静的配信時は `bun run build` が `dist/` にコピー）
 - アイコンを差し替えるときは `public/` の各 PNG を入れ替えてください（`icon-192` / `icon-512` / `icon-maskable-512` / `apple-touch-icon` / `favicon-32`）
 
 ## 必要な外部設定

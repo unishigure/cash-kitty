@@ -17,7 +17,7 @@
  */
 import { createHash } from "node:crypto";
 import { cp, rm } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 import tailwind from "bun-plugin-tailwind";
 
 const root = import.meta.dir;
@@ -35,7 +35,6 @@ const result = await Bun.build({
 	plugins: [tailwind],
 	// Inline BUN_PUBLIC_* env vars (Google client id, OCR API URL) into the bundle.
 	env: "BUN_PUBLIC_*",
-	// frontend.tsx registers the service worker only in production builds.
 	define: { "process.env.NODE_ENV": JSON.stringify("production") },
 });
 
@@ -45,48 +44,9 @@ if (!result.success) {
 	process.exit(1);
 }
 
-// PWA assets (manifest, service worker, icons) are served from ../public by the
-// Bun server at runtime; a static host needs them copied to the site root.
+// PWA assets (manifest, icons) are served from ../public by the Bun server at
+// runtime; a static host needs them copied to the site root.
 await cp(join(root, "public"), outdir, { recursive: true });
-
-// Stamp the service worker with a per-build version and precache list so every
-// deploy installs a fresh cache (and `activate` purges the old one). Without
-// this the cache name is constant, the stale shell keeps pointing at hashed
-// assets that no longer exist on the server, and the PWA renders blank.
-await injectServiceWorkerVersion();
-
-async function injectServiceWorkerVersion(): Promise<void> {
-	const swPath = join(outdir, "sw.js");
-	if (!(await Bun.file(swPath).exists())) {
-		console.warn("⚠️  dist/sw.js not found — service worker not stamped.");
-		return;
-	}
-
-	// Root-relative URLs of every hashed JS/CSS asset Bun emitted this build.
-	const assetUrls = result.outputs
-		.filter((o) => o.kind !== "sourcemap")
-		.map((o) => `/${relative(outdir, o.path).split("\\").join("/")}`)
-		.filter((u) => u.endsWith(".js") || u.endsWith(".css"));
-
-	// Content-derived version: the asset names already embed content hashes, so
-	// this only changes when the build output changes (deterministic, no clock).
-	const buildVersion = createHash("sha256")
-		.update([...assetUrls].sort().join("\n"))
-		.digest("hex")
-		.slice(0, 12);
-
-	const precacheUrls = ["/", "/manifest.webmanifest", ...assetUrls];
-
-	let sw = await Bun.file(swPath).text();
-	sw = sw.replace("__BUILD_VERSION__", buildVersion);
-	sw = sw.replace(
-		/const PRECACHE_URLS = \[[^\]]*\];/,
-		`const PRECACHE_URLS = ${JSON.stringify(precacheUrls)};`,
-	);
-	await Bun.write(swPath, sw);
-
-	console.log(`   SW version:  ${buildVersion} (${assetUrls.length} assets)`);
-}
 
 // Ensure the production HTML contains static manifest/icon links.
 // Some platforms are picky about links injected only via runtime script.
@@ -193,7 +153,6 @@ async function injectCsp(): Promise<void> {
 		"font-src 'self'",
 		`connect-src 'self' https://www.googleapis.com https://accounts.google.com/gsi/ https://cloudflareinsights.com${ocrConnectSrc}`,
 		"frame-src https://accounts.google.com/gsi/",
-		"worker-src 'self'",
 		"manifest-src 'self'",
 	].join("; ");
 

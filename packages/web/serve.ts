@@ -42,9 +42,7 @@ function applySecurityHeaders(res: Response): Response {
 function withHeaders(path: string, res: Response): Response {
 	if (path.endsWith(".webmanifest")) {
 		res.headers.set("content-type", "application/manifest+json; charset=utf-8");
-	}
-	// Stable-named PWA files may be swapped in place; always revalidate.
-	if (path.endsWith("sw.js") || path.endsWith(".webmanifest")) {
+		// Stable-named PWA file may be swapped in place; always revalidate.
 		res.headers.set("cache-control", "no-cache");
 	}
 	return applySecurityHeaders(res);

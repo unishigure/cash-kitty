@@ -2,8 +2,8 @@ import path from "node:path";
 import { serve } from "bun";
 import index from "./index.html";
 
-// Static PWA assets (manifest, service worker, icons) live in ../public and are
-// served from the site root so the service worker scope covers the whole SPA.
+// Static PWA assets (manifest, icons) live in ../public and are served from the
+// site root.
 const PUBLIC_DIR = path.join(import.meta.dir, "..", "public");
 
 /** Serve a file from ../public, optionally overriding the content type. */
@@ -11,9 +11,9 @@ function servePublic(file: string, contentType?: string): Response {
 	const f = Bun.file(path.join(PUBLIC_DIR, file));
 	const headers = new Headers();
 	if (contentType) headers.set("content-type", contentType);
-	// These assets have stable filenames (sw.js, manifest, icons) and may be
-	// swapped in place, so tell the browser to always revalidate rather than
-	// serve a stale cached copy. (ETag still yields 304s when unchanged.)
+	// These assets have stable filenames (manifest, icons) and may be swapped in
+	// place, so tell the browser to always revalidate rather than serve a stale
+	// cached copy. (ETag still yields 304s when unchanged.)
 	headers.set("cache-control", "no-cache");
 	return new Response(f, { headers });
 }
@@ -29,7 +29,6 @@ const server = serve({
 				"manifest.webmanifest",
 				"application/manifest+json; charset=utf-8",
 			),
-		"/sw.js": () => servePublic("sw.js", "text/javascript; charset=utf-8"),
 		"/icon-192.png": () => servePublic("icon-192.png", "image/png"),
 		"/icon-512.png": () => servePublic("icon-512.png", "image/png"),
 		"/icon-maskable-512.png": () =>
