@@ -67,11 +67,15 @@ export function CaptureTab({
 
 	return (
 		<div className="space-y-4">
+			{/*
+			 * No `capture` attribute: leaving it off lets mobile browsers offer
+			 * both the camera and the existing photo library, instead of forcing
+			 * the camera open directly.
+			 */}
 			<input
 				ref={fileRef}
 				type="file"
 				accept="image/*"
-				capture="environment"
 				className="hidden"
 				onChange={onPickImage}
 			/>
