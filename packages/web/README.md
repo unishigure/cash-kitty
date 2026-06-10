@@ -125,7 +125,9 @@ Google Drive へ保存するため、Google Cloud Console で OAuth クライア
 5. **承認済みの JavaScript 生成元** に、このアプリを開く URL を追加
    - PC 用: `http://localhost:3000`
    - スマホ用: 下記の Cloudflare Tunnel で発行する公開 URL（例 `https://cashkitty.example.com`）
-6. 発行された **クライアント ID**（`xxxx.apps.googleusercontent.com`）を `.env` の `BUN_PUBLIC_GOOGLE_CLIENT_ID` に設定
+6. **承認済みのリダイレクト URI** にも同じ URL を追加（末尾 `/` まで一致が必要。例 `http://localhost:3000/`、`https://cashkitty.example.com/`）
+   - 認証はポップアップではなく **ページ全体のリダイレクト**で行うため、JavaScript 生成元だけでは動きません
+7. 発行された **クライアント ID**（`xxxx.apps.googleusercontent.com`）を `.env` の `BUN_PUBLIC_GOOGLE_CLIENT_ID` に設定
 
 ### 3. `.env` で設定を一元管理
 

@@ -8,6 +8,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { consumeAuthRedirect } from "./lib/googleAuth";
+
+// If we are returning from a Google OAuth redirect, store the token (or the
+// error) carried in the URL fragment *before* React renders, so initial state
+// already sees it and the token never lingers in the address bar.
+consumeAuthRedirect();
 
 const elem = document.getElementById("root");
 if (!elem) throw new Error("Root element #root not found");

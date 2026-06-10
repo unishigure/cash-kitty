@@ -11,10 +11,13 @@ import {
 } from "../lib/drive";
 import { monthKey } from "../lib/format";
 import {
-	getAccessToken,
-	signOut as gisSignOut,
+	beginAuthRedirect,
+	canSilentReconnect,
+	clearToken,
+	getAuthRedirectError,
+	getValidToken,
 	hasValidToken,
-	wasConnected,
+	signOut,
 } from "../lib/googleAuth";
 import { compressImage } from "../lib/image";
 import type { Receipt } from "../lib/types";
@@ -50,7 +53,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 	const [status, setStatus] = useState<DriveStatus>(
 		hasValidToken()
 			? "connected"
-			: wasConnected()
+			: canSilentReconnect()
 				? "connecting"
 				: "disconnected",
 	);
@@ -69,24 +72,37 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 	clientIdRef.current = clientId;
 
 	/**
-	 * Run a Drive operation with a valid token. Tries a silent token first; if
-	 * the call comes back 401, re-authenticates interactively once and retries.
+	 * Run a Drive operation with the cached token. When the token is missing or
+	 * rejected (401), *background* ops trigger a one-shot silent redirect
+	 * re-auth — the page navigates to Google and reloads with a fresh token.
+	 * User-initiated mutations must never navigate away (the form being saved
+	 * would be lost), so they fail with a clear reconnect message instead.
 	 */
 	const withToken = useCallback(
 		async <T>(
 			op: (token: string) => Promise<T>,
-			interactive: boolean,
+			background: boolean,
 		): Promise<T> => {
 			const id = clientIdRef.current;
 			if (!id) throw new Error("Google クライアント ID が設定されていません");
-			let token = await getAccessToken(id, interactive);
+			const reauth = (): Promise<T> => {
+				if (background && canSilentReconnect()) {
+					setStatus("connecting");
+					beginAuthRedirect(id, "silent");
+					return new Promise<T>(() => {}); // page is navigating away
+				}
+				throw new Error(
+					"Google Drive との接続が切れています。設定タブから再接続してください。",
+				);
+			};
+			const token = getValidToken();
+			if (!token) return reauth();
 			try {
 				return await op(token);
 			} catch (e) {
 				if (e instanceof UnauthorizedError) {
-					gisSignOut();
-					token = await getAccessToken(id, true);
-					return op(token);
+					clearToken();
+					return reauth();
 				}
 				throw e;
 			}
@@ -104,7 +120,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 				const cached = cacheRef.current[month] ?? [];
 				const data = await withToken(
 					(t) => syncReceipts(t, month, cached),
-					false,
+					true,
 				);
 				setReceiptsByMonth((prev) => ({ ...prev, [month]: data }));
 				setStatus("connected");
@@ -119,24 +135,23 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 	);
 
 	const connect = useCallback(async () => {
-		setStatus("connecting");
-		setLoading(true);
-		setError(null);
-		try {
-			// Interactive op to drive consent; also seeds the receipt census.
-			const total = await withToken((t) => countReceipts(t), true);
-			setTotalCount(total);
-			setStatus("connected");
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
+		const id = clientIdRef.current;
+		if (!id) {
+			setError("Google クライアント ID が設定されていません");
 			setStatus("error");
-		} finally {
-			setLoading(false);
+			return;
 		}
-	}, [withToken]);
+		setError(null);
+		setStatus("connecting");
+		// Keeps the button disabled while the browser navigates to Google. The
+		// round-trip lands back on the settings tab, where the mount effect picks
+		// up the token (or the error) from the URL fragment.
+		setLoading(true);
+		beginAuthRedirect(id, "interactive", "settings");
+	}, []);
 
 	const disconnect = useCallback(() => {
-		gisSignOut();
+		signOut();
 		setReceiptsByMonth({});
 		setTotalCount(0);
 		setStatus("disconnected");
@@ -162,7 +177,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 				return receipt.fileId
 					? updateReceipt(t, toSave)
 					: createReceipt(t, toSave);
-			}, true);
+			}, false);
 			// Drop the receipt from every cached month, then re-insert it into the
 			// month its (possibly edited) date now belongs to. This keeps the cache
 			// correct even when an edit moves a receipt across months.
@@ -186,7 +201,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 				await withToken(async (t) => {
 					if (receipt.imageFileId) await deleteFile(t, receipt.imageFileId);
 					if (receipt.fileId) await deleteFile(t, receipt.fileId);
-				}, true);
+				}, false);
 			}
 			setReceiptsByMonth((prev) => {
 				const next: Record<string, Receipt[]> = {};
@@ -204,35 +219,47 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		async (receipt: Receipt): Promise<string | null> => {
 			const { imageFileId } = receipt;
 			if (!imageFileId) return null;
-			const blob = await withToken((t) => getFileBlob(t, imageFileId), false);
+			const blob = await withToken((t) => getFileBlob(t, imageFileId), true);
 			return URL.createObjectURL(blob);
 		},
 		[withToken],
 	);
 
-	// Auto-reconnect on mount. If a valid token survived (localStorage persists it
-	// across task kills / restarts), mark connected. Otherwise, if the user
-	// connected before, try a *silent* token grant (no popup) — this keeps the
-	// connection alive as long as the Google session and prior consent are
-	// intact. A silent failure quietly falls back to disconnected (no error
-	// shown). Either way we only seed the total count here; the per-month data is
-	// fetched lazily by `loadMonth` when the stats view asks for a month.
+	// Auto-reconnect on mount. `consumeAuthRedirect()` (frontend.tsx) has
+	// already stored any token that came back in the URL fragment before React
+	// rendered, so by the time we run there are three cases: a valid token (from
+	// the redirect or surviving in localStorage) → connected; no token but a
+	// prior connection → leave for a *silent* (prompt=none) auth redirect, which
+	// bounces straight back with a token while the Google session is intact; a
+	// failed interactive attempt → surface its error. Here we only seed the
+	// total count; per-month data is fetched lazily by `loadMonth`.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only once on mount.
 	useEffect(() => {
 		if (!clientId) return;
-		const interactive = !hasValidToken();
-		if (interactive && !wasConnected()) return;
-		if (!interactive) setStatus("connected");
-		else setStatus("connecting");
-		void (async () => {
-			try {
-				const total = await withToken((t) => countReceipts(t), false);
-				setTotalCount(total);
-				setStatus("connected");
-			} catch {
-				setStatus("disconnected");
-			}
-		})();
+		const redirectError = getAuthRedirectError();
+		if (redirectError) {
+			setError(redirectError);
+			setStatus("error");
+			return;
+		}
+		if (hasValidToken()) {
+			setStatus("connected");
+			void (async () => {
+				try {
+					const total = await withToken((t) => countReceipts(t), true);
+					setTotalCount(total);
+				} catch {
+					setStatus("disconnected");
+				}
+			})();
+			return;
+		}
+		if (canSilentReconnect()) {
+			setStatus("connecting");
+			beginAuthRedirect(clientId, "silent");
+			return;
+		}
+		setStatus("disconnected");
 	}, []);
 
 	return {
