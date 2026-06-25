@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ImageIcon, RefreshIcon } from "../components/icons";
+import {
+	ArrowDownIcon,
+	ArrowUpIcon,
+	ImageIcon,
+	RefreshIcon,
+} from "../components/icons";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import { categoryColor } from "../lib/categories";
 import { formatMonthLabel, formatYen } from "../lib/format";
@@ -21,7 +26,40 @@ export function StatsTab({
 }) {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+	const [canScroll, setCanScroll] = useState({ up: false, down: false });
 	const { receiptsByMonth, loading, error, status, connect, loadMonth } = drive;
+
+	useEffect(() => {
+		const updateScrollState = () => {
+			const root = document.documentElement;
+			const top = window.scrollY || root.scrollTop;
+			const max = Math.max(0, root.scrollHeight - window.innerHeight);
+			const next = { up: top > 8, down: top < max - 8 };
+			setCanScroll((current) =>
+				current.up === next.up && current.down === next.down ? current : next,
+			);
+		};
+
+		updateScrollState();
+		window.addEventListener("scroll", updateScrollState, { passive: true });
+		window.addEventListener("resize", updateScrollState);
+
+		const observer = new ResizeObserver(updateScrollState);
+		observer.observe(document.body);
+
+		return () => {
+			window.removeEventListener("scroll", updateScrollState);
+			window.removeEventListener("resize", updateScrollState);
+			observer.disconnect();
+		};
+	}, []);
+
+	const scrollToEdge = (edge: "top" | "bottom") => {
+		window.scrollTo({
+			top: edge === "top" ? 0 : document.documentElement.scrollHeight,
+			behavior: "smooth",
+		});
+	};
 
 	// (Re)fetch this month from Drive whenever the month changes or we (re)connect.
 	// Manual retry after an error is handled by the "更新" button.
@@ -285,6 +323,37 @@ export function StatsTab({
 					drive={drive}
 					onClose={() => setSelectedId(null)}
 				/>
+			)}
+
+			{!selected && (canScroll.up || canScroll.down) && (
+				<div className="pointer-events-none fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30">
+					<div className="mx-auto flex max-w-lg justify-end px-4">
+						<div className="flex flex-col gap-2">
+							{canScroll.up && (
+								<button
+									type="button"
+									onClick={() => scrollToEdge("top")}
+									aria-label="一番上へ移動"
+									title="一番上へ移動"
+									className="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 active:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:active:bg-emerald-400"
+								>
+									<ArrowUpIcon className="h-5 w-5" />
+								</button>
+							)}
+							{canScroll.down && (
+								<button
+									type="button"
+									onClick={() => scrollToEdge("bottom")}
+									aria-label="一番下へ移動"
+									title="一番下へ移動"
+									className="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 active:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:active:bg-emerald-400"
+								>
+									<ArrowDownIcon className="h-5 w-5" />
+								</button>
+							)}
+						</div>
+					</div>
+				</div>
 			)}
 		</div>
 	);

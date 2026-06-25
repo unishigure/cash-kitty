@@ -63,6 +63,24 @@ export function RefreshIcon(props: SVGProps<SVGSVGElement>) {
 	);
 }
 
+export function ArrowUpIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg {...base} {...props} aria-hidden="true">
+			<path d="M12 19V5" />
+			<path d="m5 12 7-7 7 7" />
+		</svg>
+	);
+}
+
+export function ArrowDownIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg {...base} {...props} aria-hidden="true">
+			<path d="M12 5v14" />
+			<path d="m19 12-7 7-7-7" />
+		</svg>
+	);
+}
+
 export function ImageIcon(props: SVGProps<SVGSVGElement>) {
 	return (
 		<svg {...base} {...props} aria-hidden="true">
