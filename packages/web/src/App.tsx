@@ -70,49 +70,51 @@ function AppShell({
 	const isCurrentMonth = statsMonth === currentMonthKey();
 
 	return (
-		<div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-			<header className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur pt-[max(0.75rem,env(safe-area-inset-top))] dark:border-slate-800 dark:bg-slate-900/95">
-				<h1 className="text-lg font-bold tracking-tight">
-					<span className="text-emerald-600 dark:text-emerald-400">Cash</span>{" "}
-					Kitty
-					<span className="ml-2 text-sm font-normal text-slate-400 dark:text-slate-500">
-						{TAB_TITLES[tab]}
-					</span>
-				</h1>
-				{tab === "stats" && !isCurrentMonth && (
-					<button
-						type="button"
-						onClick={goToCurrentMonth}
-						className="shrink-0 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 active:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:active:bg-emerald-900"
-					>
-						今月に戻る
-					</button>
-				)}
-				{tab === "capture" && ocrHealth.status === "checking" && (
-					<span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-slate-500">
-						<span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-transparent dark:border-slate-600 dark:border-t-transparent" />
-						接続中…
-					</span>
-				)}
-				{tab === "capture" && ocrHealth.status === "offline" && (
-					<div className="flex shrink-0 items-center gap-2">
-						<span className="text-xs font-medium text-slate-400 dark:text-slate-500">
-							取込不可
+		<div className="flex min-h-dvh w-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+			<header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+				<div className="flex items-center justify-between gap-2 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+					<h1 className="text-lg font-bold tracking-tight">
+						<span className="text-emerald-600 dark:text-emerald-400">Cash</span>{" "}
+						Kitty
+						<span className="ml-2 text-sm font-normal text-slate-400 dark:text-slate-500">
+							{TAB_TITLES[tab]}
 						</span>
+					</h1>
+					{tab === "stats" && !isCurrentMonth && (
 						<button
 							type="button"
-							onClick={ocrHealth.recheck}
-							aria-label="再試行"
-							title="再試行"
-							className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-300 text-slate-500 active:bg-slate-100 dark:border-slate-600 dark:text-slate-400 dark:active:bg-slate-800"
+							onClick={goToCurrentMonth}
+							className="shrink-0 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 active:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:active:bg-emerald-900"
 						>
-							<RefreshIcon className="h-4 w-4" />
+							今月に戻る
 						</button>
-					</div>
-				)}
+					)}
+					{tab === "capture" && ocrHealth.status === "checking" && (
+						<span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-slate-500">
+							<span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-transparent dark:border-slate-600 dark:border-t-transparent" />
+							接続中…
+						</span>
+					)}
+					{tab === "capture" && ocrHealth.status === "offline" && (
+						<div className="flex shrink-0 items-center gap-2">
+							<span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+								取込不可
+							</span>
+							<button
+								type="button"
+								onClick={ocrHealth.recheck}
+								aria-label="再試行"
+								title="再試行"
+								className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-300 text-slate-500 active:bg-slate-100 dark:border-slate-600 dark:text-slate-400 dark:active:bg-slate-800"
+							>
+								<RefreshIcon className="h-4 w-4" />
+							</button>
+						</div>
+					)}
+				</div>
 			</header>
 
-			<main className="flex flex-1 flex-col px-4 pb-24 pt-4">
+			<main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-4 pb-24 pt-4">
 				{tab === "capture" && (
 					<CaptureTab
 						settings={settings}

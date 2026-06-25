@@ -210,183 +210,185 @@ export function ReceiptDetail({
 				)}
 			</header>
 
-			<div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-				{/* Image */}
-				<div className="flex min-h-45 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-					{imageLoading ? (
-						<span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-					) : imageUrl ? (
-						<img
-							src={imageUrl}
-							alt="レシート"
-							className="max-h-[70vh] w-full object-contain"
-						/>
-					) : (
-						<p className="px-6 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
-							{imageError
-								? `画像を読み込めませんでした: ${imageError}`
-								: "このレシートには画像がありません"}
-						</p>
-					)}
-				</div>
-
-				{editing ? (
-					/* Edit form */
-					<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
-						<Field label="店名">
-							<input
-								type="text"
-								value={form.storeName}
-								onChange={(e) => setField("storeName", e.target.value)}
-								placeholder="例: スーパーマーケット"
-								className="input placeholder:text-slate-300"
+			<div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col">
+				<div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+					{/* Image */}
+					<div className="flex min-h-45 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+						{imageLoading ? (
+							<span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+						) : imageUrl ? (
+							<img
+								src={imageUrl}
+								alt="レシート"
+								className="max-h-[70vh] w-full object-contain"
 							/>
-						</Field>
-
-						<Field label="金額 (円)" required>
-							<input
-								type="number"
-								inputMode="numeric"
-								value={form.totalAmount}
-								onChange={(e) => setField("totalAmount", e.target.value)}
-								placeholder="0"
-								className="input"
-							/>
-						</Field>
-
-						<Field label="日付">
-							<input
-								type="date"
-								value={form.date}
-								onChange={(e) => setField("date", e.target.value)}
-								className="input min-w-0 appearance-none"
-							/>
-						</Field>
-
-						<Field label="カテゴリ" required>
-							<div className="flex flex-wrap gap-2">
-								{CATEGORIES.map((c) => (
-									<button
-										key={c}
-										type="button"
-										onClick={() => setField("category", c)}
-										className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-											form.category === c
-												? "bg-emerald-600 text-white"
-												: "bg-slate-100 text-slate-600 active:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:active:bg-slate-600"
-										}`}
-									>
-										{c}
-									</button>
-								))}
-							</div>
-						</Field>
-
-						<Field label="メモ">
-							<input
-								type="text"
-								value={form.memo}
-								onChange={(e) => setField("memo", e.target.value)}
-								placeholder="任意"
-								className="input placeholder:text-slate-300"
-							/>
-						</Field>
-
-						{saveError && (
-							<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-								{saveError}
+						) : (
+							<p className="px-6 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+								{imageError
+									? `画像を読み込めませんでした: ${imageError}`
+									: "このレシートには画像がありません"}
 							</p>
 						)}
-
-						<div className="flex gap-2 pt-1">
-							<button
-								type="button"
-								onClick={() => void onSave()}
-								disabled={saving || !form.totalAmount.trim() || !form.category}
-								className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white disabled:opacity-50"
-							>
-								{saving ? "保存中…" : "変更を保存"}
-							</button>
-							<button
-								type="button"
-								onClick={cancelEdit}
-								disabled={saving}
-								className="flex-1 rounded-xl border border-slate-300 bg-white py-3 text-sm font-medium text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
-							>
-								キャンセル
-							</button>
-						</div>
 					</div>
-				) : (
-					/* Read-only fields */
-					<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
-						<Row label="店名" value={receipt.storeName || "（店名なし）"} />
-						<Row label="金額" value={formatYen(receipt.totalAmount)} strong />
-						<Row label="日付" value={receipt.date || "—"} />
-						<Row
-							label="カテゴリ"
-							value={
-								<span className="inline-flex items-center gap-1.5">
-									<span
-										className="h-2.5 w-2.5 rounded-full"
-										style={{ backgroundColor: categoryColor(receipt.category) }}
-									/>
-									{receipt.category}
-								</span>
-							}
-						/>
-						{receipt.memo && <Row label="メモ" value={receipt.memo} />}
-					</div>
-				)}
 
-				{!editing && receipt.fullText && (
-					<details className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
-						<summary className="cursor-pointer text-sm font-medium text-slate-600 dark:text-slate-300">
-							全文を表示
-						</summary>
-						<pre className="mt-2 whitespace-pre-wrap wrap-break-word text-xs text-slate-500 dark:text-slate-400">
-							{receipt.fullText}
-						</pre>
-					</details>
-				)}
+					{editing ? (
+						/* Edit form */
+						<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+							<Field label="店名">
+								<input
+									type="text"
+									value={form.storeName}
+									onChange={(e) => setField("storeName", e.target.value)}
+									placeholder="例: スーパーマーケット"
+									className="input placeholder:text-slate-300"
+								/>
+							</Field>
 
-				{!editing && (
-					<>
-						{deleteError && (
-							<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-								{deleteError}
-							</p>
-						)}
-						{confirming ? (
-							<div className="flex gap-2">
+							<Field label="金額 (円)" required>
+								<input
+									type="number"
+									inputMode="numeric"
+									value={form.totalAmount}
+									onChange={(e) => setField("totalAmount", e.target.value)}
+									placeholder="0"
+									className="input"
+								/>
+							</Field>
+
+							<Field label="日付">
+								<input
+									type="date"
+									value={form.date}
+									onChange={(e) => setField("date", e.target.value)}
+									className="input min-w-0 appearance-none"
+								/>
+							</Field>
+
+							<Field label="カテゴリ" required>
+								<div className="flex flex-wrap gap-2">
+									{CATEGORIES.map((c) => (
+										<button
+											key={c}
+											type="button"
+											onClick={() => setField("category", c)}
+											className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+												form.category === c
+													? "bg-emerald-600 text-white"
+													: "bg-slate-100 text-slate-600 active:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:active:bg-slate-600"
+											}`}
+										>
+											{c}
+										</button>
+									))}
+								</div>
+							</Field>
+
+							<Field label="メモ">
+								<input
+									type="text"
+									value={form.memo}
+									onChange={(e) => setField("memo", e.target.value)}
+									placeholder="任意"
+									className="input placeholder:text-slate-300"
+								/>
+							</Field>
+
+							{saveError && (
+								<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+									{saveError}
+								</p>
+							)}
+
+							<div className="flex gap-2 pt-1">
 								<button
 									type="button"
-									onClick={() => void onDelete()}
-									disabled={deleting}
-									className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-bold text-white disabled:opacity-50"
+									onClick={() => void onSave()}
+									disabled={saving || !form.totalAmount.trim() || !form.category}
+									className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white disabled:opacity-50"
 								>
-									{deleting ? "削除中…" : "削除する"}
+									{saving ? "保存中…" : "変更を保存"}
 								</button>
 								<button
 									type="button"
-									onClick={() => setConfirming(false)}
-									disabled={deleting}
+									onClick={cancelEdit}
+									disabled={saving}
 									className="flex-1 rounded-xl border border-slate-300 bg-white py-3 text-sm font-medium text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
 								>
 									キャンセル
 								</button>
 							</div>
-						) : (
-							<button
-								type="button"
-								onClick={() => setConfirming(true)}
-								className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-white py-3 text-sm font-bold text-red-600 active:bg-red-50 dark:border-red-900 dark:bg-slate-800 dark:text-red-400 dark:active:bg-red-950"
-							>
-								<TrashIcon className="h-4 w-4" /> このレシートを削除
-							</button>
-						)}
-					</>
-				)}
+						</div>
+					) : (
+						/* Read-only fields */
+						<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+							<Row label="店名" value={receipt.storeName || "（店名なし）"} />
+							<Row label="金額" value={formatYen(receipt.totalAmount)} strong />
+							<Row label="日付" value={receipt.date || "—"} />
+							<Row
+								label="カテゴリ"
+								value={
+									<span className="inline-flex items-center gap-1.5">
+										<span
+											className="h-2.5 w-2.5 rounded-full"
+											style={{ backgroundColor: categoryColor(receipt.category) }}
+										/>
+										{receipt.category}
+									</span>
+								}
+							/>
+							{receipt.memo && <Row label="メモ" value={receipt.memo} />}
+						</div>
+					)}
+
+					{!editing && receipt.fullText && (
+						<details className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+							<summary className="cursor-pointer text-sm font-medium text-slate-600 dark:text-slate-300">
+								全文を表示
+							</summary>
+							<pre className="mt-2 whitespace-pre-wrap wrap-break-word text-xs text-slate-500 dark:text-slate-400">
+								{receipt.fullText}
+							</pre>
+						</details>
+					)}
+
+					{!editing && (
+						<>
+							{deleteError && (
+								<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+									{deleteError}
+								</p>
+							)}
+							{confirming ? (
+								<div className="flex gap-2">
+									<button
+										type="button"
+										onClick={() => void onDelete()}
+										disabled={deleting}
+										className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-bold text-white disabled:opacity-50"
+									>
+										{deleting ? "削除中…" : "削除する"}
+									</button>
+									<button
+										type="button"
+										onClick={() => setConfirming(false)}
+										disabled={deleting}
+										className="flex-1 rounded-xl border border-slate-300 bg-white py-3 text-sm font-medium text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+									>
+										キャンセル
+									</button>
+								</div>
+							) : (
+								<button
+									type="button"
+									onClick={() => setConfirming(true)}
+									className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-white py-3 text-sm font-bold text-red-600 active:bg-red-50 dark:border-red-900 dark:bg-slate-800 dark:text-red-400 dark:active:bg-red-950"
+								>
+									<TrashIcon className="h-4 w-4" /> このレシートを削除
+								</button>
+							)}
+						</>
+					)}
+				</div>
 			</div>
 		</div>
 	);
