@@ -303,7 +303,9 @@ export function ReceiptDetail({
 								<button
 									type="button"
 									onClick={() => void onSave()}
-									disabled={saving || !form.totalAmount.trim() || !form.category}
+									disabled={
+										saving || !form.totalAmount.trim() || !form.category
+									}
 									className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white disabled:opacity-50"
 								>
 									{saving ? "保存中…" : "変更を保存"}
@@ -330,7 +332,9 @@ export function ReceiptDetail({
 									<span className="inline-flex items-center gap-1.5">
 										<span
 											className="h-2.5 w-2.5 rounded-full"
-											style={{ backgroundColor: categoryColor(receipt.category) }}
+											style={{
+												backgroundColor: categoryColor(receipt.category),
+											}}
 										/>
 										{receipt.category}
 									</span>
