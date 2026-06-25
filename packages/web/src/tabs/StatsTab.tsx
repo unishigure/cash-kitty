@@ -84,14 +84,20 @@ export function StatsTab({
 			.sort((a, b) => b.amount - a.amount);
 	}, [monthly]);
 
-	// The receipt list honors the active category filter (tap a category to set).
-	const filtered = useMemo(
-		() =>
-			selectedCategory
-				? monthly.filter((r) => r.category === selectedCategory)
-				: monthly,
-		[monthly, selectedCategory],
-	);
+	// The receipt list honors the active category filter (tap a category to set)
+	// and displays older receipts first.
+	const filtered = useMemo(() => {
+		const list = selectedCategory
+			? monthly.filter((r) => r.category === selectedCategory)
+			: [...monthly];
+
+		return list.sort(
+			(a, b) =>
+				a.date.localeCompare(b.date) ||
+				a.createdAt.localeCompare(b.createdAt) ||
+				a.id.localeCompare(b.id),
+		);
+	}, [monthly, selectedCategory]);
 
 	// Derive from the live list so the detail reflects the latest data.
 	const selected = selectedId
