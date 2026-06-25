@@ -8,7 +8,6 @@ import { useReceiptCapture } from "./hooks/useReceiptCapture";
 import { type SettingsApi, useSettings } from "./hooks/useSettings";
 import { type ThemeApi, useTheme } from "./hooks/useTheme";
 import { currentMonthKey, shiftMonth } from "./lib/format";
-import { getResumeTab } from "./lib/googleAuth";
 import { CaptureTab } from "./tabs/CaptureTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 import { StatsTab } from "./tabs/StatsTab";
@@ -33,19 +32,8 @@ function AppShell({
 	themeApi: ThemeApi;
 }) {
 	const { settings } = settingsApi;
+	const [tab, setTab] = useState<TabId>("stats");
 	const drive = useGoogleDrive(settings.googleClientId);
-	// After an OAuth redirect round-trip, restore the tab the user left from.
-	// Otherwise open on stats when Drive is already (or about to be) connected,
-	// and land on capture so a first-time user starts where the setup flow is.
-	const [tab, setTab] = useState<TabId>(() => {
-		const resume = getResumeTab();
-		if (resume === "capture" || resume === "stats" || resume === "settings") {
-			return resume;
-		}
-		return drive.status === "connected" || drive.status === "connecting"
-			? "stats"
-			: "capture";
-	});
 	// Held at the shell level so an in-flight OCR analysis (and the form it
 	// fills) survives switching the bottom-nav tab away and back.
 	const capture = useReceiptCapture(settings, drive);
