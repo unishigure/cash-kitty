@@ -11,6 +11,7 @@ export const CATEGORIES = [
 	"光熱費",
 	"通信",
 	"税金",
+	"貯蓄",
 	"その他",
 ] as const;
 
@@ -31,6 +32,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
 	光熱費: "#eab308",
 	通信: "#06b6d4",
 	税金: "#64748b",
+	貯蓄: "#10b981",
 	その他: "#94a3b8",
 };
 
