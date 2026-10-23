@@ -55,7 +55,7 @@ export function StatsTab({
 		drive;
 	const { fixedCategories } = preferences;
 	const excluding = excludeFixed && fixedCategories.length > 0;
-	const analysisReceipts = useMemo(
+	const shownReceipts = useMemo(
 		() => withoutCategories(receipts, excluding ? fixedCategories : []),
 		[receipts, excluding, fixedCategories],
 	);
@@ -65,8 +65,8 @@ export function StatsTab({
 	);
 	const query = useMemo(() => toQuery(filters, month), [filters, month]);
 	const results = useMemo(
-		() => filterReceipts(receipts, query),
-		[receipts, query],
+		() => filterReceipts(shownReceipts, query),
+		[shownReceipts, query],
 	);
 	const searchRef = useRef<HTMLInputElement>(null);
 	const refresh = () =>
@@ -162,6 +162,8 @@ export function StatsTab({
 			results={results}
 			filters={filters}
 			onChangeFilters={onChangeFilters}
+			excludedFixed={excluding ? fixedCategories : null}
+			onIncludeFixed={() => onChangeExcludeFixed(false)}
 			month={month}
 			direction={direction}
 			onChangeMonth={onChangeMonth}
@@ -178,7 +180,7 @@ export function StatsTab({
 	// both columns share.
 	const analysis = (
 		<AnalysisView
-			receipts={analysisReceipts}
+			receipts={shownReceipts}
 			fixedCategories={fixedCategories}
 			excludeFixed={excluding}
 			onChangeExcludeFixed={onChangeExcludeFixed}

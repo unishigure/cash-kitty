@@ -46,6 +46,8 @@ export function ReceiptListView({
 	results,
 	filters,
 	onChangeFilters,
+	excludedFixed,
+	onIncludeFixed,
 	month,
 	direction,
 	onChangeMonth,
@@ -56,10 +58,13 @@ export function ReceiptListView({
 	searchRef,
 }: {
 	receipts: readonly Receipt[];
-	/** `receipts` narrowed and sorted by `filters`. */
+	/** `receipts` without `excludedFixed`, narrowed and sorted by `filters`. */
 	results: readonly Receipt[];
 	filters: ListFilters;
 	onChangeFilters: (filters: ListFilters) => void;
+	/** Fixed-cost categories left out by 分析's 「固定費を除く」, or null when off. */
+	excludedFixed: readonly string[] | null;
+	onIncludeFixed: () => void;
 	month: string;
 	direction: 1 | -1;
 	onChangeMonth: (delta: 1 | -1) => void;
@@ -77,7 +82,10 @@ export function ReceiptListView({
 	const total = results.reduce((s, r) => s + r.totalAmount, 0);
 	const hiddenCount = hiddenFilterCount(filters);
 	const narrowed =
-		hiddenCount > 0 || filters.text.trim() !== "" || filters.day !== null;
+		hiddenCount > 0 ||
+		filters.text.trim() !== "" ||
+		filters.day !== null ||
+		excludedFixed !== null;
 
 	const categoryOptions = useMemo(() => {
 		const extra = new Set(receipts.map((r) => r.category));
@@ -93,8 +101,18 @@ export function ReceiptListView({
 	};
 
 	// The panel lists categories itself, so their chips show only while it is
-	// closed. The day has no control in the panel, so its chip always shows.
-	const chips = [
+	// closed. The day and 固定費を除く have no control in the panel, so their
+	// chips always show.
+	const chips: { label: string; title?: string; remove: () => void }[] = [
+		...(excludedFixed
+			? [
+					{
+						label: "固定費を除く",
+						title: excludedFixed.join("・"),
+						remove: onIncludeFixed,
+					},
+				]
+			: []),
 		...(filters.day
 			? [{ label: dayLabel(filters.day), remove: () => set({ day: null }) }]
 			: []),
@@ -184,12 +202,13 @@ export function ReceiptListView({
 						{narrowed && receipts.length > 0 && (
 							<button
 								type="button"
-								onClick={() =>
+								onClick={() => {
 									onChangeFilters({
 										...INITIAL_FILTERS,
 										period: filters.period,
-									})
-								}
+									});
+									if (excludedFixed) onIncludeFixed();
+								}}
 								className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 active:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300"
 							>
 								条件をクリア
@@ -403,11 +422,12 @@ export function ReceiptListView({
 
 				{chips.length > 0 && (
 					<div className="flex flex-wrap gap-1.5">
-						{chips.map(({ label, remove }) => (
+						{chips.map(({ label, title, remove }) => (
 							<button
 								key={label}
 								type="button"
 								onClick={remove}
+								title={title}
 								aria-label={`${label} の絞り込みを解除`}
 								className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 active:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:active:bg-emerald-900"
 							>
