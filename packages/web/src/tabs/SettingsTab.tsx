@@ -114,7 +114,7 @@ export function SettingsTab({
 	const onExport = async () => {
 		setExportState({ kind: "exporting" });
 		try {
-			const receipts = await drive.loadAllReceipts();
+			const receipts = await drive.sync();
 			downloadText(
 				receiptsToCsv(receipts),
 				`cash-kitty-${todayIso()}.csv`,
@@ -175,7 +175,7 @@ export function SettingsTab({
 					<span>サーバーに保存されることはありません。</span>
 				</p>
 				<p className="px-1 text-center text-xs text-slate-400 dark:text-slate-500">
-					データ保存件数: {drive.totalCount} 件
+					データ保存件数: {drive.receipts.length} 件
 				</p>
 				{!config.googleClientId && (
 					<p className="text-xs text-red-600 dark:text-red-400">
@@ -200,10 +200,10 @@ export function SettingsTab({
 						<button
 							type="button"
 							onClick={() => void drive.connect()}
-							disabled={!config.googleClientId || drive.loading}
+							disabled={!config.googleClientId || drive.status === "connecting"}
 							className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-bold text-white disabled:opacity-50"
 						>
-							{drive.loading ? "接続中…" : "接続する"}
+							{drive.status === "connecting" ? "接続中…" : "接続する"}
 						</button>
 					)}
 				</div>

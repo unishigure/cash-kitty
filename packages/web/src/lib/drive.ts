@@ -1,10 +1,8 @@
 /**
  * Google Drive REST client scoped to the application data folder
  * (`appDataFolder`). Each receipt is stored as one JSON file named
- * `receipt-<YYYY-MM>-<id>.json`. Embedding the month in the file name lets us
- * list (and re-fetch) a single month without downloading every receipt. This
- * folder is hidden from the user's normal Drive UI and is only accessible by
- * this app.
+ * `receipt-<YYYY-MM>-<id>.json`. This folder is hidden from the user's normal
+ * Drive UI and is only accessible by this app.
  */
 import { monthKey } from "./format";
 import type { Receipt } from "./types";
@@ -12,8 +10,11 @@ import type { Receipt } from "./types";
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 
-/** Receipt file names start with this; a month-scoped prefix appends `<month>-`. */
 const RECEIPT_PREFIX = "receipt-";
+
+// Bounds parallel content downloads so a first sync of hundreds of files stays
+// under Drive's per-user rate limit.
+const SYNC_CONCURRENCY = 6;
 
 /** The Drive file name for a receipt, e.g. `receipt-2026-06-<id>.json`. */
 function fileName(receipt: Receipt): string {
@@ -65,15 +66,10 @@ interface DriveFile {
 }
 
 /**
- * List receipt files in the appDataFolder. With no `prefix`, lists every
- * receipt; with `receipt-<month>-` it lists only that month's files. The Drive
- * `name contains` query does prefix matching, but we re-filter by `startsWith`
- * so the result is exact regardless of how Drive interprets the query.
+ * List every receipt file in the appDataFolder. Drive's `name contains` query
+ * is looser than a prefix match, so the result is re-filtered by `startsWith`.
  */
-async function listReceiptFiles(
-	token: string,
-	prefix: string = RECEIPT_PREFIX,
-): Promise<DriveFile[]> {
+async function listReceiptFiles(token: string): Promise<DriveFile[]> {
 	const files: DriveFile[] = [];
 	let pageToken: string | undefined;
 	do {
@@ -81,7 +77,7 @@ async function listReceiptFiles(
 			spaces: "appDataFolder",
 			fields: "files(id,name,modifiedTime),nextPageToken",
 			pageSize: "1000",
-			q: `name contains '${prefix}'`,
+			q: `name contains '${RECEIPT_PREFIX}'`,
 		});
 		if (pageToken) params.set("pageToken", pageToken);
 		const res = await driveFetch(token, `${DRIVE_API}/files?${params}`);
@@ -92,7 +88,7 @@ async function listReceiptFiles(
 		files.push(...(body.files ?? []));
 		pageToken = body.nextPageToken;
 	} while (pageToken);
-	return files.filter((f) => f.name.startsWith(prefix));
+	return files.filter((f) => f.name.startsWith(RECEIPT_PREFIX));
 }
 
 /** Fetch and parse the JSON content of a single Drive file. */
@@ -150,49 +146,44 @@ function normalizeReceipt(
 	};
 }
 
-function byDateDesc(a: Receipt, b: Receipt): number {
-	return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
-}
-
-async function syncByPrefix(
+/**
+ * Bring `cached` in line with Drive: list all receipt files once, reuse cached
+ * receipts whose file is unchanged, download only new or modified files, and
+ * drop receipts whose file no longer exists.
+ */
+export async function syncReceipts(
 	token: string,
-	prefix: string,
-	cached: Receipt[],
+	cached: readonly Receipt[],
 ): Promise<Receipt[]> {
-	const files = await listReceiptFiles(token, prefix);
+	const files = await listReceiptFiles(token);
 	const byFileId = new Map(
 		cached.filter((r) => r.fileId).map((r) => [r.fileId, r]),
 	);
-	const receipts = await Promise.all(
-		files.map((f) => {
-			const hit = byFileId.get(f.id);
-			// Reuse the cached receipt when its file is unchanged.
-			if (hit && hit.driveModifiedTime === f.modifiedTime) return hit;
-			return getReceiptContent(token, f);
-		}),
+	const receipts = await mapConcurrent(files, SYNC_CONCURRENCY, (f) => {
+		const hit = byFileId.get(f.id);
+		if (hit && hit.driveModifiedTime === f.modifiedTime) return hit;
+		return getReceiptContent(token, f);
+	});
+	return receipts.filter((r): r is Receipt => r !== null);
+}
+
+async function mapConcurrent<T, R>(
+	items: readonly T[],
+	limit: number,
+	fn: (item: T) => R | Promise<R>,
+): Promise<R[]> {
+	const results = new Array<R>(items.length);
+	let next = 0;
+	const worker = async () => {
+		while (next < items.length) {
+			const i = next++;
+			results[i] = await fn(items[i] as T);
+		}
+	};
+	await Promise.all(
+		Array.from({ length: Math.min(limit, items.length) }, worker),
 	);
-	return receipts.filter((r): r is Receipt => r !== null).sort(byDateDesc);
-}
-
-export async function syncReceipts(
-	token: string,
-	month: string,
-	cached: Receipt[],
-): Promise<Receipt[]> {
-	return syncByPrefix(token, `${RECEIPT_PREFIX}${month}-`, cached);
-}
-
-export async function syncAllReceipts(
-	token: string,
-	cached: Receipt[],
-): Promise<Receipt[]> {
-	return syncByPrefix(token, RECEIPT_PREFIX, cached);
-}
-
-/** Cheap, metadata-only count of stored receipts (no content fetch). */
-export async function countReceipts(token: string): Promise<number> {
-	const files = await listReceiptFiles(token);
-	return files.length;
+	return results;
 }
 
 /** Strip runtime-only fields so they aren't persisted into the Drive file. */

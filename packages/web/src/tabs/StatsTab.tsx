@@ -7,7 +7,7 @@ import {
 } from "../components/icons";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import { categoryColor } from "../lib/categories";
-import { formatMonthLabel, formatYen } from "../lib/format";
+import { formatMonthLabel, formatYen, monthKey } from "../lib/format";
 import type { Receipt } from "../lib/types";
 import { ReceiptDetail } from "./ReceiptDetail";
 
@@ -27,7 +27,12 @@ export function StatsTab({
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 	const [canScroll, setCanScroll] = useState({ up: false, down: false });
-	const { receiptsByMonth, loading, error, status, connect, loadMonth } = drive;
+	const { receipts, syncState, error, status, connect, sync } = drive;
+	const syncing = syncState.kind === "syncing";
+	const refresh = () =>
+		void sync().catch(() => {
+			/* surfaced through syncState */
+		});
 
 	useEffect(() => {
 		const updateScrollState = () => {
@@ -60,12 +65,6 @@ export function StatsTab({
 			behavior: "smooth",
 		});
 	};
-
-	// (Re)fetch this month from Drive whenever the month changes or we (re)connect.
-	// Manual retry after an error is handled by the "更新" button.
-	useEffect(() => {
-		if (status === "connected") void loadMonth(month);
-	}, [month, status, loadMonth]);
 
 	// Clear the category filter when switching months — the categories differ
 	// per month, so a stale filter could leave the list empty. Adjusting state
@@ -103,8 +102,8 @@ export function StatsTab({
 	};
 
 	const monthly = useMemo(
-		() => receiptsByMonth[month] ?? [],
-		[receiptsByMonth, month],
+		() => receipts.filter((r) => monthKey(r.date) === month),
+		[receipts, month],
 	);
 
 	const total = useMemo(
@@ -157,10 +156,10 @@ export function StatsTab({
 				<button
 					type="button"
 					onClick={() => void connect()}
-					disabled={loading}
+					disabled={status === "connecting"}
 					className="mt-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
 				>
-					{loading ? "接続中…" : "Google Drive に接続"}
+					{status === "connecting" ? "接続中…" : "Google Drive に接続"}
 				</button>
 			</div>
 		);
@@ -209,16 +208,16 @@ export function StatsTab({
 					<p className="mt-1 text-xs text-emerald-100">
 						{monthly.length} 件のレシート
 					</p>
-					{loading && (
+					{syncing && (
 						<div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-emerald-600/60">
 							<span className="inline-block h-7 w-7 animate-spin rounded-full border-2 border-white border-t-transparent" />
 						</div>
 					)}
 				</div>
 
-				{error && (
+				{syncState.kind === "error" && (
 					<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-						{error}
+						{syncState.message}
 					</p>
 				)}
 
@@ -289,15 +288,15 @@ export function StatsTab({
 						</div>
 						<button
 							type="button"
-							onClick={() => void loadMonth(month)}
-							disabled={loading}
+							onClick={refresh}
+							disabled={syncing}
 							aria-label="更新"
 							className="rounded-lg p-1.5 text-emerald-600 active:bg-emerald-50 disabled:opacity-50 dark:text-emerald-400 dark:active:bg-emerald-950"
 						>
 							<RefreshIcon className="h-4 w-4" />
 						</button>
 					</div>
-					{filtered.length === 0 && !loading ? (
+					{filtered.length === 0 && !syncing ? (
 						<p className="rounded-xl border border-dashed border-slate-200 bg-white py-8 text-center text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
 							{selectedCategory
 								? "このカテゴリのレシートはありません"
