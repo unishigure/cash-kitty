@@ -439,7 +439,7 @@ export function ReceiptListView({
 				)}
 			</div>
 
-			<div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+			<div className="overflow-x-clip lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
 				{filters.period.kind === "month" ? (
 					<div
 						key={month}

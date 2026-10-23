@@ -183,7 +183,7 @@ export function AnalysisView({
 	);
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-3 overflow-x-clip">
 			<div className="lg:hidden">
 				<MonthSelector month={month} onChangeMonth={onChangeMonth} />
 			</div>
