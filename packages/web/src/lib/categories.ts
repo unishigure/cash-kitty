@@ -21,21 +21,21 @@ export const DEFAULT_CATEGORY: Category = "その他";
 
 /** A stable color per category for charts / chips. */
 export const CATEGORY_COLORS: Record<string, string> = {
-	食費: "#f97316",
-	外食: "#dc2626",
-	日用品: "#65a30d",
-	交通: "#2563eb",
-	娯楽: "#9333ea",
-	医療: "#0d9488",
-	衣服: "#db2777",
-	住居費: "#d97706",
-	光熱費: "#ca8a04",
-	通信: "#0891b2",
-	税金: "#475569",
-	貯蓄: "#4f46e5",
-	その他: "#94a3b8",
+	食費: "#fd721c",
+	外食: "#df0325",
+	日用品: "#2ab301",
+	交通: "#005bfc",
+	娯楽: "#a22cdc",
+	医療: "#017f64",
+	衣服: "#fe5ec3",
+	住居費: "#a05b11",
+	光熱費: "#b09803",
+	通信: "#04a7ec",
+	税金: "#5a66a5",
+	貯蓄: "#967dfa",
+	その他: "#8b8f93",
 };
 
 export function categoryColor(category: string): string {
-	return CATEGORY_COLORS[category] ?? "#94a3b8";
+	return CATEGORY_COLORS[category] ?? "#8b8f93";
 }
