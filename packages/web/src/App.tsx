@@ -5,8 +5,8 @@ import { TabBar, type TabId } from "./components/TabBar";
 import { useGoogleDrive } from "./hooks/useGoogleDrive";
 import { useOcrHealth } from "./hooks/useOcrHealth";
 import { useReceiptCapture } from "./hooks/useReceiptCapture";
-import { type SettingsApi, useSettings } from "./hooks/useSettings";
-import { type ThemeApi, useTheme } from "./hooks/useTheme";
+import { useTheme } from "./hooks/useTheme";
+import { BUILD_CONFIG } from "./lib/config";
 import { currentMonthKey, shiftMonth } from "./lib/format";
 import { CaptureTab } from "./tabs/CaptureTab";
 import { SettingsTab } from "./tabs/SettingsTab";
@@ -19,27 +19,15 @@ const TAB_TITLES: Record<TabId, string> = {
 };
 
 export function App() {
-	const settingsApi = useSettings();
 	const themeApi = useTheme();
-	return <AppShell settingsApi={settingsApi} themeApi={themeApi} />;
-}
-
-function AppShell({
-	settingsApi,
-	themeApi,
-}: {
-	settingsApi: SettingsApi;
-	themeApi: ThemeApi;
-}) {
-	const { settings } = settingsApi;
 	const [tab, setTab] = useState<TabId>("stats");
-	const drive = useGoogleDrive(settings.googleClientId);
+	const drive = useGoogleDrive(BUILD_CONFIG.googleClientId);
 	// Held at the shell level so an in-flight OCR analysis (and the form it
 	// fills) survives switching the bottom-nav tab away and back.
-	const capture = useReceiptCapture(settings, drive);
+	const capture = useReceiptCapture(BUILD_CONFIG.apiBaseUrl, drive);
 	// Lifted so the header can host the "connecting" indicator while CaptureTab
 	// still uses the status to gate image capture.
-	const ocrHealth = useOcrHealth(settings.apiBaseUrl);
+	const ocrHealth = useOcrHealth(BUILD_CONFIG.apiBaseUrl);
 
 	// Stats month lives here so the header can host a "return to current month"
 	// button while StatsTab drives the month with arrows/swipe.
@@ -83,6 +71,11 @@ function AppShell({
 							接続中…
 						</span>
 					)}
+					{tab === "capture" && ocrHealth.status === "unconfigured" && (
+						<span className="shrink-0 text-xs font-medium text-slate-400 dark:text-slate-500">
+							OCR 未設定
+						</span>
+					)}
 					{tab === "capture" && ocrHealth.status === "offline" && (
 						<div className="flex shrink-0 items-center gap-2">
 							<span className="text-xs font-medium text-slate-400 dark:text-slate-500">
@@ -105,10 +98,9 @@ function AppShell({
 			<main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-4 pb-24 pt-4">
 				{tab === "capture" && (
 					<CaptureTab
-						settings={settings}
+						config={BUILD_CONFIG}
 						capture={capture}
 						ocrHealth={ocrHealth}
-						onGoSettings={() => setTab("settings")}
 					/>
 				)}
 				{tab === "stats" && (
@@ -120,7 +112,11 @@ function AppShell({
 					/>
 				)}
 				{tab === "settings" && (
-					<SettingsTab settings={settings} drive={drive} themeApi={themeApi} />
+					<SettingsTab
+						config={BUILD_CONFIG}
+						drive={drive}
+						themeApi={themeApi}
+					/>
 				)}
 			</main>
 

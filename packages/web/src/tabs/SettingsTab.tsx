@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import type { ThemeApi } from "../hooks/useTheme";
+import { type AppConfig, MISSING_CLIENT_ID_MESSAGE } from "../lib/config";
 import { receiptsToCsv } from "../lib/csv";
 import { todayIso } from "../lib/format";
-import type { AppSettings } from "../lib/settings";
 import type { Theme } from "../lib/theme";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
@@ -43,11 +43,11 @@ const THEME_OPTIONS: { value: Theme; label: string }[] = [
 ];
 
 export function SettingsTab({
-	settings,
+	config,
 	drive,
 	themeApi,
 }: {
-	settings: AppSettings;
+	config: AppConfig;
 	drive: Drive;
 	themeApi: ThemeApi;
 }) {
@@ -177,6 +177,11 @@ export function SettingsTab({
 				<p className="px-1 text-center text-xs text-slate-400 dark:text-slate-500">
 					データ保存件数: {drive.totalCount} 件
 				</p>
+				{!config.googleClientId && (
+					<p className="text-xs text-red-600 dark:text-red-400">
+						{MISSING_CLIENT_ID_MESSAGE}
+					</p>
+				)}
 				{drive.error && (
 					<p className="text-xs text-red-600 dark:text-red-400">
 						{drive.error}
@@ -195,7 +200,7 @@ export function SettingsTab({
 						<button
 							type="button"
 							onClick={() => void drive.connect()}
-							disabled={!settings.googleClientId || drive.loading}
+							disabled={!config.googleClientId || drive.loading}
 							className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-bold text-white disabled:opacity-50"
 						>
 							{drive.loading ? "接続中…" : "接続する"}

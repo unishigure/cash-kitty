@@ -60,7 +60,7 @@ BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
 BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
 ```
 
-`packages/web` を単体で配信する構成では、`BUN_PUBLIC_OCR_API_URL` を未設定にしないでください。未設定だと `/api/...` を叩くため、OCR が失敗します。
+`BUN_PUBLIC_GOOGLE_CLIENT_ID` と `BUN_PUBLIC_OCR_API_URL` はビルド時の値だけを使い、アプリ内で入力する手段はありません。`BUN_PUBLIC_GOOGLE_CLIENT_ID` が未設定だとレシートを保存できず、`BUN_PUBLIC_OCR_API_URL` が未設定だと OCR が無効になります（手入力での保存はできます）。
 
 `public/_redirects` と `public/_headers` はビルド時に `dist/` へコピーされます。これにより Cloudflare Pages 上でも、SPA の直接アクセス時に `index.html` へフォールバックし、`manifest.webmanifest` は再検証付きで配信されます。
 

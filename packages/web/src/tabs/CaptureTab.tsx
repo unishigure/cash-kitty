@@ -3,18 +3,20 @@ import { CheckIcon, RefreshIcon } from "../components/icons";
 import type { OcrHealthApi } from "../hooks/useOcrHealth";
 import type { ReceiptCapture } from "../hooks/useReceiptCapture";
 import { CATEGORIES } from "../lib/categories";
-import type { AppSettings } from "../lib/settings";
+import {
+	type AppConfig,
+	MISSING_CLIENT_ID_MESSAGE,
+	MISSING_OCR_URL_MESSAGE,
+} from "../lib/config";
 
 export function CaptureTab({
-	settings,
+	config,
 	capture,
 	ocrHealth,
-	onGoSettings,
 }: {
-	settings: AppSettings;
+	config: AppConfig;
 	capture: ReceiptCapture;
 	ocrHealth: OcrHealthApi;
-	onGoSettings: () => void;
 }) {
 	const {
 		preview,
@@ -54,14 +56,17 @@ export function CaptureTab({
 		setError(null);
 	};
 
-	if (!settings.googleClientId) {
+	if (!config.googleClientId) {
 		return (
-			<NoticeCard
-				title="セットアップが必要です"
-				body="レシートを保存するには、設定タブで Google クライアント ID を登録してください。"
-				actionLabel="設定を開く"
-				onAction={onGoSettings}
-			/>
+			<div className="mt-8 space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-800">
+				<p className="text-base font-bold text-slate-800 dark:text-slate-100">
+					レシートを保存できません
+				</p>
+				<p className="text-sm text-slate-500 dark:text-slate-400">
+					{MISSING_CLIENT_ID_MESSAGE}。ビルド時の環境変数に Google OAuth
+					クライアント ID を設定してください。
+				</p>
+			</div>
 		);
 	}
 
@@ -84,6 +89,12 @@ export function CaptureTab({
 			 * OCR connection status (checking / offline + retry) lives in the
 			 * header; capture is blocked here while the API is unreachable.
 			 */}
+
+			{ocrHealth.status === "unconfigured" && (
+				<p className="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+					{MISSING_OCR_URL_MESSAGE}。OCR は使えませんが、手入力で保存できます。
+				</p>
+			)}
 
 			{/* Capture / preview area */}
 			{ocrOnline && (
@@ -259,33 +270,5 @@ function Field({
 function Spinner() {
 	return (
 		<span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-	);
-}
-
-function NoticeCard({
-	title,
-	body,
-	actionLabel,
-	onAction,
-}: {
-	title: string;
-	body: string;
-	actionLabel: string;
-	onAction: () => void;
-}) {
-	return (
-		<div className="mt-8 space-y-3 rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-800">
-			<p className="text-base font-bold text-slate-800 dark:text-slate-100">
-				{title}
-			</p>
-			<p className="text-sm text-slate-500 dark:text-slate-400">{body}</p>
-			<button
-				type="button"
-				onClick={onAction}
-				className="mt-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white"
-			>
-				{actionLabel}
-			</button>
-		</div>
 	);
 }

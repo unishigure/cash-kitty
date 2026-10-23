@@ -1,4 +1,4 @@
-/** Color-scheme preference, persisted to localStorage (separate from AppSettings). */
+/** Color-scheme preference, persisted to localStorage. */
 export type Theme = "light" | "dark" | "system";
 
 const STORAGE_KEY = "cash-kitty.theme";

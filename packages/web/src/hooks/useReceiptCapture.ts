@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { newId } from "../lib/id";
 import { analyzeReceipt } from "../lib/ocr";
-import type { AppSettings } from "../lib/settings";
 import type { Receipt } from "../lib/types";
 import type { useGoogleDrive } from "./useGoogleDrive";
 
@@ -32,7 +31,7 @@ const emptyForm = (): FormState => ({
  * tab away from "取り込み" and back does not unmount the state: an in-flight
  * OCR analysis keeps running and its result still lands in the form.
  */
-export function useReceiptCapture(settings: AppSettings, drive: Drive) {
+export function useReceiptCapture(apiBaseUrl: string, drive: Drive) {
 	const [imageFile, setImageFile] = useState<File | null>(null);
 	const [preview, setPreview] = useState<string | null>(null);
 	const [analyzing, setAnalyzing] = useState(false);
@@ -68,7 +67,7 @@ export function useReceiptCapture(settings: AppSettings, drive: Drive) {
 
 			setAnalyzing(true);
 			try {
-				const result = await analyzeReceipt(settings.apiBaseUrl, file);
+				const result = await analyzeReceipt(apiBaseUrl, file);
 				setForm((f) => ({
 					...f,
 					storeName: result.storeName || f.storeName,
@@ -85,7 +84,7 @@ export function useReceiptCapture(settings: AppSettings, drive: Drive) {
 				setAnalyzing(false);
 			}
 		},
-		[settings.apiBaseUrl],
+		[apiBaseUrl],
 	);
 
 	/** Validate + persist to Drive. Returns true on success. */

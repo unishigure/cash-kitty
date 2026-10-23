@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MISSING_CLIENT_ID_MESSAGE } from "../lib/config";
 import {
 	countReceipts,
 	createReceipt,
@@ -86,7 +87,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 			background: boolean,
 		): Promise<T> => {
 			const id = clientIdRef.current;
-			if (!id) throw new Error("Google クライアント ID が設定されていません");
+			if (!id) throw new Error(MISSING_CLIENT_ID_MESSAGE);
 			const reauth = (): Promise<T> => {
 				if (background && canSilentReconnect()) {
 					setStatus("connecting");
@@ -154,7 +155,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 	const connect = useCallback(async () => {
 		const id = clientIdRef.current;
 		if (!id) {
-			setError("Google クライアント ID が設定されていません");
+			setError(MISSING_CLIENT_ID_MESSAGE);
 			setStatus("error");
 			return;
 		}
