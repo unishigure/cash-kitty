@@ -257,13 +257,11 @@ export function CaptureTab({
 						disabled={!current || state?.kind === "saving"}
 						aria-label={batch ? "スキップ" : "リセット"}
 						title={batch ? "スキップ" : "リセット"}
-						className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-600 transition active:scale-[0.99] disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+						className={`inline-flex h-14 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-600 transition active:scale-[0.99] disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 ${
+							batch ? "px-5 text-sm font-medium" : "w-14"
+						}`}
 					>
-						{batch ? (
-							<span className="text-xs font-bold">スキップ</span>
-						) : (
-							<RefreshIcon className="h-5 w-5" />
-						)}
+						{batch ? "スキップ" : <RefreshIcon className="h-5 w-5" />}
 					</button>
 					<button
 						type="button"
