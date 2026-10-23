@@ -8,6 +8,11 @@ import { useReceiptCapture } from "./hooks/useReceiptCapture";
 import { useTheme } from "./hooks/useTheme";
 import { BUILD_CONFIG } from "./lib/config";
 import { currentMonthKey, shiftMonth } from "./lib/format";
+import {
+	INITIAL_FILTERS,
+	type ListFilters,
+	type StatsView,
+} from "./lib/statsFilters";
 import { CaptureTab } from "./tabs/CaptureTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 import { StatsTab } from "./tabs/StatsTab";
@@ -29,20 +34,24 @@ export function App() {
 	// still uses the status to gate image capture.
 	const ocrHealth = useOcrHealth(BUILD_CONFIG.apiBaseUrl);
 
-	// Stats month lives here so the header can host a "return to current month"
-	// button while StatsTab drives the month with arrows/swipe.
+	// Stats state lives here so it survives tab switches and the header can
+	// host a "return to current month" button while StatsTab drives the month.
+	const [statsView, setStatsView] = useState<StatsView>("list");
+	const [statsFilters, setStatsFilters] =
+		useState<ListFilters>(INITIAL_FILTERS);
 	const [statsMonth, setStatsMonth] = useState<string>(currentMonthKey());
 	const [statsDir, setStatsDir] = useState<1 | -1>(1);
 	const changeStatsMonth = (delta: 1 | -1) => {
 		setStatsDir(delta);
 		setStatsMonth((m) => shiftMonth(m, delta));
 	};
-	const goToCurrentMonth = () => {
-		const current = currentMonthKey();
+	const selectStatsMonth = (target: string) => {
 		// Slide in the direction we're traveling in time (keys are "YYYY-MM").
-		setStatsDir(statsMonth < current ? 1 : -1);
-		setStatsMonth(current);
+		setStatsDir(statsMonth < target ? 1 : -1);
+		setStatsMonth(target);
 	};
+	const showsStatsMonth =
+		statsView === "analysis" || statsFilters.period.kind === "month";
 	const isCurrentMonth = statsMonth === currentMonthKey();
 
 	return (
@@ -56,10 +65,10 @@ export function App() {
 							{TAB_TITLES[tab]}
 						</span>
 					</h1>
-					{tab === "stats" && !isCurrentMonth && (
+					{tab === "stats" && showsStatsMonth && !isCurrentMonth && (
 						<button
 							type="button"
-							onClick={goToCurrentMonth}
+							onClick={() => selectStatsMonth(currentMonthKey())}
 							className="shrink-0 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 active:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:active:bg-emerald-900"
 						>
 							今月に戻る
@@ -106,9 +115,14 @@ export function App() {
 				{tab === "stats" && (
 					<StatsTab
 						drive={drive}
+						view={statsView}
+						onChangeView={setStatsView}
 						month={statsMonth}
 						direction={statsDir}
 						onChangeMonth={changeStatsMonth}
+						onSelectMonth={selectStatsMonth}
+						filters={statsFilters}
+						onChangeFilters={setStatsFilters}
 					/>
 				)}
 				{tab === "settings" && (
