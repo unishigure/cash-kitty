@@ -210,13 +210,20 @@ export function StatsTab({
 				});
 				onChangeView("list");
 			}}
-			onShowDay={(date) => {
-				const period = { kind: "range", from: date, to: date } as const;
+			selectedDay={filters.day}
+			onSelectDay={(date) => {
 				if (desktop) {
-					onChangeFilters({ ...filters, period });
+					onChangeFilters({
+						...filters,
+						day: filters.day === date ? null : date,
+					});
 					return;
 				}
-				onChangeFilters({ ...INITIAL_FILTERS, period });
+				onChangeFilters({
+					...INITIAL_FILTERS,
+					period: { kind: "month" },
+					day: date,
+				});
 				onChangeView("list");
 			}}
 			syncState={syncState}

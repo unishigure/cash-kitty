@@ -138,7 +138,8 @@ export function AnalysisView({
 	onSelectMonth,
 	activeCategories = NO_CATEGORIES,
 	onSelectCategory,
-	onShowDay,
+	selectedDay,
+	onSelectDay,
 	syncState,
 }: {
 	/** Already without fixed costs when `excludeFixed` is on. */
@@ -156,7 +157,9 @@ export function AnalysisView({
 	/** Categories the list is narrowed to; the others are dimmed. */
 	activeCategories?: ReadonlySet<string>;
 	onSelectCategory: (category: string) => void;
-	onShowDay: (date: string) => void;
+	/** The day the list is narrowed to, highlighted in the heatmap. */
+	selectedDay: string | null;
+	onSelectDay: (date: string) => void;
 	syncState: SyncState;
 }) {
 	const selectedMonth = period.kind === "month" ? period.month : undefined;
@@ -291,7 +294,11 @@ export function AnalysisView({
 						title={`${Number(selectedMonth.slice(5))}月の日別`}
 						className="lg:order-1 lg:col-span-3"
 					>
-						<DailyHeatmap days={days} onShowDay={onShowDay} />
+						<DailyHeatmap
+							days={days}
+							selected={selectedDay}
+							onSelect={onSelectDay}
+						/>
 					</Card>
 				)}
 			</div>

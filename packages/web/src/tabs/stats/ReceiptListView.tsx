@@ -76,7 +76,8 @@ export function ReceiptListView({
 
 	const total = results.reduce((s, r) => s + r.totalAmount, 0);
 	const hiddenCount = hiddenFilterCount(filters);
-	const narrowed = hiddenCount > 0 || filters.text.trim() !== "";
+	const narrowed =
+		hiddenCount > 0 || filters.text.trim() !== "" || filters.day !== null;
 
 	const categoryOptions = useMemo(() => {
 		const extra = new Set(receipts.map((r) => r.category));
@@ -90,6 +91,20 @@ export function ReceiptListView({
 		else next.add(c);
 		set({ categories: next });
 	};
+
+	// The panel lists categories itself, so their chips show only while it is
+	// closed. The day has no control in the panel, so its chip always shows.
+	const chips = [
+		...(filters.day
+			? [{ label: dayLabel(filters.day), remove: () => set({ day: null }) }]
+			: []),
+		...(panelOpen
+			? []
+			: [...filters.categories].map((c) => ({
+					label: c,
+					remove: () => toggleCategory(c),
+				}))),
+	];
 
 	const changePeriod = (kind: PeriodChoice["kind"]) => {
 		if (kind === filters.period.kind) return;
@@ -386,17 +401,17 @@ export function ReceiptListView({
 					</div>
 				)}
 
-				{!panelOpen && filters.categories.size > 0 && (
+				{chips.length > 0 && (
 					<div className="flex flex-wrap gap-1.5">
-						{[...filters.categories].map((c) => (
+						{chips.map(({ label, remove }) => (
 							<button
-								key={c}
+								key={label}
 								type="button"
-								onClick={() => toggleCategory(c)}
-								aria-label={`${c} の絞り込みを解除`}
+								onClick={remove}
+								aria-label={`${label} の絞り込みを解除`}
 								className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 active:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:active:bg-emerald-900"
 							>
-								<span>{c}</span>
+								<span>{label}</span>
 								<span aria-hidden="true">✕</span>
 							</button>
 						))}
