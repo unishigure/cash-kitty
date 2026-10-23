@@ -4,6 +4,7 @@ import {
 	createReceipt,
 	deleteFile,
 	getFileBlob,
+	syncAllReceipts,
 	syncReceipts,
 	UnauthorizedError,
 	updateReceipt,
@@ -42,6 +43,7 @@ interface UseGoogleDrive {
 	disconnect: () => void;
 	/** (Re)fetch a single month's receipts from Drive. */
 	loadMonth: (month: string) => Promise<void>;
+	loadAllReceipts: () => Promise<Receipt[]>;
 	/** Save a receipt, optionally uploading its image (on first save). */
 	saveReceipt: (receipt: Receipt, image?: Blob) => Promise<void>;
 	removeReceipt: (receipt: Receipt) => Promise<void>;
@@ -133,6 +135,21 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		},
 		[withToken],
 	);
+
+	const loadAllReceipts = useCallback(async () => {
+		const all = await withToken(
+			(t) => syncAllReceipts(t, Object.values(cacheRef.current).flat()),
+			false,
+		);
+		const next: Record<string, Receipt[]> = {};
+		for (const r of all) {
+			const m = monthKey(r.date);
+			next[m] = [...(next[m] ?? []), r];
+		}
+		setReceiptsByMonth(next);
+		setTotalCount(all.length);
+		return all;
+	}, [withToken]);
 
 	const connect = useCallback(async () => {
 		const id = clientIdRef.current;
@@ -271,6 +288,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		connect,
 		disconnect,
 		loadMonth,
+		loadAllReceipts,
 		saveReceipt,
 		removeReceipt,
 		loadImageUrl,

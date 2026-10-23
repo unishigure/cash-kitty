@@ -1,10 +1,28 @@
 import { useEffect, useState } from "react";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import type { ThemeApi } from "../hooks/useTheme";
+import { receiptsToCsv } from "../lib/csv";
+import { todayIso } from "../lib/format";
 import type { AppSettings } from "../lib/settings";
 import type { Theme } from "../lib/theme";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
+
+type ExportState =
+	| { kind: "idle" }
+	| { kind: "exporting" }
+	| { kind: "done"; count: number }
+	| { kind: "error"; message: string };
+
+function downloadText(text: string, filename: string, type: string) {
+	const url = URL.createObjectURL(new Blob([text], { type }));
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = filename;
+	a.click();
+	// Revoking synchronously can cancel the download in Safari.
+	setTimeout(() => URL.revokeObjectURL(url));
+}
 
 type BeforeInstallPromptEvent = Event & {
 	prompt: () => Promise<void>;
@@ -38,6 +56,7 @@ export function SettingsTab({
 		useState<BeforeInstallPromptEvent | null>(null);
 	const [isInstalled, setIsInstalled] = useState<boolean>(false);
 	const [installMsg, setInstallMsg] = useState<string | null>(null);
+	const [exportState, setExportState] = useState<ExportState>({ kind: "idle" });
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -90,6 +109,24 @@ export function SettingsTab({
 			setInstallMsg("インストールをキャンセルしました。");
 		}
 		setInstallPrompt(null);
+	};
+
+	const onExport = async () => {
+		setExportState({ kind: "exporting" });
+		try {
+			const receipts = await drive.loadAllReceipts();
+			downloadText(
+				receiptsToCsv(receipts),
+				`cash-kitty-${todayIso()}.csv`,
+				"text/csv;charset=utf-8",
+			);
+			setExportState({ kind: "done", count: receipts.length });
+		} catch (e) {
+			setExportState({
+				kind: "error",
+				message: e instanceof Error ? e.message : String(e),
+			});
+		}
 	};
 
 	return (
@@ -165,6 +202,37 @@ export function SettingsTab({
 						</button>
 					)}
 				</div>
+			</section>
+
+			<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+				<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
+					データのエクスポート
+				</h2>
+				<p className="text-xs text-center text-slate-500 dark:text-slate-400">
+					すべてのレシートを CSV ファイルとしてダウンロードします。
+				</p>
+				<button
+					type="button"
+					onClick={() => void onExport()}
+					disabled={
+						drive.status !== "connected" || exportState.kind === "exporting"
+					}
+					className="w-full rounded-lg bg-emerald-600 py-2 text-sm font-bold text-white disabled:opacity-50"
+				>
+					{exportState.kind === "exporting"
+						? "エクスポート中…"
+						: "CSV でダウンロード"}
+				</button>
+				{exportState.kind === "error" && (
+					<p className="text-xs text-red-600 dark:text-red-400">
+						{exportState.message}
+					</p>
+				)}
+				{exportState.kind === "done" && (
+					<p className="text-center text-xs text-slate-500 dark:text-slate-400">
+						{exportState.count} 件をエクスポートしました。
+					</p>
+				)}
 			</section>
 
 			{/* PWA install */}

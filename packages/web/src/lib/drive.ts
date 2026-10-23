@@ -154,19 +154,11 @@ function byDateDesc(a: Receipt, b: Receipt): number {
 	return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
 }
 
-/**
- * Incrementally load one month's receipts, reusing `cached` entries to avoid
- * re-downloading content. Only the file list (cheap metadata) is always
- * fetched; content is downloaded only for files that are new or whose
- * `modifiedTime` changed since they were cached. Files no longer present on
- * Drive are dropped. Pass `cached: []` for a full load. Sorted by date desc.
- */
-export async function syncReceipts(
+async function syncByPrefix(
 	token: string,
-	month: string,
+	prefix: string,
 	cached: Receipt[],
 ): Promise<Receipt[]> {
-	const prefix = `${RECEIPT_PREFIX}${month}-`;
 	const files = await listReceiptFiles(token, prefix);
 	const byFileId = new Map(
 		cached.filter((r) => r.fileId).map((r) => [r.fileId, r]),
@@ -180,6 +172,21 @@ export async function syncReceipts(
 		}),
 	);
 	return receipts.filter((r): r is Receipt => r !== null).sort(byDateDesc);
+}
+
+export async function syncReceipts(
+	token: string,
+	month: string,
+	cached: Receipt[],
+): Promise<Receipt[]> {
+	return syncByPrefix(token, `${RECEIPT_PREFIX}${month}-`, cached);
+}
+
+export async function syncAllReceipts(
+	token: string,
+	cached: Receipt[],
+): Promise<Receipt[]> {
+	return syncByPrefix(token, RECEIPT_PREFIX, cached);
 }
 
 /** Cheap, metadata-only count of stored receipts (no content fetch). */
