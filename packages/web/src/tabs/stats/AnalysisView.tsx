@@ -190,7 +190,7 @@ export function AnalysisView({
 				key={selectedMonth ?? JSON.stringify(period)}
 				className={`space-y-4 lg:grid lg:grid-cols-6 lg:gap-4 lg:space-y-0 ${direction === 1 ? "slide-from-right" : "slide-from-left"}`}
 			>
-				<div className="relative space-y-3 rounded-2xl bg-emerald-600 p-5 text-white lg:col-span-2">
+				<div className="relative space-y-3 rounded-2xl bg-emerald-600 p-5 text-white lg:col-span-2 lg:self-start">
 					<div>
 						<p className="text-xs font-medium text-emerald-100">
 							{PERIOD_TOTAL_LABEL[period.kind]}

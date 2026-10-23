@@ -3,6 +3,7 @@ import "./index.css";
 import { RefreshIcon } from "./components/icons";
 import { TabBar, type TabId, TopTabs } from "./components/TabBar";
 import { useGoogleDrive } from "./hooks/useGoogleDrive";
+import { useIsDesktop } from "./hooks/useIsDesktop";
 import { useOcrHealth } from "./hooks/useOcrHealth";
 import { useReceiptCapture } from "./hooks/useReceiptCapture";
 import { useTheme } from "./hooks/useTheme";
@@ -33,6 +34,7 @@ export function App() {
 	// Lifted so the header can host the "connecting" indicator while CaptureTab
 	// still uses the status to gate image capture.
 	const ocrHealth = useOcrHealth(BUILD_CONFIG.apiBaseUrl);
+	const desktop = useIsDesktop();
 
 	// Stats state lives here so it survives tab switches and the header can
 	// host a "return to current month" button while StatsTab drives the month.
@@ -52,7 +54,8 @@ export function App() {
 		setStatsMonth(target);
 	};
 	const showsStatsMonth =
-		statsView === "analysis" || statsFilters.period.kind === "month";
+		(statsView === "analysis" && !desktop) ||
+		statsFilters.period.kind === "month";
 	const isCurrentMonth = statsMonth === currentMonthKey();
 
 	return (
@@ -133,6 +136,7 @@ export function App() {
 						onChangeFilters={setStatsFilters}
 						excludeFixed={excludeFixed}
 						onChangeExcludeFixed={setExcludeFixed}
+						desktop={desktop}
 					/>
 				)}
 				{tab === "settings" && (

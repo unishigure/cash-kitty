@@ -3,10 +3,12 @@ import { ArrowDownIcon, ArrowUpIcon } from "../components/icons";
 import { SegmentedControl } from "../components/SegmentedControl";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import { withoutCategories } from "../lib/analytics";
+import { filterReceipts } from "../lib/receiptQuery";
 import {
 	INITIAL_FILTERS,
 	type ListFilters,
 	type StatsView,
+	toQuery,
 } from "../lib/statsFilters";
 import { ReceiptDetail } from "./ReceiptDetail";
 import { AnalysisView } from "./stats/AnalysisView";
@@ -31,6 +33,7 @@ export function StatsTab({
 	onChangeFilters,
 	excludeFixed,
 	onChangeExcludeFixed,
+	desktop,
 }: {
 	drive: Drive;
 	view: StatsView;
@@ -43,6 +46,8 @@ export function StatsTab({
 	onChangeFilters: (filters: ListFilters) => void;
 	excludeFixed: boolean;
 	onChangeExcludeFixed: (exclude: boolean) => void;
+	/** From `lg` up both views show side by side and share the list's period. */
+	desktop: boolean;
 }) {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [canScroll, setCanScroll] = useState({ up: false, down: false });
@@ -58,11 +63,32 @@ export function StatsTab({
 		() => ({ kind: "month" as const, month }),
 		[month],
 	);
+	const query = useMemo(() => toQuery(filters, month), [filters, month]);
+	const results = useMemo(
+		() => filterReceipts(receipts, query),
+		[receipts, query],
+	);
+	const searchRef = useRef<HTMLInputElement>(null);
 	const refresh = () =>
 		void sync().catch(() => {
 			/* surfaced through syncState */
 		});
 	const showsMonth = view === "analysis" || filters.period.kind === "month";
+
+	useEffect(() => {
+		if (!desktop) return;
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+			const target = e.target as HTMLElement | null;
+			if (target?.closest("input, textarea, select, [contenteditable]")) {
+				return;
+			}
+			e.preventDefault();
+			searchRef.current?.focus();
+		};
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [desktop]);
 
 	useEffect(() => {
 		const updateScrollState = () => {
@@ -126,6 +152,76 @@ export function StatsTab({
 	const selected = selectedId
 		? (receipts.find((r) => r.id === selectedId) ?? null)
 		: null;
+	const index = selected ? results.indexOf(selected) : -1;
+	const prevId = index > 0 ? results[index - 1]?.id : undefined;
+	const nextId = index >= 0 ? results[index + 1]?.id : undefined;
+
+	const list = (
+		<ReceiptListView
+			receipts={receipts}
+			results={results}
+			filters={filters}
+			onChangeFilters={onChangeFilters}
+			month={month}
+			direction={direction}
+			onChangeMonth={onChangeMonth}
+			syncState={syncState}
+			onRefresh={refresh}
+			onOpen={setSelectedId}
+			selectedId={selectedId}
+			searchRef={searchRef}
+		/>
+	);
+
+	// Below lg, a tap leaves 分析 for a freshly filtered 明細. From lg up the
+	// list sits alongside, so a tap narrows it in place and keeps the period
+	// both columns share.
+	const analysis = (
+		<AnalysisView
+			receipts={analysisReceipts}
+			fixedCategories={fixedCategories}
+			excludeFixed={excluding}
+			onChangeExcludeFixed={onChangeExcludeFixed}
+			period={desktop ? query.period : monthPeriod}
+			month={month}
+			direction={direction}
+			onChangeMonth={onChangeMonth}
+			onSelectMonth={(target) => {
+				onSelectMonth(target);
+				if (desktop && filters.period.kind !== "month") {
+					onChangeFilters({ ...filters, period: { kind: "month" } });
+				}
+			}}
+			activeCategories={desktop ? filters.categories : undefined}
+			onSelectCategory={(category) => {
+				if (desktop) {
+					const only =
+						filters.categories.size === 1 && filters.categories.has(category);
+					onChangeFilters({
+						...filters,
+						categories: only ? new Set() : new Set([category]),
+					});
+					return;
+				}
+				onChangeFilters({
+					...INITIAL_FILTERS,
+					period: { kind: "month" },
+					categories: new Set([category]),
+				});
+				onChangeView("list");
+			}}
+			onShowDay={(date) => {
+				const period = { kind: "range", from: date, to: date } as const;
+				if (desktop) {
+					onChangeFilters({ ...filters, period });
+					return;
+				}
+				onChangeFilters({ ...INITIAL_FILTERS, period });
+				onChangeView("list");
+			}}
+			syncState={syncState}
+		/>
+	);
 
 	if (status !== "connected" && receipts.length === 0) {
 		return (
@@ -157,64 +253,41 @@ export function StatsTab({
 			onTouchStart={handleTouchStart}
 			onTouchEnd={handleTouchEnd}
 		>
-			<SegmentedControl
-				label="統計の表示"
-				options={VIEW_OPTIONS}
-				value={view}
-				onChange={onChangeView}
-			/>
-
-			{view === "list" ? (
-				<ReceiptListView
-					receipts={receipts}
-					filters={filters}
-					onChangeFilters={onChangeFilters}
-					month={month}
-					direction={direction}
-					onChangeMonth={onChangeMonth}
-					syncState={syncState}
-					onRefresh={refresh}
-					onOpen={setSelectedId}
-				/>
+			{desktop ? (
+				<div className="grid grid-cols-[minmax(0,1fr)_400px] items-start gap-5">
+					{analysis}
+					<div className="sticky top-19 h-[calc(100dvh-6rem)]">{list}</div>
+				</div>
 			) : (
-				<AnalysisView
-					receipts={analysisReceipts}
-					fixedCategories={fixedCategories}
-					excludeFixed={excluding}
-					onChangeExcludeFixed={onChangeExcludeFixed}
-					period={monthPeriod}
-					month={month}
-					direction={direction}
-					onChangeMonth={onChangeMonth}
-					onSelectMonth={onSelectMonth}
-					onSelectCategory={(category) => {
-						onChangeFilters({
-							...INITIAL_FILTERS,
-							period: { kind: "month" },
-							categories: new Set([category]),
-						});
-						onChangeView("list");
-					}}
-					onShowDay={(date) => {
-						onChangeFilters({
-							...INITIAL_FILTERS,
-							period: { kind: "range", from: date, to: date },
-						});
-						onChangeView("list");
-					}}
-					syncState={syncState}
-				/>
+				<>
+					<SegmentedControl
+						label="統計の表示"
+						options={VIEW_OPTIONS}
+						value={view}
+						onChange={onChangeView}
+					/>
+					{view === "list" ? list : analysis}
+				</>
 			)}
 
 			{selected && (
 				<ReceiptDetail
+					key={selected.id}
 					receipt={selected}
 					drive={drive}
 					onClose={() => setSelectedId(null)}
+					navigation={
+						desktop
+							? {
+									prev: prevId ? () => setSelectedId(prevId) : undefined,
+									next: nextId ? () => setSelectedId(nextId) : undefined,
+								}
+							: undefined
+					}
 				/>
 			)}
 
-			{!selected && (canScroll.up || canScroll.down) && (
+			{!desktop && !selected && (canScroll.up || canScroll.down) && (
 				<div className="pointer-events-none fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30">
 					<div className="mx-auto flex max-w-lg justify-end px-4">
 						<div className="flex flex-col gap-2">

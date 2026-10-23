@@ -54,7 +54,7 @@ export function DailyHeatmap({
 							onClick={() => setSelected(isPicked ? null : d.date)}
 							aria-label={`${m}月${day}日 ${formatYen(d.total)} ${d.count}件`}
 							aria-pressed={isPicked}
-							className={`aspect-square rounded-md text-xs font-medium tabular-nums ${
+							className={`aspect-square rounded-md text-xs font-medium tabular-nums lg:aspect-auto lg:h-9 ${
 								LEVELS[level(d.total, max)]
 							} ${isPicked ? "ring-2 ring-slate-900 ring-offset-1 ring-offset-white dark:ring-white dark:ring-offset-slate-800" : ""}`}
 						>

@@ -5,9 +5,11 @@ import { ImageIcon } from "./icons";
 
 export function ReceiptRow({
 	receipt,
+	selected = false,
 	onOpen,
 }: {
 	receipt: Receipt;
+	selected?: boolean;
 	onOpen: () => void;
 }) {
 	return (
@@ -15,7 +17,10 @@ export function ReceiptRow({
 			<button
 				type="button"
 				onClick={onOpen}
-				className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-slate-50 dark:active:bg-slate-700"
+				aria-current={selected || undefined}
+				className={`flex w-full items-center gap-3 px-4 py-3 text-left active:bg-slate-50 lg:hover:bg-slate-50 dark:active:bg-slate-700 lg:dark:hover:bg-slate-700/50 ${
+					selected ? "bg-emerald-50 dark:bg-emerald-950/60" : ""
+				}`}
 			>
 				<span
 					className="h-9 w-1.5 shrink-0 rounded-full"
