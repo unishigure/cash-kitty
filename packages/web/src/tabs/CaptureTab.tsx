@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
 import { CheckIcon, RefreshIcon } from "../components/icons";
+import { ReceiptForm } from "../components/ReceiptForm";
 import type { OcrHealthApi } from "../hooks/useOcrHealth";
 import type { ReceiptCapture } from "../hooks/useReceiptCapture";
-import { CATEGORIES } from "../lib/categories";
 import {
 	type AppConfig,
 	MISSING_CLIENT_ID_MESSAGE,
 	MISSING_OCR_URL_MESSAGE,
 } from "../lib/config";
+import { parseReceiptForm } from "../lib/receiptForm";
 
 export function CaptureTab({
 	config,
@@ -150,71 +151,7 @@ export function CaptureTab({
 				</p>
 			)}
 
-			{/* Edit form */}
-			<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
-				<Field label="店名">
-					<input
-						type="text"
-						value={form.storeName}
-						onChange={(e) => setField("storeName", e.target.value)}
-						placeholder="例: スーパーマーケット"
-						className="input placeholder:text-slate-300"
-					/>
-				</Field>
-
-				<Field label="金額 (円)" required>
-					<input
-						type="number"
-						inputMode="numeric"
-						value={form.totalAmount}
-						onChange={(e) => setField("totalAmount", e.target.value)}
-						placeholder="0"
-						className="input"
-					/>
-				</Field>
-
-				<Field label="日付" required>
-					<input
-						type="date"
-						value={form.date}
-						onChange={(e) => setField("date", e.target.value)}
-						className="input min-w-0 appearance-none"
-					/>
-				</Field>
-
-				<div className="block">
-					<span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-						カテゴリ
-						<span className="ml-0.5 text-red-500">*</span>
-					</span>
-					<div className="flex flex-wrap gap-2">
-						{CATEGORIES.map((c) => (
-							<button
-								key={c}
-								type="button"
-								onClick={() => setField("category", c)}
-								className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-									form.category === c
-										? "bg-emerald-600 text-white"
-										: "bg-slate-100 text-slate-600 active:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:active:bg-slate-600"
-								}`}
-							>
-								{c}
-							</button>
-						))}
-					</div>
-				</div>
-
-				<Field label="メモ">
-					<input
-						type="text"
-						value={form.memo}
-						onChange={(e) => setField("memo", e.target.value)}
-						placeholder="任意"
-						className="input placeholder:text-slate-300"
-					/>
-				</Field>
-			</div>
+			<ReceiptForm form={form} onChange={setField} />
 
 			<div className="flex gap-3">
 				<button
@@ -230,40 +167,13 @@ export function CaptureTab({
 				<button
 					type="button"
 					onClick={onSave}
-					disabled={
-						saving ||
-						analyzing ||
-						!form.totalAmount.trim() ||
-						!form.date ||
-						!form.category
-					}
+					disabled={saving || analyzing || !parseReceiptForm(form).ok}
 					className="flex-1 rounded-xl bg-emerald-600 py-3.5 text-base font-bold text-white shadow-sm transition active:scale-[0.99] disabled:opacity-50"
 				>
 					{saving ? "保存中…" : "保存する"}
 				</button>
 			</div>
 		</div>
-	);
-}
-
-function Field({
-	label,
-	required,
-	children,
-}: {
-	label: string;
-	required?: boolean;
-	children: React.ReactNode;
-}) {
-	return (
-		// biome-ignore lint/a11y/noLabelWithoutControl: the form control is supplied via `children`.
-		<label className="block">
-			<span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-				{label}
-				{required && <span className="ml-0.5 text-red-500">*</span>}
-			</span>
-			{children}
-		</label>
 	);
 }
 

@@ -1,33 +1,20 @@
 import { useCallback, useState } from "react";
 import { newId } from "../lib/id";
 import { analyzeReceipt } from "../lib/ocr";
+import {
+	EMPTY_RECEIPT_FORM,
+	parseReceiptForm,
+	type ReceiptFormState,
+} from "../lib/receiptForm";
 import type { Receipt } from "../lib/types";
 import type { useGoogleDrive } from "./useGoogleDrive";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
 
-export interface FormState {
-	storeName: string;
-	totalAmount: string;
-	date: string;
-	category: string;
-	memo: string;
-	fullText: string;
-}
-
-const emptyForm = (): FormState => ({
-	storeName: "",
-	totalAmount: "",
-	date: "",
-	category: "",
-	memo: "",
-	fullText: "",
-});
-
 /**
  * Receipt capture + OCR state.
  *
- * Lives in `AppShell` (not in `CaptureTab`) so that switching the bottom-nav
+ * Lives in `App` (not in `CaptureTab`) so that switching the bottom-nav
  * tab away from "取り込み" and back does not unmount the state: an in-flight
  * OCR analysis keeps running and its result still lands in the form.
  */
@@ -38,10 +25,11 @@ export function useReceiptCapture(apiBaseUrl: string, drive: Drive) {
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [done, setDone] = useState(false);
-	const [form, setForm] = useState<FormState>(emptyForm);
+	const [form, setForm] = useState<ReceiptFormState>(EMPTY_RECEIPT_FORM);
+	const [fullText, setFullText] = useState("");
 
 	const setField = useCallback(
-		<K extends keyof FormState>(key: K, value: FormState[K]) =>
+		<K extends keyof ReceiptFormState>(key: K, value: ReceiptFormState[K]) =>
 			setForm((f) => ({ ...f, [key]: value })),
 		[],
 	);
@@ -52,7 +40,8 @@ export function useReceiptCapture(apiBaseUrl: string, drive: Drive) {
 			if (prev) URL.revokeObjectURL(prev);
 			return null;
 		});
-		setForm(emptyForm());
+		setForm(EMPTY_RECEIPT_FORM);
+		setFullText("");
 	}, []);
 
 	const analyze = useCallback(
@@ -76,8 +65,8 @@ export function useReceiptCapture(apiBaseUrl: string, drive: Drive) {
 							? String(result.totalAmount)
 							: f.totalAmount,
 					date: result.date || f.date,
-					fullText: result.fullText,
 				}));
+				setFullText(result.fullText);
 			} catch (err) {
 				setError(err instanceof Error ? err.message : String(err));
 			} finally {
@@ -90,32 +79,16 @@ export function useReceiptCapture(apiBaseUrl: string, drive: Drive) {
 	/** Validate + persist to Drive. Returns true on success. */
 	const save = useCallback(async (): Promise<boolean> => {
 		setError(null);
-		const amount = Number(form.totalAmount);
-		if (!form.totalAmount.trim()) {
-			setError("金額を入力してください。");
-			return false;
-		}
-		if (!Number.isFinite(amount) || amount < 0) {
-			setError("金額が正しくありません。");
-			return false;
-		}
-		if (!form.date) {
-			setError("日付を入力してください。");
-			return false;
-		}
-		if (!form.category) {
-			setError("カテゴリを選択してください。");
+		const parsed = parseReceiptForm(form);
+		if (!parsed.ok) {
+			setError(parsed.error);
 			return false;
 		}
 		const now = new Date().toISOString();
 		const receipt: Receipt = {
 			id: newId(),
-			storeName: form.storeName.trim(),
-			totalAmount: Math.round(amount),
-			date: form.date,
-			category: form.category,
-			memo: form.memo.trim() || undefined,
-			fullText: form.fullText || undefined,
+			...parsed.value,
+			fullText: fullText || undefined,
 			createdAt: now,
 			updatedAt: now,
 		};
@@ -132,7 +105,7 @@ export function useReceiptCapture(apiBaseUrl: string, drive: Drive) {
 		} finally {
 			setSaving(false);
 		}
-	}, [form, drive, imageFile, reset]);
+	}, [form, fullText, drive, imageFile, reset]);
 
 	return {
 		imageFile,

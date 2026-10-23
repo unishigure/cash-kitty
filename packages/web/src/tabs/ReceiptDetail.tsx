@@ -1,27 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { TrashIcon } from "../components/icons";
+import { ReceiptForm } from "../components/ReceiptForm";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
-import { CATEGORIES, categoryColor } from "../lib/categories";
+import { categoryColor } from "../lib/categories";
 import { formatYen } from "../lib/format";
+import {
+	parseReceiptForm,
+	type ReceiptFormState,
+	receiptToForm,
+} from "../lib/receiptForm";
 import type { Receipt } from "../lib/types";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
-
-interface FormState {
-	storeName: string;
-	totalAmount: string;
-	date: string;
-	category: string;
-	memo: string;
-}
-
-const toForm = (r: Receipt): FormState => ({
-	storeName: r.storeName,
-	totalAmount: String(r.totalAmount),
-	date: r.date,
-	category: r.category,
-	memo: r.memo ?? "",
-});
 
 /** Full-screen detail view for a single receipt: shows the image, allows edit & delete. */
 export function ReceiptDetail({
@@ -38,7 +28,9 @@ export function ReceiptDetail({
 	const [imageError, setImageError] = useState<string | null>(null);
 
 	const [editing, setEditing] = useState(false);
-	const [form, setForm] = useState<FormState>(() => toForm(receipt));
+	const [form, setForm] = useState<ReceiptFormState>(() =>
+		receiptToForm(receipt),
+	);
 	const [saving, setSaving] = useState(false);
 	const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -46,8 +38,10 @@ export function ReceiptDetail({
 	const [deleting, setDeleting] = useState(false);
 	const [deleteError, setDeleteError] = useState<string | null>(null);
 
-	const setField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
-		setForm((f) => ({ ...f, [key]: value }));
+	const setField = <K extends keyof ReceiptFormState>(
+		key: K,
+		value: ReceiptFormState[K],
+	) => setForm((f) => ({ ...f, [key]: value }));
 
 	// Play a slide-out before unmounting; `onClose` fires when it finishes.
 	const [closing, setClosing] = useState(false);
@@ -121,7 +115,7 @@ export function ReceiptDetail({
 	}, [receipt.imageFileId]);
 
 	const startEdit = () => {
-		setForm(toForm(receipt));
+		setForm(receiptToForm(receipt));
 		setSaveError(null);
 		setEditing(true);
 	};
@@ -133,26 +127,14 @@ export function ReceiptDetail({
 
 	const onSave = async () => {
 		setSaveError(null);
-		const amount = Number(form.totalAmount);
-		if (!form.totalAmount.trim()) {
-			setSaveError("金額を入力してください。");
-			return;
-		}
-		if (!Number.isFinite(amount) || amount < 0) {
-			setSaveError("金額が正しくありません。");
-			return;
-		}
-		if (!form.category) {
-			setSaveError("カテゴリを選択してください。");
+		const parsed = parseReceiptForm(form);
+		if (!parsed.ok) {
+			setSaveError(parsed.error);
 			return;
 		}
 		const updated: Receipt = {
 			...receipt,
-			storeName: form.storeName.trim(),
-			totalAmount: Math.round(amount),
-			date: form.date,
-			category: form.category,
-			memo: form.memo.trim() || undefined,
+			...parsed.value,
 			updatedAt: new Date().toISOString(),
 		};
 		setSaving(true);
@@ -232,67 +214,7 @@ export function ReceiptDetail({
 					</div>
 
 					{editing ? (
-						/* Edit form */
-						<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
-							<Field label="店名">
-								<input
-									type="text"
-									value={form.storeName}
-									onChange={(e) => setField("storeName", e.target.value)}
-									placeholder="例: スーパーマーケット"
-									className="input placeholder:text-slate-300"
-								/>
-							</Field>
-
-							<Field label="金額 (円)" required>
-								<input
-									type="number"
-									inputMode="numeric"
-									value={form.totalAmount}
-									onChange={(e) => setField("totalAmount", e.target.value)}
-									placeholder="0"
-									className="input"
-								/>
-							</Field>
-
-							<Field label="日付">
-								<input
-									type="date"
-									value={form.date}
-									onChange={(e) => setField("date", e.target.value)}
-									className="input min-w-0 appearance-none"
-								/>
-							</Field>
-
-							<Field label="カテゴリ" required>
-								<div className="flex flex-wrap gap-2">
-									{CATEGORIES.map((c) => (
-										<button
-											key={c}
-											type="button"
-											onClick={() => setField("category", c)}
-											className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-												form.category === c
-													? "bg-emerald-600 text-white"
-													: "bg-slate-100 text-slate-600 active:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:active:bg-slate-600"
-											}`}
-										>
-											{c}
-										</button>
-									))}
-								</div>
-							</Field>
-
-							<Field label="メモ">
-								<input
-									type="text"
-									value={form.memo}
-									onChange={(e) => setField("memo", e.target.value)}
-									placeholder="任意"
-									className="input placeholder:text-slate-300"
-								/>
-							</Field>
-
+						<ReceiptForm form={form} onChange={setField}>
 							{saveError && (
 								<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
 									{saveError}
@@ -303,9 +225,7 @@ export function ReceiptDetail({
 								<button
 									type="button"
 									onClick={() => void onSave()}
-									disabled={
-										saving || !form.totalAmount.trim() || !form.category
-									}
+									disabled={saving || !parseReceiptForm(form).ok}
 									className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white disabled:opacity-50"
 								>
 									{saving ? "保存中…" : "変更を保存"}
@@ -319,7 +239,7 @@ export function ReceiptDetail({
 									キャンセル
 								</button>
 							</div>
-						</div>
+						</ReceiptForm>
 					) : (
 						/* Read-only fields */
 						<div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
@@ -394,26 +314,6 @@ export function ReceiptDetail({
 					)}
 				</div>
 			</div>
-		</div>
-	);
-}
-
-function Field({
-	label,
-	required,
-	children,
-}: {
-	label: string;
-	required?: boolean;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className="block">
-			<span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-				{label}
-				{required && <span className="ml-0.5 text-red-500">*</span>}
-			</span>
-			{children}
 		</div>
 	);
 }
