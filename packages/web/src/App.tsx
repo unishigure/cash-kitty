@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./index.css";
 import { RefreshIcon } from "./components/icons";
-import { TabBar, type TabId } from "./components/TabBar";
+import { TabBar, type TabId, TopTabs } from "./components/TabBar";
 import { useGoogleDrive } from "./hooks/useGoogleDrive";
 import { useOcrHealth } from "./hooks/useOcrHealth";
 import { useReceiptCapture } from "./hooks/useReceiptCapture";
@@ -58,14 +58,15 @@ export function App() {
 	return (
 		<div className="flex min-h-dvh w-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
 			<header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
-				<div className="flex items-center justify-between gap-2 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+				<div className="flex items-center justify-between gap-2 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] lg:mx-auto lg:h-14 lg:max-w-340 lg:gap-8 lg:px-6 lg:py-0">
 					<h1 className="text-lg font-bold tracking-tight">
 						<span className="text-emerald-600 dark:text-emerald-400">Cash</span>{" "}
 						Kitty
-						<span className="ml-2 text-sm font-normal text-slate-400 dark:text-slate-500">
+						<span className="ml-2 text-sm font-normal text-slate-400 lg:hidden dark:text-slate-500">
 							{TAB_TITLES[tab]}
 						</span>
 					</h1>
+					<TopTabs active={tab} onChange={setTab} />
 					{tab === "stats" && showsStatsMonth && !isCurrentMonth && (
 						<button
 							type="button"
@@ -105,7 +106,13 @@ export function App() {
 				</div>
 			</header>
 
-			<main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-4 pb-24 pt-4">
+			<main
+				className={`mx-auto flex w-full max-w-lg flex-1 flex-col px-4 pb-24 pt-4 lg:pb-8 ${
+					tab === "stats"
+						? "lg:max-w-340 lg:px-6 lg:pt-5"
+						: "lg:max-w-2xl lg:pt-8"
+				}`}
+			>
 				{tab === "capture" && (
 					<CaptureTab
 						config={BUILD_CONFIG}
