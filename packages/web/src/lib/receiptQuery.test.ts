@@ -32,6 +32,7 @@ const base: ReceiptQuery = {
 	text: "",
 	period: { kind: "all" },
 	categories: new Set(),
+	day: null,
 	sort: "date-asc",
 };
 const ids = (q: Partial<ReceiptQuery>) =>
@@ -53,6 +54,15 @@ describe("filterReceipts", () => {
 		expect(
 			ids({ period: { kind: "range", from: "2026-06-30", to: "" } }),
 		).toEqual(["d", "e"]);
+	});
+
+	test("day narrows the period to that date and combines with other filters", () => {
+		const june = { kind: "month", month: "2026-06" } as const;
+		expect(ids({ period: june, day: "2026-06-15" })).toEqual(["c"]);
+		expect(ids({ period: june, day: "2026-06-02" })).toEqual([]);
+		expect(
+			ids({ period: june, day: "2026-06-01", categories: new Set(["食費"]) }),
+		).toEqual([]);
 	});
 
 	test("text matches store name, memo and full text across width and case", () => {

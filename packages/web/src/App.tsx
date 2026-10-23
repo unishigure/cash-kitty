@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import "./index.css";
 import { RefreshIcon } from "./components/icons";
 import { TabBar, type TabId, TopTabs } from "./components/TabBar";
@@ -8,11 +8,12 @@ import { useOcrHealth } from "./hooks/useOcrHealth";
 import { useReceiptCapture } from "./hooks/useReceiptCapture";
 import { useTheme } from "./hooks/useTheme";
 import { BUILD_CONFIG } from "./lib/config";
-import { currentMonthKey, shiftMonth } from "./lib/format";
+import { currentMonthKey } from "./lib/format";
 import {
-	INITIAL_FILTERS,
+	initialStats,
 	type ListFilters,
 	type StatsView,
+	statsReducer,
 } from "./lib/statsFilters";
 import { CaptureTab } from "./tabs/CaptureTab";
 import { SettingsTab } from "./tabs/SettingsTab";
@@ -39,20 +40,23 @@ export function App() {
 	// Stats state lives here so it survives tab switches and the header can
 	// host a "return to current month" button while StatsTab drives the month.
 	const [statsView, setStatsView] = useState<StatsView>("list");
-	const [statsFilters, setStatsFilters] =
-		useState<ListFilters>(INITIAL_FILTERS);
-	const [statsMonth, setStatsMonth] = useState<string>(currentMonthKey());
-	const [statsDir, setStatsDir] = useState<1 | -1>(1);
+	const [stats, dispatchStats] = useReducer(
+		statsReducer,
+		currentMonthKey(),
+		initialStats,
+	);
+	const {
+		month: statsMonth,
+		direction: statsDir,
+		filters: statsFilters,
+	} = stats;
 	const [excludeFixed, setExcludeFixed] = useState(false);
-	const changeStatsMonth = (delta: 1 | -1) => {
-		setStatsDir(delta);
-		setStatsMonth((m) => shiftMonth(m, delta));
-	};
-	const selectStatsMonth = (target: string) => {
-		// Slide in the direction we're traveling in time (keys are "YYYY-MM").
-		setStatsDir(statsMonth < target ? 1 : -1);
-		setStatsMonth(target);
-	};
+	const changeStatsMonth = (delta: 1 | -1) =>
+		dispatchStats({ type: "shiftMonth", delta });
+	const selectStatsMonth = (month: string) =>
+		dispatchStats({ type: "selectMonth", month });
+	const setStatsFilters = (filters: ListFilters) =>
+		dispatchStats({ type: "setFilters", filters });
 	const showsStatsMonth =
 		(statsView === "analysis" && !desktop) ||
 		statsFilters.period.kind === "month";

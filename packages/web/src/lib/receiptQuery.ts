@@ -14,6 +14,8 @@ export interface ReceiptQuery {
 	period: Period;
 	/** Empty means every category. */
 	categories: ReadonlySet<string>;
+	/** One ISO date (YYYY-MM-DD) inside the period, or null for every day. */
+	day: string | null;
 	minAmount?: number;
 	maxAmount?: number;
 	sort: SortKey;
@@ -71,6 +73,7 @@ export function filterReceipts(
 	return receipts
 		.filter((r) => {
 			if (!inPeriod(r, query.period)) return false;
+			if (query.day && r.date !== query.day) return false;
 			if (query.categories.size && !query.categories.has(r.category)) {
 				return false;
 			}
