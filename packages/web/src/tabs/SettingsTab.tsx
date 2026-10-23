@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
 import type { ThemeApi } from "../hooks/useTheme";
+import { CATEGORIES, categoryColor } from "../lib/categories";
 import { type AppConfig, MISSING_CLIENT_ID_MESSAGE } from "../lib/config";
 import { receiptsToCsv } from "../lib/csv";
 import { todayIso } from "../lib/format";
+import { parsePreferences } from "../lib/preferences";
 import type { Theme } from "../lib/theme";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
@@ -41,6 +43,68 @@ const THEME_OPTIONS: { value: Theme; label: string }[] = [
 	{ value: "dark", label: "ダーク" },
 	{ value: "system", label: "システム" },
 ];
+
+function FixedCostsSection({ drive }: { drive: Drive }) {
+	const [error, setError] = useState<string | null>(null);
+	const fixed = drive.preferences.fixedCategories;
+	const connected = drive.status === "connected";
+
+	const toggle = (category: string) => {
+		const next = fixed.includes(category)
+			? fixed.filter((c) => c !== category)
+			: [...fixed, category];
+		setError(null);
+		drive
+			.updatePreferences(parsePreferences({ fixedCategories: next }))
+			.catch((e: unknown) =>
+				setError(e instanceof Error ? e.message : String(e)),
+			);
+	};
+
+	return (
+		<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+			<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
+				固定費
+			</h2>
+			<p className="text-center text-xs text-slate-500 dark:text-slate-400">
+				選んだカテゴリは、分析の「固定費を除く」で集計から外せます。
+			</p>
+			<div className="flex flex-wrap gap-2">
+				{CATEGORIES.map((c) => {
+					const on = fixed.includes(c);
+					return (
+						<button
+							key={c}
+							type="button"
+							aria-pressed={on}
+							disabled={!connected}
+							onClick={() => toggle(c)}
+							className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition disabled:opacity-50 ${
+								on
+									? "bg-emerald-600 text-white"
+									: "bg-slate-100 text-slate-600 active:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:active:bg-slate-600"
+							}`}
+						>
+							<span
+								className="h-2 w-2 rounded-full ring-1 ring-white/70"
+								style={{ backgroundColor: categoryColor(c) }}
+							/>
+							{c}
+						</button>
+					);
+				})}
+			</div>
+			{!connected && (
+				<p className="text-center text-xs text-slate-400 dark:text-slate-500">
+					Google Drive に接続すると変更できます。
+				</p>
+			)}
+			{error && (
+				<p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+			)}
+		</section>
+	);
+}
 
 export function SettingsTab({
 	config,
@@ -208,6 +272,8 @@ export function SettingsTab({
 					)}
 				</div>
 			</section>
+
+			<FixedCostsSection drive={drive} />
 
 			<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
 				<h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
