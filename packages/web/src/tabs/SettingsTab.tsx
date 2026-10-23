@@ -50,7 +50,7 @@ const PRIMARY_BUTTON =
 const HELP_PLACEMENT = {
 	center: "lg:min-w-0 lg:flex-1",
 	end: "lg:min-w-0 lg:flex-1 lg:text-right",
-	below: "lg:order-1 lg:basis-full lg:text-left",
+	below: "lg:order-1 lg:basis-full",
 } as const;
 
 /**
@@ -147,7 +147,7 @@ function FixedCostsSection({ drive }: { drive: Drive }) {
 			help="選んだカテゴリは、分析の「固定費を除く」で集計から外せます。"
 			helpPlacement="end"
 		>
-			<div className="flex flex-wrap gap-2 lg:justify-center">
+			<div className="flex flex-wrap justify-center gap-2">
 				{CATEGORIES.map((c) => {
 					const on = fixed.includes(c);
 					return (
