@@ -71,6 +71,11 @@ export function TrendChart({
 	const barW = Math.min(24, slot * 0.62);
 	const y = (v: number) => PAD.top + plotH - (v / max) * plotH;
 	const selectedMonth = months.find((m) => m.month === selected);
+	const legend = selectedMonth
+		? keys
+				.map((key) => ({ key, value: amountFor(selectedMonth, key) }))
+				.filter((s) => s.value > 0)
+		: [];
 
 	return (
 		<div>
@@ -178,9 +183,9 @@ export function TrendChart({
 					);
 				})}
 			</svg>
-			{keys.length > 0 && selectedMonth && (
+			{legend.length > 0 && (
 				<ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-					{keys.map((key) => (
+					{legend.map(({ key, value }) => (
 						<li key={key} className="flex items-center gap-1.5">
 							<span
 								className="h-2.5 w-2.5 shrink-0 rounded-sm"
@@ -190,7 +195,7 @@ export function TrendChart({
 								{key}
 							</span>
 							<span className="ml-auto tabular-nums text-slate-500 dark:text-slate-400">
-								{formatYen(amountFor(selectedMonth, key))}
+								{formatYen(value)}
 							</span>
 						</li>
 					))}
