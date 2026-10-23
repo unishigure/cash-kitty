@@ -11,6 +11,7 @@ import {
 	hiddenFilterCount,
 	INITIAL_FILTERS,
 	type ListFilters,
+	PERIOD_TOTAL_LABEL,
 	type PeriodChoice,
 	toQuery,
 } from "../../lib/statsFilters";
@@ -21,12 +22,6 @@ const PERIOD_OPTIONS = [
 	{ value: "all", label: "全期間" },
 	{ value: "range", label: "期間指定" },
 ] as const;
-
-const SUMMARY_LABEL: Record<PeriodChoice["kind"], string> = {
-	month: "この月の合計",
-	all: "全期間の合計",
-	range: "期間の合計",
-};
 
 function lastDayOf(month: string): string {
 	const [y = 0, m = 1] = month.split("-").map(Number);
@@ -109,7 +104,7 @@ export function ReceiptListView({
 		<div className="space-y-4">
 			<div className="relative rounded-2xl bg-emerald-600 p-5 text-white">
 				<p className="text-xs font-medium text-emerald-100">
-					{SUMMARY_LABEL[filters.period.kind]}
+					{PERIOD_TOTAL_LABEL[filters.period.kind]}
 					{narrowed && "（絞り込み中）"}
 				</p>
 				<p className="mt-1 text-3xl font-bold">{formatYen(total)}</p>

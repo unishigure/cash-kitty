@@ -33,7 +33,8 @@ export function TrendChart({
 	onSelect,
 }: {
 	months: MonthTotal[];
-	selected: string;
+	/** Highlighted month; with none, every column is drawn at full strength. */
+	selected?: string;
 	onSelect: (month: string) => void;
 }) {
 	const series = useMemo(() => {
@@ -119,7 +120,7 @@ export function TrendChart({
 								if (e.key === "Enter" || e.key === " ") onSelect(m.month);
 							}}
 							className="cursor-pointer outline-none"
-							opacity={isSelected ? 1 : 0.45}
+							opacity={isSelected || selected === undefined ? 1 : 0.45}
 						>
 							<rect
 								x={PAD.left + slot * i}

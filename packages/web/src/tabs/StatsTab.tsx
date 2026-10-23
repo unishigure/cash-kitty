@@ -54,6 +54,10 @@ export function StatsTab({
 		() => withoutCategories(receipts, excluding ? fixedCategories : []),
 		[receipts, excluding, fixedCategories],
 	);
+	const monthPeriod = useMemo(
+		() => ({ kind: "month" as const, month }),
+		[month],
+	);
 	const refresh = () =>
 		void sync().catch(() => {
 			/* surfaced through syncState */
@@ -178,6 +182,7 @@ export function StatsTab({
 					fixedCategories={fixedCategories}
 					excludeFixed={excluding}
 					onChangeExcludeFixed={onChangeExcludeFixed}
+					period={monthPeriod}
 					month={month}
 					direction={direction}
 					onChangeMonth={onChangeMonth}

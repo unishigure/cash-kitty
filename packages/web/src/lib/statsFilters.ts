@@ -16,6 +16,12 @@ export type PeriodChoice =
 	| { kind: "month" }
 	| Exclude<Period, { kind: "month" }>;
 
+export const PERIOD_TOTAL_LABEL: Record<Period["kind"], string> = {
+	month: "この月の合計",
+	all: "全期間の合計",
+	range: "期間の合計",
+};
+
 export interface ListFilters {
 	text: string;
 	period: PeriodChoice;
