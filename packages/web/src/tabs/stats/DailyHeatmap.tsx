@@ -1,5 +1,5 @@
 import type { DayTotal } from "../../lib/analytics";
-import { formatYen } from "../../lib/format";
+import { formatYen, todayIso } from "../../lib/format";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -33,6 +33,7 @@ export function DailyHeatmap({
 	const [y = 0, m = 1] = first.date.split("-").map(Number);
 	const lead = new Date(y, m - 1, 1).getDay();
 	const max = Math.max(...days.map((d) => d.total));
+	const today = todayIso();
 
 	return (
 		<div className="space-y-2">
@@ -45,7 +46,8 @@ export function DailyHeatmap({
 					<span key={`blank-${i}`} />
 				))}
 				{days.map((d) => {
-					const label = `${m}月${Number(d.date.slice(8))}日 ${formatYen(d.total)} ${d.count}件`;
+					const isToday = d.date === today;
+					const label = `${m}月${Number(d.date.slice(8))}日 ${formatYen(d.total)} ${d.count}件${isToday ? " 今日" : ""}`;
 					const isSelected = d.date === selected;
 					return (
 						<button
@@ -55,12 +57,19 @@ export function DailyHeatmap({
 							disabled={d.count === 0 && !isSelected}
 							aria-label={label}
 							aria-pressed={isSelected}
+							aria-current={isToday ? "date" : undefined}
 							title={label}
 							className={`aspect-square rounded-md text-xs font-medium tabular-nums lg:aspect-auto lg:h-9 lg:enabled:hover:brightness-95 ${
 								LEVELS[level(d.total, max)]
 							} ${isSelected ? "ring-2 ring-slate-900 ring-offset-1 ring-offset-white dark:ring-white dark:ring-offset-slate-800" : ""}`}
 						>
-							{Number(d.date.slice(8))}
+							{isToday ? (
+								<span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-900 px-1 font-bold text-white dark:bg-white dark:text-slate-900">
+									{Number(d.date.slice(8))}
+								</span>
+							) : (
+								Number(d.date.slice(8))
+							)}
 						</button>
 					);
 				})}
