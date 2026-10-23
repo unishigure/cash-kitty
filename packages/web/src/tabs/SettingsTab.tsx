@@ -47,16 +47,24 @@ const THEME_OPTIONS: { value: Theme; label: string }[] = [
 const PRIMARY_BUTTON =
 	"w-full rounded-lg bg-emerald-600 py-2 text-sm font-bold text-white disabled:opacity-50 lg:w-auto lg:px-4";
 
+const HELP_PLACEMENT = {
+	center: "lg:min-w-0 lg:flex-1",
+	end: "lg:min-w-0 lg:flex-1 lg:text-right",
+	below: "lg:order-1 lg:basis-full lg:text-left",
+} as const;
+
 /**
  * A settings card. On mobile everything stacks in DOM order. From lg up the
- * title, status, help, meta and action share one row (help takes the slack and
- * wraps), and every other child wraps onto full-width rows below it.
+ * title, status, help, meta and action share one header row (help fills the
+ * slack between title and action), then help when `helpPlacement` is "below",
+ * then every other child on full-width rows.
  * `children` sit above the action on mobile, `footer` below it.
  */
 function SettingsSection({
 	title,
 	status,
 	help,
+	helpPlacement = "center",
 	meta,
 	action,
 	children,
@@ -65,6 +73,7 @@ function SettingsSection({
 	title: string;
 	status?: ReactNode;
 	help?: ReactNode;
+	helpPlacement?: keyof typeof HELP_PLACEMENT;
 	meta?: ReactNode;
 	action?: ReactNode;
 	children?: ReactNode;
@@ -79,7 +88,7 @@ function SettingsSection({
 		</h2>
 	);
 	return (
-		<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 lg:flex lg:flex-wrap lg:items-center lg:gap-3 lg:space-y-0 lg:[&>:not([data-row])]:basis-full dark:border-slate-700 dark:bg-slate-800">
+		<section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 lg:flex lg:flex-wrap lg:items-center lg:gap-3 lg:space-y-0 lg:[&>:not([data-row])]:order-2 lg:[&>:not([data-row])]:basis-full dark:border-slate-700 dark:bg-slate-800">
 			{status ? (
 				<div data-row className="flex items-center justify-between lg:contents">
 					{heading}
@@ -91,7 +100,7 @@ function SettingsSection({
 			{help && (
 				<p
 					data-row
-					className="text-center text-xs text-slate-500 lg:min-w-0 lg:flex-1 lg:text-left dark:text-slate-400"
+					className={`text-center text-xs text-slate-500 dark:text-slate-400 ${HELP_PLACEMENT[helpPlacement]}`}
 				>
 					{help}
 				</p>
@@ -136,8 +145,9 @@ function FixedCostsSection({ drive }: { drive: Drive }) {
 		<SettingsSection
 			title="固定費"
 			help="選んだカテゴリは、分析の「固定費を除く」で集計から外せます。"
+			helpPlacement="end"
 		>
-			<div className="flex flex-wrap gap-2">
+			<div className="flex flex-wrap gap-2 lg:justify-center">
 				{CATEGORIES.map((c) => {
 					const on = fixed.includes(c);
 					return (
@@ -307,6 +317,7 @@ export function SettingsTab({
 						</span>
 					</>
 				}
+				helpPlacement="below"
 				meta={`データ保存件数: ${drive.receipts.length} 件`}
 				action={
 					drive.status === "connected" ? (
