@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { syncReceipts } from "./drive";
+import { loadPreferences, syncReceipts } from "./drive";
 import type { Receipt } from "./types";
 
 interface FakeFile {
@@ -73,6 +73,49 @@ function cachedFrom(f: FakeFile, storeName: string): Receipt {
 		driveModifiedTime: f.modifiedTime,
 	};
 }
+
+describe("loadPreferences", () => {
+	function servePreferences(
+		files: { id: string; modifiedTime: string; content: unknown }[],
+	) {
+		globalThis.fetch = (async (input: RequestInfo | URL) => {
+			const url = new URL(String(input));
+			if (url.pathname === "/drive/v3/files") {
+				return Response.json({
+					files: files.map(({ id, modifiedTime }) => ({
+						id,
+						name: "preferences.json",
+						modifiedTime,
+					})),
+				});
+			}
+			const id = url.pathname.split("/").pop();
+			return Response.json(files.find((f) => f.id === id)?.content);
+		}) as typeof fetch;
+	}
+
+	test("yields the defaults when the file does not exist yet", async () => {
+		servePreferences([]);
+		expect(await loadPreferences("token")).toEqual({
+			preferences: { fixedCategories: [] },
+		});
+	});
+
+	test("reads the most recently modified file and parses it", async () => {
+		servePreferences([
+			{ id: "old", modifiedTime: "t1", content: { fixedCategories: ["通信"] } },
+			{
+				id: "new",
+				modifiedTime: "t2",
+				content: { fixedCategories: ["住居費", "unknown"] },
+			},
+		]);
+		expect(await loadPreferences("token")).toEqual({
+			fileId: "new",
+			preferences: { fixedCategories: ["住居費"] },
+		});
+	});
+});
 
 describe("syncReceipts", () => {
 	test("reuses unchanged receipts, refetches changed ones, adds new ones, drops deleted ones", async () => {

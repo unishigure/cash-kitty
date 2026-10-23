@@ -5,12 +5,18 @@
  * Drive UI and is only accessible by this app.
  */
 import { monthKey } from "./format";
+import {
+	DEFAULT_PREFERENCES,
+	type Preferences,
+	parsePreferences,
+} from "./preferences";
 import type { Receipt } from "./types";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 
 const RECEIPT_PREFIX = "receipt-";
+const PREFERENCES_FILE = "preferences.json";
 
 // Bounds parallel content downloads so a first sync of hundreds of files stays
 // under Drive's per-user rate limit.
@@ -317,4 +323,61 @@ export async function getFileBlob(
 ): Promise<Blob> {
 	const res = await driveFetch(token, `${DRIVE_API}/files/${fileId}?alt=media`);
 	return res.blob();
+}
+
+export interface StoredPreferences {
+	/** Absent until the file has been created. */
+	fileId?: string;
+	preferences: Preferences;
+}
+
+/** Read the preferences file. A missing file yields the defaults. */
+export async function loadPreferences(
+	token: string,
+): Promise<StoredPreferences> {
+	const params = new URLSearchParams({
+		spaces: "appDataFolder",
+		fields: "files(id,name,modifiedTime)",
+		q: `name = '${PREFERENCES_FILE}'`,
+	});
+	const res = await driveFetch(token, `${DRIVE_API}/files?${params}`);
+	const body = (await res.json()) as { files?: DriveFile[] };
+	// Two devices saving for the first time at once can each create a file.
+	const [latest] = (body.files ?? [])
+		.filter((f) => f.name === PREFERENCES_FILE)
+		.sort((a, b) => b.modifiedTime.localeCompare(a.modifiedTime));
+	if (!latest) return { preferences: DEFAULT_PREFERENCES };
+	const content = await driveFetch(
+		token,
+		`${DRIVE_API}/files/${latest.id}?alt=media`,
+	);
+	const raw: unknown = await content.json().catch(() => null);
+	return { fileId: latest.id, preferences: parsePreferences(raw) };
+}
+
+/** Write the preferences file, creating it when `fileId` is absent. Returns its file id. */
+export async function savePreferences(
+	token: string,
+	preferences: Preferences,
+	fileId?: string,
+): Promise<string> {
+	const metadata = fileId
+		? {}
+		: {
+				name: PREFERENCES_FILE,
+				parents: ["appDataFolder"],
+				mimeType: "application/json",
+			};
+	const { body, boundary } = multipartBody(metadata, preferences);
+	const res = await driveFetch(
+		token,
+		`${UPLOAD_API}/files${fileId ? `/${fileId}` : ""}?uploadType=multipart&fields=id`,
+		{
+			method: fileId ? "PATCH" : "POST",
+			headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
+			body,
+		},
+	);
+	const saved = (await res.json()) as { id: string };
+	return saved.id;
 }

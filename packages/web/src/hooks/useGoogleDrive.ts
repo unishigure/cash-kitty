@@ -4,6 +4,9 @@ import {
 	createReceipt,
 	deleteFile,
 	getFileBlob,
+	loadPreferences,
+	type StoredPreferences,
+	savePreferences,
 	syncReceipts,
 	UnauthorizedError,
 	updateReceipt,
@@ -19,6 +22,13 @@ import {
 	signOut,
 } from "../lib/googleAuth";
 import { compressImage } from "../lib/image";
+import {
+	clearLocalPreferences,
+	DEFAULT_PREFERENCES,
+	loadLocalPreferences,
+	type Preferences,
+	saveLocalPreferences,
+} from "../lib/preferences";
 import {
 	clearCachedReceipts,
 	loadCachedReceipts,
@@ -44,8 +54,11 @@ interface UseGoogleDrive {
 	/** Connect (interactive consent if needed). */
 	connect: () => Promise<void>;
 	disconnect: () => void;
-	/** Bring `receipts` in line with Drive. Concurrent calls share one run. */
+	/** Bring `receipts` and `preferences` in line with Drive. Concurrent calls share one run. */
 	sync: () => Promise<Receipt[]>;
+	preferences: Preferences;
+	/** Apply locally right away, then write to Drive. Reverts if the write fails. */
+	updatePreferences: (preferences: Preferences) => Promise<void>;
 	/** Save a receipt, optionally uploading its image (on first save). */
 	saveReceipt: (receipt: Receipt, image?: Blob) => Promise<void>;
 	removeReceipt: (receipt: Receipt) => Promise<void>;
@@ -80,6 +93,21 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		receiptsRef.current = next;
 		setReceipts(next);
 		void saveCachedReceipts(next);
+	}, []);
+
+	const [preferences, setPreferences] = useState(loadLocalPreferences);
+	const preferencesRef = useRef(preferences);
+	const preferencesFileIdRef = useRef<string | undefined>(undefined);
+	// Bumped by every local change so a sync that read the file before the
+	// change does not overwrite it.
+	const preferenceWritesRef = useRef(0);
+	// Writes run one at a time so the file id learned by a create is reused.
+	const preferenceQueueRef = useRef<Promise<unknown>>(Promise.resolve());
+
+	const commitPreferences = useCallback((next: Preferences) => {
+		preferencesRef.current = next;
+		setPreferences(next);
+		saveLocalPreferences(next);
 	}, []);
 
 	/**
@@ -128,16 +156,27 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 			setSyncState({ kind: "syncing" });
 			try {
 				let next: Receipt[];
+				let stored: StoredPreferences;
 				let mutations: number;
+				let preferenceWrites: number;
 				do {
 					mutations = mutationsRef.current;
-					next = await withToken(
-						(t) => syncReceipts(t, receiptsRef.current),
+					preferenceWrites = preferenceWritesRef.current;
+					[next, stored] = await withToken(
+						(t) =>
+							Promise.all([
+								syncReceipts(t, receiptsRef.current),
+								loadPreferences(t),
+							]),
 						true,
 					);
 				} while (mutations !== mutationsRef.current);
 				if (session !== sessionRef.current) return [];
 				commit(next);
+				preferencesFileIdRef.current ??= stored.fileId;
+				if (preferenceWrites === preferenceWritesRef.current) {
+					commitPreferences(stored.preferences);
+				}
 				setSyncState({ kind: "synced", at: new Date().toISOString() });
 				setStatus("connected");
 				return next;
@@ -155,7 +194,32 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		})();
 		inflightRef.current = run;
 		return run;
-	}, [withToken, commit]);
+	}, [withToken, commit, commitPreferences]);
+
+	const updatePreferences = useCallback(
+		async (next: Preferences) => {
+			const previous = preferencesRef.current;
+			preferenceWritesRef.current++;
+			commitPreferences(next);
+			const write = preferenceQueueRef.current.then(() =>
+				withToken(async (t) => {
+					preferencesFileIdRef.current = await savePreferences(
+						t,
+						next,
+						preferencesFileIdRef.current,
+					);
+				}, false),
+			);
+			preferenceQueueRef.current = write.catch(() => {});
+			try {
+				await write;
+			} catch (e) {
+				if (preferencesRef.current === next) commitPreferences(previous);
+				throw e;
+			}
+		},
+		[withToken, commitPreferences],
+	);
 
 	const connect = useCallback(async () => {
 		const id = clientIdRef.current;
@@ -178,6 +242,10 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		receiptsRef.current = [];
 		setReceipts([]);
 		void clearCachedReceipts();
+		preferencesRef.current = DEFAULT_PREFERENCES;
+		preferencesFileIdRef.current = undefined;
+		setPreferences(DEFAULT_PREFERENCES);
+		clearLocalPreferences();
 		setSyncState({ kind: "idle" });
 		setStatus("disconnected");
 		setError(null);
@@ -278,6 +346,8 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		connect,
 		disconnect,
 		sync,
+		preferences,
+		updatePreferences,
 		saveReceipt,
 		removeReceipt,
 		loadImageUrl,
