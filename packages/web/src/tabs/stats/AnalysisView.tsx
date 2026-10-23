@@ -191,36 +191,38 @@ export function AnalysisView({
 				key={selectedMonth ?? JSON.stringify(period)}
 				className={`space-y-4 lg:grid lg:grid-cols-6 lg:items-start lg:gap-4 lg:space-y-0 ${direction === 1 ? "slide-from-right" : "slide-from-left"}`}
 			>
-				<div className="relative space-y-3 rounded-2xl bg-emerald-600 p-5 text-white lg:col-span-2">
-					<div>
-						<p className="text-xs font-medium text-emerald-100">
-							{PERIOD_TOTAL_LABEL[period.kind]}
-							{excludeFixed && "（固定費を除く）"}
-						</p>
-						<p className="mt-1 text-3xl font-bold">{formatYen(total)}</p>
-						<p className="mt-1 text-xs text-emerald-100">
-							{inRange.length} 件のレシート
-						</p>
-					</div>
-					{comparison && (
-						<div className="flex gap-2">
-							<Change
-								label="前月比"
-								value={total}
-								base={comparison.previous.total}
-							/>
-							<Change
-								label="前年同月比"
-								value={total}
-								base={comparison.lastYear.total}
-							/>
+				<div className="relative rounded-2xl bg-emerald-600 p-5 text-white lg:col-span-2">
+					<div className="space-y-3">
+						<div>
+							<p className="text-xs font-medium text-emerald-100">
+								{PERIOD_TOTAL_LABEL[period.kind]}
+								{excludeFixed && "（固定費を除く）"}
+							</p>
+							<p className="mt-1 text-3xl font-bold">{formatYen(total)}</p>
+							<p className="mt-1 text-xs text-emerald-100">
+								{inRange.length} 件のレシート
+							</p>
 						</div>
-					)}
-					<FixedCostToggle
-						fixedCategories={fixedCategories}
-						on={excludeFixed}
-						onChange={onChangeExcludeFixed}
-					/>
+						{comparison && (
+							<div className="flex gap-2">
+								<Change
+									label="前月比"
+									value={total}
+									base={comparison.previous.total}
+								/>
+								<Change
+									label="前年同月比"
+									value={total}
+									base={comparison.lastYear.total}
+								/>
+							</div>
+						)}
+						<FixedCostToggle
+							fixedCategories={fixedCategories}
+							on={excludeFixed}
+							onChange={onChangeExcludeFixed}
+						/>
+					</div>
 					{syncState.kind === "syncing" && (
 						<div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-emerald-600/60">
 							<span className="inline-block h-7 w-7 animate-spin rounded-full border-2 border-white border-t-transparent" />

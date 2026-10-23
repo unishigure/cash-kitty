@@ -256,7 +256,7 @@ export function StatsTab({
 
 	return (
 		<div
-			className="flex flex-1 flex-col space-y-3"
+			className="flex flex-1 flex-col gap-3"
 			onTouchStart={handleTouchStart}
 			onTouchEnd={handleTouchEnd}
 		>
