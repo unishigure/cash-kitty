@@ -144,7 +144,7 @@ function FixedCostsSection({ drive }: { drive: Drive }) {
 	return (
 		<SettingsSection
 			title="固定費"
-			help="選んだカテゴリは、分析の「固定費を除く」で集計から外せます。"
+			help="選んだカテゴリは、分析の「固定費を除く」で集計から除外できます。"
 			helpPlacement="end"
 		>
 			<div className="flex flex-wrap justify-center gap-2">

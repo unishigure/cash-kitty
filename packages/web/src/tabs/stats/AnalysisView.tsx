@@ -88,6 +88,7 @@ function FixedCostToggle({
 	onChange: (on: boolean) => void;
 }) {
 	const available = fixedCategories.length > 0;
+	const names = fixedCategories.join("・");
 	const hintId = useId();
 	return (
 		<button
@@ -103,11 +104,10 @@ function FixedCostToggle({
 			<span className="shrink-0 font-medium">固定費を除く</span>
 			<span
 				id={hintId}
+				title={available ? names : undefined}
 				className="min-w-0 flex-1 truncate text-[11px] text-emerald-100/80"
 			>
-				{available
-					? fixedCategories.join("・")
-					: "設定タブで固定費のカテゴリを選ぶと使えます"}
+				{available ? names : "設定タブで固定費のカテゴリを選ぶと使えます"}
 			</span>
 			<span
 				className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${
@@ -293,7 +293,7 @@ export function AnalysisView({
 
 				{selectedMonth && days && (
 					<Card
-						title={`${Number(selectedMonth.slice(5))}月の日別`}
+						title={`日別（${Number(selectedMonth.slice(5))}月）`}
 						className="lg:order-1 lg:col-span-3"
 					>
 						<DailyHeatmap
