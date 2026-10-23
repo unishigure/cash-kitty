@@ -113,7 +113,9 @@ export function App() {
 				className={`mx-auto flex w-full max-w-lg flex-1 flex-col px-4 pb-24 pt-4 lg:pb-8 ${
 					tab === "stats"
 						? "lg:max-w-340 lg:px-6 lg:pt-5"
-						: "lg:max-w-2xl lg:pt-8"
+						: tab === "capture"
+							? "lg:max-w-275 lg:px-6 lg:pt-8"
+							: "lg:max-w-2xl lg:pt-8"
 				}`}
 			>
 				{tab === "capture" && (
