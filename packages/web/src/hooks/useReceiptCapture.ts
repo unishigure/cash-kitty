@@ -1,152 +1,164 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import {
+	captureReducer,
+	currentItem,
+	EMPTY_QUEUE,
+	nextToAnalyze,
+	progress,
+} from "../lib/captureQueue";
 import { newId } from "../lib/id";
 import { analyzeReceipt } from "../lib/ocr";
-import type { AppSettings } from "../lib/settings";
+import { parseReceiptForm, type ReceiptFormState } from "../lib/receiptForm";
 import type { Receipt } from "../lib/types";
 import type { useGoogleDrive } from "./useGoogleDrive";
 
 type Drive = ReturnType<typeof useGoogleDrive>;
 
-export interface FormState {
-	storeName: string;
-	totalAmount: string;
-	date: string;
-	category: string;
-	memo: string;
-	fullText: string;
-}
-
-const emptyForm = (): FormState => ({
-	storeName: "",
-	totalAmount: "",
-	date: "",
-	category: "",
-	memo: "",
-	fullText: "",
-});
+const errorMessage = (e: unknown) =>
+	e instanceof Error ? e.message : String(e);
 
 /**
- * Receipt capture + OCR state.
+ * Receipt capture queue + OCR.
  *
- * Lives in `AppShell` (not in `CaptureTab`) so that switching the bottom-nav
- * tab away from "取り込み" and back does not unmount the state: an in-flight
- * OCR analysis keeps running and its result still lands in the form.
+ * Lives in `App` (not in `CaptureTab`) so that switching the bottom-nav
+ * tab away from "取り込み" and back does not unmount the state: in-flight
+ * OCR keeps running and its results still land in the queue.
  */
-export function useReceiptCapture(settings: AppSettings, drive: Drive) {
-	const [imageFile, setImageFile] = useState<File | null>(null);
-	const [preview, setPreview] = useState<string | null>(null);
-	const [analyzing, setAnalyzing] = useState(false);
-	const [saving, setSaving] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+export function useReceiptCapture(apiBaseUrl: string, drive: Drive) {
+	const [queue, dispatch] = useReducer(captureReducer, EMPTY_QUEUE);
 	const [done, setDone] = useState(false);
-	const [form, setForm] = useState<FormState>(emptyForm);
+	const doneTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+	const ocr = Boolean(apiBaseUrl);
+	const current = currentItem(queue);
+
+	// The OCR server is a single local instance, so a request for a skipped or
+	// retaken item still holds it until it settles. `settled` re-runs the
+	// effect once it does.
+	const busyRef = useRef(false);
+	const [settled, bumpSettled] = useReducer((n: number) => n + 1, 0);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `settled` only re-triggers the check after a request ends.
+	useEffect(() => {
+		const item = nextToAnalyze(queue);
+		if (!item?.image || busyRef.current) return;
+		busyRef.current = true;
+		dispatch({ type: "analyzeStart", id: item.id });
+		analyzeReceipt(apiBaseUrl, item.image)
+			.then((result) => dispatch({ type: "analyzeDone", id: item.id, result }))
+			.catch((e: unknown) =>
+				dispatch({ type: "analyzeFail", id: item.id, error: errorMessage(e) }),
+			)
+			.finally(() => {
+				busyRef.current = false;
+				bumpSettled();
+			});
+	}, [queue, settled, apiBaseUrl]);
+
+	const previewsRef = useRef(new Set<string>());
+	useEffect(() => {
+		const live = new Set(
+			queue.flatMap((item) => (item.previewUrl ? [item.previewUrl] : [])),
+		);
+		for (const url of previewsRef.current) {
+			if (!live.has(url)) URL.revokeObjectURL(url);
+		}
+		previewsRef.current = live;
+	}, [queue]);
+
+	const addImages = useCallback(
+		(files: readonly File[]) => {
+			if (!files.length) return;
+			setDone(false);
+			dispatch({
+				type: "add",
+				ocr,
+				items: files.map((image) => ({
+					id: newId(),
+					image,
+					previewUrl: URL.createObjectURL(image),
+				})),
+			});
+		},
+		[ocr],
+	);
+
+	/** Replace the current item's photo and analyze it again. */
+	const retake = useCallback(
+		(image: File) => {
+			if (!current) return addImages([image]);
+			dispatch({
+				type: "retake",
+				id: current.id,
+				image,
+				previewUrl: URL.createObjectURL(image),
+				ocr,
+			});
+		},
+		[current, addImages, ocr],
+	);
 
 	const setField = useCallback(
-		<K extends keyof FormState>(key: K, value: FormState[K]) =>
-			setForm((f) => ({ ...f, [key]: value })),
-		[],
-	);
-
-	const reset = useCallback(() => {
-		setImageFile(null);
-		setPreview((prev) => {
-			if (prev) URL.revokeObjectURL(prev);
-			return null;
-		});
-		setForm(emptyForm());
-	}, []);
-
-	const analyze = useCallback(
-		async (file: File) => {
-			setError(null);
-			setDone(false);
-			setImageFile(file);
-			setPreview((prev) => {
-				if (prev) URL.revokeObjectURL(prev);
-				return URL.createObjectURL(file);
-			});
-
-			setAnalyzing(true);
-			try {
-				const result = await analyzeReceipt(settings.apiBaseUrl, file);
-				setForm((f) => ({
-					...f,
-					storeName: result.storeName || f.storeName,
-					totalAmount:
-						result.totalAmount != null
-							? String(result.totalAmount)
-							: f.totalAmount,
-					date: result.date || f.date,
-					fullText: result.fullText,
-				}));
-			} catch (err) {
-				setError(err instanceof Error ? err.message : String(err));
-			} finally {
-				setAnalyzing(false);
+		<K extends keyof ReceiptFormState>(key: K, value: ReceiptFormState[K]) => {
+			let id = current?.id;
+			if (!id) {
+				id = newId();
+				setDone(false);
+				dispatch({
+					type: "add",
+					ocr,
+					items: [{ id, image: null, previewUrl: null }],
+				});
 			}
+			dispatch({ type: "edit", id, key, value });
 		},
-		[settings.apiBaseUrl],
+		[current, ocr],
 	);
 
-	/** Validate + persist to Drive. Returns true on success. */
+	const skip = useCallback(() => {
+		if (current) dispatch({ type: "skip", id: current.id });
+	}, [current]);
+
+	const retry = useCallback(() => {
+		if (current) dispatch({ type: "retry", id: current.id });
+	}, [current]);
+
+	/** Validate + persist the current item to Drive. Returns true on success. */
 	const save = useCallback(async (): Promise<boolean> => {
-		setError(null);
-		const amount = Number(form.totalAmount);
-		if (!form.totalAmount.trim()) {
-			setError("金額を入力してください。");
-			return false;
-		}
-		if (!Number.isFinite(amount) || amount < 0) {
-			setError("金額が正しくありません。");
-			return false;
-		}
-		if (!form.date) {
-			setError("日付を入力してください。");
-			return false;
-		}
-		if (!form.category) {
-			setError("カテゴリを選択してください。");
-			return false;
-		}
+		if (!current) return false;
+		const { id } = current;
+		const parsed = parseReceiptForm(current.form);
+		if (!parsed.ok) return false;
 		const now = new Date().toISOString();
 		const receipt: Receipt = {
 			id: newId(),
-			storeName: form.storeName.trim(),
-			totalAmount: Math.round(amount),
-			date: form.date,
-			category: form.category,
-			memo: form.memo.trim() || undefined,
-			fullText: form.fullText || undefined,
+			...parsed.value,
+			fullText: current.fullText || undefined,
 			createdAt: now,
 			updatedAt: now,
 		};
-		setSaving(true);
+		dispatch({ type: "saveStart", id });
 		try {
-			await drive.saveReceipt(receipt, imageFile ?? undefined);
+			await drive.saveReceipt(receipt, current.image ?? undefined);
+			dispatch({ type: "saveDone", id });
 			setDone(true);
-			reset();
-			setTimeout(() => setDone(false), 2500);
+			clearTimeout(doneTimerRef.current);
+			doneTimerRef.current = setTimeout(() => setDone(false), 2500);
 			return true;
-		} catch (err) {
-			setError(err instanceof Error ? err.message : String(err));
+		} catch (e) {
+			dispatch({ type: "saveFail", id, error: errorMessage(e) });
 			return false;
-		} finally {
-			setSaving(false);
 		}
-	}, [form, drive, imageFile, reset]);
+	}, [current, drive]);
 
 	return {
-		imageFile,
-		preview,
-		analyzing,
-		saving,
-		error,
+		queue,
+		current,
+		progress: progress(queue),
 		done,
-		form,
+		addImages,
+		retake,
 		setField,
-		setError,
-		analyze,
-		reset,
+		skip,
+		retry,
 		save,
 	};
 }

@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MISSING_CLIENT_ID_MESSAGE } from "../lib/config";
 import {
-	countReceipts,
 	createReceipt,
 	deleteFile,
 	getFileBlob,
-	syncAllReceipts,
+	loadPreferences,
+	type StoredPreferences,
+	savePreferences,
 	syncReceipts,
 	UnauthorizedError,
 	updateReceipt,
 	uploadFile,
 } from "../lib/drive";
-import { monthKey } from "../lib/format";
 import {
 	beginAuthRedirect,
 	canSilentReconnect,
@@ -21,29 +22,43 @@ import {
 	signOut,
 } from "../lib/googleAuth";
 import { compressImage } from "../lib/image";
+import {
+	clearLocalPreferences,
+	DEFAULT_PREFERENCES,
+	loadLocalPreferences,
+	type Preferences,
+	saveLocalPreferences,
+} from "../lib/preferences";
+import {
+	clearCachedReceipts,
+	loadCachedReceipts,
+	saveCachedReceipts,
+} from "../lib/receiptCache";
 import type { Receipt } from "../lib/types";
 
 export type DriveStatus = "disconnected" | "connecting" | "connected" | "error";
 
-/** Sort receipts by date, newest first. */
-function byDateDesc(a: Receipt, b: Receipt): number {
-	return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
-}
+export type SyncState =
+	| { kind: "idle" }
+	| { kind: "syncing" }
+	| { kind: "synced"; at: string }
+	| { kind: "error"; message: string };
 
 interface UseGoogleDrive {
 	status: DriveStatus;
-	/** Receipts cached per `YYYY-MM` month, populated on demand by `loadMonth`. */
-	receiptsByMonth: Record<string, Receipt[]>;
-	/** Total saved receipts across all months (cheap metadata-only count). */
-	totalCount: number;
-	loading: boolean;
+	/** Every receipt the user has, in no particular order. */
+	receipts: Receipt[];
+	syncState: SyncState;
+	/** Connection error (failed auth redirect, missing client id). */
 	error: string | null;
 	/** Connect (interactive consent if needed). */
 	connect: () => Promise<void>;
 	disconnect: () => void;
-	/** (Re)fetch a single month's receipts from Drive. */
-	loadMonth: (month: string) => Promise<void>;
-	loadAllReceipts: () => Promise<Receipt[]>;
+	/** Bring `receipts` and `preferences` in line with Drive. Concurrent calls share one run. */
+	sync: () => Promise<Receipt[]>;
+	preferences: Preferences;
+	/** Apply locally right away, then write to Drive. Reverts if the write fails. */
+	updatePreferences: (preferences: Preferences) => Promise<void>;
 	/** Save a receipt, optionally uploading its image (on first save). */
 	saveReceipt: (receipt: Receipt, image?: Blob) => Promise<void>;
 	removeReceipt: (receipt: Receipt) => Promise<void>;
@@ -59,19 +74,41 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 				? "connecting"
 				: "disconnected",
 	);
-	const [receiptsByMonth, setReceiptsByMonth] = useState<
-		Record<string, Receipt[]>
-	>({});
-	// Mirror the cache in a ref so `loadMonth` can read the latest months without
-	// listing them as deps (which would change its identity and re-trigger the
-	// StatsTab fetch effect on every cache update — an infinite loop).
-	const cacheRef = useRef(receiptsByMonth);
-	cacheRef.current = receiptsByMonth;
-	const [totalCount, setTotalCount] = useState(0);
-	const [loading, setLoading] = useState(false);
+	const [receipts, setReceipts] = useState<Receipt[]>([]);
+	// Async work (sync, save) must read the latest collection, not the one
+	// captured by the render that started it.
+	const receiptsRef = useRef<Receipt[]>([]);
+	// Bumped by every local save/delete so a sync that listed files before the
+	// change knows its result is stale.
+	const mutationsRef = useRef(0);
+	// Bumped on disconnect so an in-flight sync cannot repopulate the store.
+	const sessionRef = useRef(0);
+	const inflightRef = useRef<Promise<Receipt[]> | null>(null);
+	const [syncState, setSyncState] = useState<SyncState>({ kind: "idle" });
 	const [error, setError] = useState<string | null>(null);
 	const clientIdRef = useRef(clientId);
 	clientIdRef.current = clientId;
+
+	const commit = useCallback((next: Receipt[]) => {
+		receiptsRef.current = next;
+		setReceipts(next);
+		void saveCachedReceipts(next);
+	}, []);
+
+	const [preferences, setPreferences] = useState(loadLocalPreferences);
+	const preferencesRef = useRef(preferences);
+	const preferencesFileIdRef = useRef<string | undefined>(undefined);
+	// Bumped by every local change so a sync that read the file before the
+	// change does not overwrite it.
+	const preferenceWritesRef = useRef(0);
+	// Writes run one at a time so the file id learned by a create is reused.
+	const preferenceQueueRef = useRef<Promise<unknown>>(Promise.resolve());
+
+	const commitPreferences = useCallback((next: Preferences) => {
+		preferencesRef.current = next;
+		setPreferences(next);
+		saveLocalPreferences(next);
+	}, []);
 
 	/**
 	 * Run a Drive operation with the cached token. When the token is missing or
@@ -86,7 +123,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 			background: boolean,
 		): Promise<T> => {
 			const id = clientIdRef.current;
-			if (!id) throw new Error("Google クライアント ID が設定されていません");
+			if (!id) throw new Error(MISSING_CLIENT_ID_MESSAGE);
 			const reauth = (): Promise<T> => {
 				if (background && canSilentReconnect()) {
 					setStatus("connecting");
@@ -112,72 +149,110 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		[],
 	);
 
-	const loadMonth = useCallback(
-		async (month: string) => {
-			setLoading(true);
-			setError(null);
+	const sync = useCallback((): Promise<Receipt[]> => {
+		if (inflightRef.current) return inflightRef.current;
+		const session = sessionRef.current;
+		const run = (async () => {
+			setSyncState({ kind: "syncing" });
 			try {
-				// Incremental: reuse already-fetched receipts, download only new or
-				// changed files.
-				const cached = cacheRef.current[month] ?? [];
-				const data = await withToken(
-					(t) => syncReceipts(t, month, cached),
-					true,
-				);
-				setReceiptsByMonth((prev) => ({ ...prev, [month]: data }));
+				let next: Receipt[];
+				let stored: StoredPreferences;
+				let mutations: number;
+				let preferenceWrites: number;
+				do {
+					mutations = mutationsRef.current;
+					preferenceWrites = preferenceWritesRef.current;
+					[next, stored] = await withToken(
+						(t) =>
+							Promise.all([
+								syncReceipts(t, receiptsRef.current),
+								loadPreferences(t),
+							]),
+						true,
+					);
+				} while (mutations !== mutationsRef.current);
+				if (session !== sessionRef.current) return [];
+				commit(next);
+				preferencesFileIdRef.current ??= stored.fileId;
+				if (preferenceWrites === preferenceWritesRef.current) {
+					commitPreferences(stored.preferences);
+				}
+				setSyncState({ kind: "synced", at: new Date().toISOString() });
 				setStatus("connected");
+				return next;
 			} catch (e) {
-				setError(e instanceof Error ? e.message : String(e));
-				setStatus("error");
+				if (session === sessionRef.current) {
+					setSyncState({
+						kind: "error",
+						message: e instanceof Error ? e.message : String(e),
+					});
+				}
+				throw e;
 			} finally {
-				setLoading(false);
+				inflightRef.current = null;
+			}
+		})();
+		inflightRef.current = run;
+		return run;
+	}, [withToken, commit, commitPreferences]);
+
+	const updatePreferences = useCallback(
+		async (next: Preferences) => {
+			const previous = preferencesRef.current;
+			preferenceWritesRef.current++;
+			commitPreferences(next);
+			const write = preferenceQueueRef.current.then(() =>
+				withToken(async (t) => {
+					preferencesFileIdRef.current = await savePreferences(
+						t,
+						next,
+						preferencesFileIdRef.current,
+					);
+				}, false),
+			);
+			preferenceQueueRef.current = write.catch(() => {});
+			try {
+				await write;
+			} catch (e) {
+				if (preferencesRef.current === next) commitPreferences(previous);
+				throw e;
 			}
 		},
-		[withToken],
+		[withToken, commitPreferences],
 	);
-
-	const loadAllReceipts = useCallback(async () => {
-		const all = await withToken(
-			(t) => syncAllReceipts(t, Object.values(cacheRef.current).flat()),
-			false,
-		);
-		const next: Record<string, Receipt[]> = {};
-		for (const r of all) {
-			const m = monthKey(r.date);
-			next[m] = [...(next[m] ?? []), r];
-		}
-		setReceiptsByMonth(next);
-		setTotalCount(all.length);
-		return all;
-	}, [withToken]);
 
 	const connect = useCallback(async () => {
 		const id = clientIdRef.current;
 		if (!id) {
-			setError("Google クライアント ID が設定されていません");
+			setError(MISSING_CLIENT_ID_MESSAGE);
 			setStatus("error");
 			return;
 		}
 		setError(null);
-		setStatus("connecting");
-		// Keeps the button disabled while the browser navigates to Google. The
+		// Stays "connecting" while the browser navigates to Google. The
 		// round-trip lands back on the settings tab, where the mount effect picks
 		// up the token (or the error) from the URL fragment.
-		setLoading(true);
+		setStatus("connecting");
 		beginAuthRedirect(id, "interactive", "settings");
 	}, []);
 
 	const disconnect = useCallback(() => {
 		signOut();
-		setReceiptsByMonth({});
-		setTotalCount(0);
+		sessionRef.current++;
+		receiptsRef.current = [];
+		setReceipts([]);
+		void clearCachedReceipts();
+		preferencesRef.current = DEFAULT_PREFERENCES;
+		preferencesFileIdRef.current = undefined;
+		setPreferences(DEFAULT_PREFERENCES);
+		clearLocalPreferences();
+		setSyncState({ kind: "idle" });
 		setStatus("disconnected");
 		setError(null);
 	}, []);
 
 	const saveReceipt = useCallback(
 		async (receipt: Receipt, image?: Blob) => {
-			const isCreate = !receipt.fileId;
 			const saved = await withToken(async (t) => {
 				let toSave = receipt;
 				// Upload the image once, on first save, and remember its file id.
@@ -195,21 +270,10 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 					? updateReceipt(t, toSave)
 					: createReceipt(t, toSave);
 			}, false);
-			// Drop the receipt from every cached month, then re-insert it into the
-			// month its (possibly edited) date now belongs to. This keeps the cache
-			// correct even when an edit moves a receipt across months.
-			setReceiptsByMonth((prev) => {
-				const next: Record<string, Receipt[]> = {};
-				for (const [m, list] of Object.entries(prev)) {
-					next[m] = list.filter((r) => r.id !== saved.id);
-				}
-				const m = monthKey(saved.date);
-				next[m] = [...(next[m] ?? []), saved].sort(byDateDesc);
-				return next;
-			});
-			if (isCreate) setTotalCount((c) => c + 1);
+			mutationsRef.current++;
+			commit([...receiptsRef.current.filter((r) => r.id !== saved.id), saved]);
 		},
-		[withToken],
+		[withToken, commit],
 	);
 
 	const removeReceipt = useCallback(
@@ -220,16 +284,10 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 					if (receipt.fileId) await deleteFile(t, receipt.fileId);
 				}, false);
 			}
-			setReceiptsByMonth((prev) => {
-				const next: Record<string, Receipt[]> = {};
-				for (const [m, list] of Object.entries(prev)) {
-					next[m] = list.filter((r) => r.id !== receipt.id);
-				}
-				return next;
-			});
-			setTotalCount((c) => Math.max(0, c - 1));
+			mutationsRef.current++;
+			commit(receiptsRef.current.filter((r) => r.id !== receipt.id));
 		},
-		[withToken],
+		[withToken, commit],
 	);
 
 	const loadImageUrl = useCallback(
@@ -242,16 +300,22 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		[withToken],
 	);
 
-	// Auto-reconnect on mount. `consumeAuthRedirect()` (frontend.tsx) has
-	// already stored any token that came back in the URL fragment before React
-	// rendered, so by the time we run there are three cases: a valid token (from
-	// the redirect or surviving in localStorage) → connected; no token but a
-	// prior connection → leave for a *silent* (prompt=none) auth redirect, which
-	// bounces straight back with a token while the Google session is intact; a
-	// failed interactive attempt → surface its error. Here we only seed the
-	// total count; per-month data is fetched lazily by `loadMonth`.
+	// On mount: show the IndexedDB copy right away, then reconnect.
+	// `consumeAuthRedirect()` (frontend.tsx) has already stored any token that
+	// came back in the URL fragment before React rendered, so there are three
+	// cases: a valid token (from the redirect or surviving in localStorage) →
+	// connected, sync in the background; no token but a prior connection →
+	// leave for a *silent* (prompt=none) auth redirect, which bounces straight
+	// back with a token while the Google session is intact; a failed
+	// interactive attempt → surface its error.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only once on mount.
 	useEffect(() => {
+		const hydrated = loadCachedReceipts().then((cached) => {
+			if (cached && mutationsRef.current === 0 && !receiptsRef.current.length) {
+				receiptsRef.current = cached;
+				setReceipts(cached);
+			}
+		});
 		if (!clientId) return;
 		const redirectError = getAuthRedirectError();
 		if (redirectError) {
@@ -261,14 +325,9 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		}
 		if (hasValidToken()) {
 			setStatus("connected");
-			void (async () => {
-				try {
-					const total = await withToken((t) => countReceipts(t), true);
-					setTotalCount(total);
-				} catch {
-					setStatus("disconnected");
-				}
-			})();
+			void hydrated.then(sync).catch(() => {
+				/* surfaced through syncState */
+			});
 			return;
 		}
 		if (canSilentReconnect()) {
@@ -281,14 +340,14 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 
 	return {
 		status,
-		receiptsByMonth,
-		totalCount,
-		loading,
+		receipts,
+		syncState,
 		error,
 		connect,
 		disconnect,
-		loadMonth,
-		loadAllReceipts,
+		sync,
+		preferences,
+		updatePreferences,
 		saveReceipt,
 		removeReceipt,
 		loadImageUrl,

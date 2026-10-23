@@ -3,6 +3,13 @@ export function formatYen(amount: number): string {
 	return `¥${Math.round(amount).toLocaleString("ja-JP")}`;
 }
 
+/** Axis-sized amount: 8,500 -> "8,500", 12,300 -> "1.2万", 150,000 -> "15万". */
+export function formatYenCompact(amount: number): string {
+	if (amount < 10_000) return Math.round(amount).toLocaleString("ja-JP");
+	const man = amount / 10_000;
+	return `${man >= 10 ? Math.round(man) : Math.round(man * 10) / 10}万`;
+}
+
 /** Today as an ISO `YYYY-MM-DD` string in local time. */
 export function todayIso(): string {
 	return toIsoDate(new Date());

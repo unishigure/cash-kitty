@@ -4,11 +4,14 @@
 スマホでの利用を前提にしています
 
 - **取り込み** タブ: カメラで撮影 / 画像選択 → OCR で解析 → 内容を編集して保存
-- **統計** タブ: 月別の合計・カテゴリ別内訳・明細（タップで詳細 → 画像表示・編集・削除）
+- **統計** タブ: 2 つの表示を切り替えます
+  - **明細**: 月 / 全期間 / 期間指定でレシートを一覧。店名・メモ・OCR 全文の検索、カテゴリ（複数選択）・金額での絞り込み、並び替えができます（タップで詳細 → 画像表示・編集・削除）
+  - **分析**: 月の合計と前月比・前年同月比、カテゴリ別内訳（タップでそのカテゴリの明細へ）、12 か月の推移、日別のカレンダー
 - **設定** タブ: Google Drive 接続（Google クライアント ID は `.env` の `BUN_PUBLIC_GOOGLE_CLIENT_ID` で設定）
 
 データは閲覧者自身の Google Drive の `appDataFolder`（アプリ専用の隠し領域）に、レシート 1 件＝ JSON 1 ファイル（`receipt-<id>.json`）＋画像ファイル（`image-<id>`）として保存されます\
-アプリサーバーには一切送信・保存されません
+アプリサーバーには一切送信・保存されません\
+起動を速くするため、同期したレシートの JSON はブラウザの IndexedDB にもキャッシュします（画像は含みません。Drive を切断するとキャッシュも削除します）
 
 OCR API へは**ブラウザが直接アクセス**します（接続先は `BUN_PUBLIC_OCR_API_URL`）。Web サーバはプロキシも設定 API（`/api/*`）も持たず、SPA と PWA 資産を配信するだけです\
 そのため OCR は接続先が到達可能なとき（ローカル API を起動している／トンネルが開いている）だけ動作します。OCR API 側は配信元オリジンを CORS で許可してください（既定は開発用の `http://localhost:3000`。本番は API の `.env` の `CORS_ALLOW_ORIGINS` に配信オリジンを設定）
@@ -60,7 +63,7 @@ BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
 BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
 ```
 
-`packages/web` を単体で配信する構成では、`BUN_PUBLIC_OCR_API_URL` を未設定にしないでください。未設定だと `/api/...` を叩くため、OCR が失敗します。
+`BUN_PUBLIC_GOOGLE_CLIENT_ID` と `BUN_PUBLIC_OCR_API_URL` はビルド時の値だけを使い、アプリ内で入力する手段はありません。`BUN_PUBLIC_GOOGLE_CLIENT_ID` が未設定だとレシートを保存できず、`BUN_PUBLIC_OCR_API_URL` が未設定だと OCR が無効になります（手入力での保存はできます）。
 
 `public/_redirects` と `public/_headers` はビルド時に `dist/` へコピーされます。これにより Cloudflare Pages 上でも、SPA の直接アクセス時に `index.html` へフォールバックし、`manifest.webmanifest` は再検証付きで配信されます。
 
