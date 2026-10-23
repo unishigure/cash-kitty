@@ -66,11 +66,11 @@ BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
 
 `public/_headers` には全ルート向けのセキュリティヘッダ（`X-Content-Type-Options` / `X-Frame-Options` / `Referrer-Policy` / `Cross-Origin-Opener-Policy` / `Strict-Transport-Security` / `Permissions-Policy`）を定義しています。`Content-Security-Policy` は静的に書かず、`build.ts` が `dist/_headers` の `/*` ブロックへ**ビルド時に注入**します（`connect-src` に `BUN_PUBLIC_OCR_API_URL` のオリジンを含める必要があり、またインライン `<script>` を `'unsafe-inline'` なしで許可するため各スクリプトの SHA-256 ハッシュを算出するため）。Google Identity Services は公式ガイダンスに従い `https://accounts.google.com/gsi/*` のみ許可しています。OCR API を別オリジンに置く場合は、その HTTPS オリジンが自動で `connect-src` に入ります。`bun start`（[serve.ts](serve.ts)）はローカル確認用に CSP 以外の同等ヘッダを付与します（HSTS は https 専用のため、CSP は生成物のため除外）。
 
-| | `bun dev`（開発） | `bun start` / 本番ホスト |
-| --- | --- | --- |
-| ファイル配信 | オンザフライでバンドル + HMR | ビルド済み `dist/` を静的配信 |
-| 設定・OCR 接続先 | `BUN_PUBLIC_*`（`.env`、`http://localhost:8000`） | `BUN_PUBLIC_*`（ホストの環境変数、`https://cash-api...`） |
-| OCR / Drive / 統計 / 手入力 | ブラウザ側で完結 | ブラウザ側で完結 |
+|                             | `bun dev`（開発）                                 | `bun start` / 本番ホスト                                  |
+| --------------------------- | ------------------------------------------------- | --------------------------------------------------------- |
+| ファイル配信                | オンザフライでバンドル + HMR                      | ビルド済み `dist/` を静的配信                             |
+| 設定・OCR 接続先            | `BUN_PUBLIC_*`（`.env`、`http://localhost:8000`） | `BUN_PUBLIC_*`（ホストの環境変数、`https://cash-api...`） |
+| OCR / Drive / 統計 / 手入力 | ブラウザ側で完結                                  | ブラウザ側で完結                                          |
 
 ### 設定の埋め込み（`BUN_PUBLIC_*`）
 
@@ -85,12 +85,12 @@ BUN_PUBLIC_OCR_API_URL=https://ocr-api.example.com
 
 - 本番（Cloudflare Pages など）: ダッシュボードの Build environment variables で設定
 
-   ```bash
-   BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
-   BUN_PUBLIC_OCR_API_URL=https://cash-api.example.com
-   ```
+  ```bash
+  BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+  BUN_PUBLIC_OCR_API_URL=https://cash-api.example.com
+  ```
 
-   ※ `BUN_PUBLIC_OCR_API_URL` はブラウザから到達できる HTTPS URL を設定してください。
+  ※ `BUN_PUBLIC_OCR_API_URL` はブラウザから到達できる HTTPS URL を設定してください。
 
 > 配信先 URL は Google の **承認済み JavaScript 生成元** に登録してください。OCR を別オリジンから呼ぶ場合は、API 側 `.env` の `CORS_ALLOW_ORIGINS` にその配信オリジン（固定 HTTPS URL）を設定してください（既定は開発用の `http://localhost:3000`）。
 
