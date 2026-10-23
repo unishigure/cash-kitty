@@ -186,9 +186,9 @@ export function AnalysisView({
 			</div>
 			<div
 				key={selectedMonth ?? JSON.stringify(period)}
-				className={`space-y-4 lg:grid lg:grid-cols-6 lg:gap-4 lg:space-y-0 ${direction === 1 ? "slide-from-right" : "slide-from-left"}`}
+				className={`space-y-4 lg:grid lg:grid-cols-6 lg:items-start lg:gap-4 lg:space-y-0 ${direction === 1 ? "slide-from-right" : "slide-from-left"}`}
 			>
-				<div className="relative space-y-3 rounded-2xl bg-emerald-600 p-5 text-white lg:col-span-2 lg:self-start">
+				<div className="relative space-y-3 rounded-2xl bg-emerald-600 p-5 text-white lg:col-span-2">
 					<div>
 						<p className="text-xs font-medium text-emerald-100">
 							{PERIOD_TOTAL_LABEL[period.kind]}
@@ -286,8 +286,11 @@ export function AnalysisView({
 					/>
 				</Card>
 
-				{days && (
-					<Card title="日別" className="lg:order-1 lg:col-span-3">
+				{selectedMonth && days && (
+					<Card
+						title={`${Number(selectedMonth.slice(5))}月の日別`}
+						className="lg:order-1 lg:col-span-3"
+					>
 						<DailyHeatmap days={days} onShowDay={onShowDay} />
 					</Card>
 				)}
