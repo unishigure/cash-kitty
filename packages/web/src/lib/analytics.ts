@@ -20,6 +20,15 @@ export interface DayTotal {
 	count: number;
 }
 
+export function withoutCategories(
+	receipts: readonly Receipt[],
+	categories: readonly string[],
+): readonly Receipt[] {
+	if (!categories.length) return receipts;
+	const skip = new Set(categories);
+	return receipts.filter((r) => !skip.has(r.category));
+}
+
 const sum = (receipts: readonly Receipt[]) =>
 	receipts.reduce((s, r) => s + r.totalAmount, 0);
 

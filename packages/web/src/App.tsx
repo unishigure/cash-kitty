@@ -41,6 +41,7 @@ export function App() {
 		useState<ListFilters>(INITIAL_FILTERS);
 	const [statsMonth, setStatsMonth] = useState<string>(currentMonthKey());
 	const [statsDir, setStatsDir] = useState<1 | -1>(1);
+	const [excludeFixed, setExcludeFixed] = useState(false);
 	const changeStatsMonth = (delta: 1 | -1) => {
 		setStatsDir(delta);
 		setStatsMonth((m) => shiftMonth(m, delta));
@@ -123,6 +124,8 @@ export function App() {
 						onSelectMonth={selectStatsMonth}
 						filters={statsFilters}
 						onChangeFilters={setStatsFilters}
+						excludeFixed={excludeFixed}
+						onChangeExcludeFixed={setExcludeFixed}
 					/>
 				)}
 				{tab === "settings" && (

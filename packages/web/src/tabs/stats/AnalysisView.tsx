@@ -66,8 +66,54 @@ function Card({
 	);
 }
 
+function FixedCostToggle({
+	fixedCategories,
+	on,
+	onChange,
+}: {
+	fixedCategories: readonly string[];
+	on: boolean;
+	onChange: (on: boolean) => void;
+}) {
+	const available = fixedCategories.length > 0;
+	return (
+		<div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
+			<div className="min-w-0 flex-1">
+				<p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+					固定費を除く
+				</p>
+				<p className="truncate text-[11px] text-slate-400 dark:text-slate-500">
+					{available
+						? fixedCategories.join("・")
+						: "設定タブで固定費のカテゴリを選ぶと使えます"}
+				</p>
+			</div>
+			<button
+				type="button"
+				role="switch"
+				aria-checked={on}
+				aria-label="固定費を除く"
+				disabled={!available}
+				onClick={() => onChange(!on)}
+				className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-40 ${
+					on ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-600"
+				}`}
+			>
+				<span
+					className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+						on ? "translate-x-5" : ""
+					}`}
+				/>
+			</button>
+		</div>
+	);
+}
+
 export function AnalysisView({
 	receipts,
+	fixedCategories,
+	excludeFixed,
+	onChangeExcludeFixed,
 	month,
 	direction,
 	onChangeMonth,
@@ -76,7 +122,11 @@ export function AnalysisView({
 	onShowDay,
 	syncState,
 }: {
+	/** Already without fixed costs when `excludeFixed` is on. */
 	receipts: readonly Receipt[];
+	fixedCategories: readonly string[];
+	excludeFixed: boolean;
+	onChangeExcludeFixed: (exclude: boolean) => void;
 	month: string;
 	direction: 1 | -1;
 	onChangeMonth: (delta: 1 | -1) => void;
@@ -103,13 +153,20 @@ export function AnalysisView({
 	return (
 		<div className="space-y-3">
 			<MonthSelector month={month} onChangeMonth={onChangeMonth} />
+			<FixedCostToggle
+				fixedCategories={fixedCategories}
+				on={excludeFixed}
+				onChange={onChangeExcludeFixed}
+			/>
 			<div
 				key={month}
 				className={`space-y-4 ${direction === 1 ? "slide-from-right" : "slide-from-left"}`}
 			>
 				<div className="relative space-y-3 rounded-2xl bg-emerald-600 p-5 text-white">
 					<div>
-						<p className="text-xs font-medium text-emerald-100">この月の合計</p>
+						<p className="text-xs font-medium text-emerald-100">
+							この月の合計{excludeFixed && "（固定費を除く）"}
+						</p>
 						<p className="mt-1 text-3xl font-bold">
 							{formatYen(current.total)}
 						</p>

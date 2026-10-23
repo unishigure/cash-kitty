@@ -5,6 +5,7 @@ import {
 	dailyTotals,
 	monthComparison,
 	monthlyTotals,
+	withoutCategories,
 } from "./analytics";
 import type { Receipt } from "./types";
 
@@ -74,6 +75,27 @@ describe("monthComparison", () => {
 		]);
 		expect(changeRatio(c.current.total, c.lastYear.total)).toBe(2);
 		expect(changeRatio(100, 0)).toBeNull();
+	});
+});
+
+describe("withoutCategories", () => {
+	test("leaves the excluded categories out of every aggregate", () => {
+		const input = withoutCategories(receipts, ["外食", "日用品"]);
+		expect(monthComparison(input, "2026-06").current.total).toBe(300);
+		expect(monthComparison(input, "2026-06").previous.total).toBe(0);
+		expect(categoryTotals(input).map((t) => t.category)).toEqual(["食費"]);
+		expect(monthlyTotals(input, "2026-06", 2).map((m) => m.total)).toEqual([
+			0, 300,
+		]);
+		expect(dailyTotals(input, "2026-06")[0]).toEqual({
+			date: "2026-06-01",
+			total: 300,
+			count: 1,
+		});
+	});
+
+	test("returns the input unchanged when nothing is excluded", () => {
+		expect(withoutCategories(receipts, [])).toBe(receipts);
 	});
 });
 

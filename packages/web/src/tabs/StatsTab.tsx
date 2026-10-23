@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDownIcon, ArrowUpIcon } from "../components/icons";
 import { SegmentedControl } from "../components/SegmentedControl";
 import type { useGoogleDrive } from "../hooks/useGoogleDrive";
+import { withoutCategories } from "../lib/analytics";
 import {
 	INITIAL_FILTERS,
 	type ListFilters,
@@ -28,6 +29,8 @@ export function StatsTab({
 	onSelectMonth,
 	filters,
 	onChangeFilters,
+	excludeFixed,
+	onChangeExcludeFixed,
 }: {
 	drive: Drive;
 	view: StatsView;
@@ -38,10 +41,19 @@ export function StatsTab({
 	onSelectMonth: (month: string) => void;
 	filters: ListFilters;
 	onChangeFilters: (filters: ListFilters) => void;
+	excludeFixed: boolean;
+	onChangeExcludeFixed: (exclude: boolean) => void;
 }) {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [canScroll, setCanScroll] = useState({ up: false, down: false });
-	const { receipts, syncState, error, status, connect, sync } = drive;
+	const { receipts, syncState, error, status, connect, sync, preferences } =
+		drive;
+	const { fixedCategories } = preferences;
+	const excluding = excludeFixed && fixedCategories.length > 0;
+	const analysisReceipts = useMemo(
+		() => withoutCategories(receipts, excluding ? fixedCategories : []),
+		[receipts, excluding, fixedCategories],
+	);
 	const refresh = () =>
 		void sync().catch(() => {
 			/* surfaced through syncState */
@@ -162,7 +174,10 @@ export function StatsTab({
 				/>
 			) : (
 				<AnalysisView
-					receipts={receipts}
+					receipts={analysisReceipts}
+					fixedCategories={fixedCategories}
+					excludeFixed={excluding}
+					onChangeExcludeFixed={onChangeExcludeFixed}
 					month={month}
 					direction={direction}
 					onChangeMonth={onChangeMonth}
