@@ -19,6 +19,11 @@ import {
 	signOut,
 } from "../lib/googleAuth";
 import { compressImage } from "../lib/image";
+import {
+	clearCachedReceipts,
+	loadCachedReceipts,
+	saveCachedReceipts,
+} from "../lib/receiptCache";
 import type { Receipt } from "../lib/types";
 
 export type DriveStatus = "disconnected" | "connecting" | "connected" | "error";
@@ -74,6 +79,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 	const commit = useCallback((next: Receipt[]) => {
 		receiptsRef.current = next;
 		setReceipts(next);
+		void saveCachedReceipts(next);
 	}, []);
 
 	/**
@@ -171,6 +177,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		sessionRef.current++;
 		receiptsRef.current = [];
 		setReceipts([]);
+		void clearCachedReceipts();
 		setSyncState({ kind: "idle" });
 		setStatus("disconnected");
 		setError(null);
@@ -225,7 +232,8 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		[withToken],
 	);
 
-	// Auto-reconnect on mount. `consumeAuthRedirect()` (frontend.tsx) has already stored any token that
+	// On mount: show the IndexedDB copy right away, then reconnect.
+	// `consumeAuthRedirect()` (frontend.tsx) has already stored any token that
 	// came back in the URL fragment before React rendered, so there are three
 	// cases: a valid token (from the redirect or surviving in localStorage) →
 	// connected, sync in the background; no token but a prior connection →
@@ -234,6 +242,12 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 	// interactive attempt → surface its error.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only once on mount.
 	useEffect(() => {
+		const hydrated = loadCachedReceipts().then((cached) => {
+			if (cached && mutationsRef.current === 0 && !receiptsRef.current.length) {
+				receiptsRef.current = cached;
+				setReceipts(cached);
+			}
+		});
 		if (!clientId) return;
 		const redirectError = getAuthRedirectError();
 		if (redirectError) {
@@ -243,7 +257,7 @@ export function useGoogleDrive(clientId: string): UseGoogleDrive {
 		}
 		if (hasValidToken()) {
 			setStatus("connected");
-			void sync().catch(() => {
+			void hydrated.then(sync).catch(() => {
 				/* surfaced through syncState */
 			});
 			return;
