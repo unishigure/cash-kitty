@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import { MonthSelector } from "../../components/MonthSelector";
 import type { SyncState } from "../../hooks/useGoogleDrive";
 import {
@@ -88,36 +88,39 @@ function FixedCostToggle({
 	onChange: (on: boolean) => void;
 }) {
 	const available = fixedCategories.length > 0;
+	const hintId = useId();
 	return (
-		<div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
-			<div className="min-w-0 flex-1">
-				<p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-					固定費を除く
-				</p>
-				<p className="truncate text-[11px] text-slate-400 dark:text-slate-500">
-					{available
-						? fixedCategories.join("・")
-						: "設定タブで固定費のカテゴリを選ぶと使えます"}
-				</p>
-			</div>
-			<button
-				type="button"
-				role="switch"
-				aria-checked={on}
-				aria-label="固定費を除く"
-				disabled={!available}
-				onClick={() => onChange(!on)}
-				className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-40 ${
-					on ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-600"
+		<button
+			type="button"
+			role="switch"
+			aria-checked={on}
+			aria-label="固定費を除く"
+			aria-describedby={hintId}
+			disabled={!available}
+			onClick={() => onChange(!on)}
+			className="flex w-full items-center gap-2 border-t border-white/20 pt-3 text-left text-xs text-emerald-50 disabled:opacity-60"
+		>
+			<span className="shrink-0 font-medium">固定費を除く</span>
+			<span
+				id={hintId}
+				className="min-w-0 flex-1 truncate text-[11px] text-emerald-100/80"
+			>
+				{available
+					? fixedCategories.join("・")
+					: "設定タブで固定費のカテゴリを選ぶと使えます"}
+			</span>
+			<span
+				className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${
+					on ? "bg-white" : "bg-emerald-800/50"
 				}`}
 			>
 				<span
-					className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-						on ? "translate-x-5" : ""
+					className={`absolute top-0.5 left-0.5 h-3 w-3 rounded-full shadow transition ${
+						on ? "translate-x-3 bg-emerald-600" : "bg-white"
 					}`}
 				/>
-			</button>
-		</div>
+			</span>
+		</button>
 	);
 }
 
@@ -181,11 +184,6 @@ export function AnalysisView({
 			<div className="lg:hidden">
 				<MonthSelector month={month} onChangeMonth={onChangeMonth} />
 			</div>
-			<FixedCostToggle
-				fixedCategories={fixedCategories}
-				on={excludeFixed}
-				onChange={onChangeExcludeFixed}
-			/>
 			<div
 				key={selectedMonth ?? JSON.stringify(period)}
 				className={`space-y-4 lg:grid lg:grid-cols-6 lg:gap-4 lg:space-y-0 ${direction === 1 ? "slide-from-right" : "slide-from-left"}`}
@@ -215,6 +213,11 @@ export function AnalysisView({
 							/>
 						</div>
 					)}
+					<FixedCostToggle
+						fixedCategories={fixedCategories}
+						on={excludeFixed}
+						onChange={onChangeExcludeFixed}
+					/>
 					{syncState.kind === "syncing" && (
 						<div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-emerald-600/60">
 							<span className="inline-block h-7 w-7 animate-spin rounded-full border-2 border-white border-t-transparent" />
