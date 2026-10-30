@@ -181,7 +181,7 @@ export function DailyHeatmap({
                   key={cell.date}
                   type="button"
                   data-date={cell.date}
-                  className={`absolute cursor-pointer rounded-xs outline-offset-1 focus-visible:outline-2 focus-visible:outline-gray-900 ${
+                  className={`absolute rounded-xs outline-offset-1 ${cell.total > 0 ? "cursor-pointer" : ""} focus-visible:outline-2 focus-visible:outline-gray-900 ${
                     cell.date === selectedDate
                       ? "ring-2 ring-gray-900"
                       : cell.date === hovered?.cell.date
@@ -207,7 +207,10 @@ export function DailyHeatmap({
                   onBlur={() => setHovered(undefined)}
                   onKeyDown={(event) => handleKeyDown(event, cell)}
                   aria-pressed={cell.date === selectedDate}
-                  onClick={() => onSelect(cell.date)}
+                  aria-disabled={cell.total === 0 || undefined}
+                  onClick={() => {
+                    if (cell.total > 0) onSelect(cell.date);
+                  }}
                 />
               ))}
             </div>
