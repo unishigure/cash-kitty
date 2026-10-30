@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
-import { dailyTotals, totalOfMonth } from "../lib/analytics";
+import { categoryTotals, dailyTotals, totalOfMonth } from "../lib/analytics";
 import {
   daysInMonth,
   formatFullDate,
@@ -10,6 +10,7 @@ import {
 } from "../lib/month";
 import { listReceiptsBetween, type Receipt } from "../lib/receipt";
 import { formatError, formatYen, today } from "../lib/ui";
+import { CategoryBreakdown } from "./charts/CategoryBreakdown";
 import { DailyHeatmap } from "./charts/DailyHeatmap";
 import { MonthlyBarChart } from "./charts/MonthlyBarChart";
 import { MonthPicker } from "./MonthPicker";
@@ -200,6 +201,7 @@ export function Analytics() {
   const previousTotal = totalOfMonth(list, previousMonth, compareUptoDay);
   const lastYearTotal = totalOfMonth(list, lastYearMonth, compareUptoDay);
 
+  const categories = categoryTotals(list, month);
   const totalsByDate = dailyTotals(list);
   const spendingDays = [...totalsByDate]
     .filter(([date]) => date >= `${chartStart}-01`)
@@ -257,6 +259,13 @@ export function Analytics() {
                 formatYen(d.total),
               ])}
             />
+          </Section>
+
+          <Section
+            title="カテゴリー別の構成"
+            period={`${formatMonth(month)}${isPartialMonth ? `（${elapsed}日まで）` : ""}`}
+          >
+            <CategoryBreakdown data={categories} />
           </Section>
 
           <Section

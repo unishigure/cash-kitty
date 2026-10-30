@@ -31,3 +31,18 @@ export function quartiles(values: number[]) {
     sorted[Math.floor((sorted.length - 1) * ratio)] ?? 0;
   return [at(0.25), at(0.5), at(0.75)] as const;
 }
+
+export function categoryTotals(receipts: Receipt[], month: YearMonth) {
+  const totals = new Map<string, { total: number; count: number }>();
+  for (const receipt of receipts) {
+    if (!isDateInMonth(receipt.date, month)) continue;
+    const current = totals.get(receipt.category) ?? { total: 0, count: 0 };
+    totals.set(receipt.category, {
+      total: current.total + receipt.totalAmount,
+      count: current.count + 1,
+    });
+  }
+  return [...totals]
+    .map(([category, value]) => ({ category, ...value }))
+    .sort((a, b) => b.total - a.total);
+}
