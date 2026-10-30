@@ -1,32 +1,14 @@
 import { useEffect, useState } from "react";
+import { isDateInMonth, toYearMonth } from "../lib/month";
 import {
   compareReceiptsNewestFirst,
   deleteReceipt,
   listReceiptsByMonth,
   type Receipt,
-  toYearMonth,
-  type YearMonth,
 } from "../lib/receipt";
-import {
-  buttonClass,
-  formatError,
-  formatYen,
-  inputClass,
-  today,
-} from "../lib/ui";
+import { formatError, formatYen, today } from "../lib/ui";
+import { MonthPicker } from "./MonthPicker";
 import { ReceiptEditDialog } from "./ReceiptEditDialog";
-
-function shiftMonth(month: YearMonth, delta: number) {
-  const date = new Date(`${month}-01T00:00`);
-  date.setMonth(date.getMonth() + delta);
-  return toYearMonth(
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
-  );
-}
-
-function isInMonth(receipt: Receipt, month: YearMonth) {
-  return receipt.date.startsWith(`${month}-`);
-}
 
 function formatDate(date: string) {
   const [, month, day] = date.split("-");
@@ -82,7 +64,7 @@ export function ReceiptList() {
     setReceipts((list) =>
       list
         ?.filter(({ id }) => id !== saved.id)
-        .concat(isInMonth(saved, month) ? [saved] : [])
+        .concat(isDateInMonth(saved.date, month) ? [saved] : [])
         .sort(compareReceiptsNewestFirst),
     );
     setStatus(`更新しました: ${saved.storeName}`);
@@ -101,34 +83,7 @@ export function ReceiptList() {
     <div className="flex flex-col gap-4">
       <h1 className="text-3xl font-bold">明細一覧</h1>
 
-      <div className="flex items-center gap-2">
-        <button
-          className={buttonClass}
-          type="button"
-          aria-label="前の月"
-          onClick={() => setMonth((m) => shiftMonth(m, -1))}
-        >
-          ‹
-        </button>
-        <input
-          className={`${inputClass} w-auto`}
-          type="month"
-          aria-label="表示する月"
-          required
-          value={month}
-          onChange={(event) => {
-            if (event.target.value) setMonth(toYearMonth(event.target.value));
-          }}
-        />
-        <button
-          className={buttonClass}
-          type="button"
-          aria-label="次の月"
-          onClick={() => setMonth((m) => shiftMonth(m, 1))}
-        >
-          ›
-        </button>
-      </div>
+      <MonthPicker month={month} onChange={setMonth} />
 
       <p role="status" aria-live="polite">
         {status}

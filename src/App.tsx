@@ -1,11 +1,13 @@
 import "./style.css";
 import { useSyncExternalStore } from "react";
+import { Analytics } from "./components/Analytics";
 import { ReceiptImport } from "./components/ReceiptImport";
 import { ReceiptList } from "./components/ReceiptList";
 
 const routes = [
   { hash: "#/import", label: "レシート取込", Page: ReceiptImport },
   { hash: "#/receipts", label: "明細一覧", Page: ReceiptList },
+  { hash: "#/analytics", label: "分析", Page: Analytics },
 ] as const;
 
 function subscribe(callback: () => void) {

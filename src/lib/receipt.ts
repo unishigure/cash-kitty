@@ -1,3 +1,5 @@
+import type { YearMonth } from "./month";
+
 export const categories = [
   "食費",
   "日用品",
@@ -29,12 +31,6 @@ export type Receipt = {
   fileId?: string;
   driveModifiedTime?: string;
 };
-
-export type YearMonth = `${number}-${number}`;
-
-export function toYearMonth(date: string) {
-  return date.slice(0, 7) as YearMonth;
-}
 
 export type ReceiptInput = Pick<
   Receipt,
@@ -105,11 +101,15 @@ export function compareReceiptsNewestFirst(a: Receipt, b: Receipt) {
   return b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt);
 }
 
-export async function listReceiptsByMonth(month: YearMonth) {
+export async function listReceiptsBetween(from: YearMonth, to: YearMonth) {
   const receipts = await withStore("readonly", (store) =>
-    store.index("date").getAll(IDBKeyRange.bound(`${month}-01`, `${month}-31`)),
+    store.index("date").getAll(IDBKeyRange.bound(`${from}-01`, `${to}-31`)),
   );
   return (receipts as Receipt[]).sort(compareReceiptsNewestFirst);
+}
+
+export function listReceiptsByMonth(month: YearMonth) {
+  return listReceiptsBetween(month, month);
 }
 
 export async function deleteReceipt(id: string) {
