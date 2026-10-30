@@ -21,6 +21,7 @@ import { formatYen, today } from "@/lib/ui";
 
 const gap = 3;
 const labelWidth = 24;
+const focusRoom = 4;
 const top = 20;
 const weekdayLabels = ["", "月", "", "水", "", "金", ""];
 
@@ -76,7 +77,10 @@ export function DailyHeatmap({
     cells.find((cell) => cell.date === activeDate)?.date ?? cells.at(-1)?.date;
 
   const cellSize = Math.min(
-    Math.max(Math.floor((width - labelWidth) / weeks) - gap, 10),
+    Math.max(
+      Math.floor((width - labelWidth - focusRoom * 2) / weeks) - gap,
+      10,
+    ),
     16,
   );
   const pitch = cellSize + gap;
@@ -142,7 +146,11 @@ export function DailyHeatmap({
       <div className="flex min-w-0">
         <div
           className="relative shrink-0 text-[11px] text-gray-600"
-          style={{ width: labelWidth, height: gridHeight }}
+          style={{
+            width: labelWidth,
+            height: gridHeight,
+            marginTop: focusRoom,
+          }}
         >
           {weekdayLabels.map(
             (label, weekday) =>
@@ -157,7 +165,11 @@ export function DailyHeatmap({
               ),
           )}
         </div>
-        <div ref={scrollerRef} className="min-w-0 flex-1 overflow-x-auto">
+        <div
+          ref={scrollerRef}
+          className="min-w-0 flex-1 overflow-x-auto"
+          style={{ padding: focusRoom }}
+        >
           {width > 0 && (
             <div
               className="relative"
