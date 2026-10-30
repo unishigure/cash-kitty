@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { isDateInMonth, toYearMonth } from "../lib/month";
 import {
-  compareReceiptsNewestFirst,
+  compareReceiptsOldestFirst,
   deleteReceipt,
   listReceiptsByMonth,
   type Receipt,
@@ -65,7 +65,7 @@ export function ReceiptList() {
       list
         ?.filter(({ id }) => id !== saved.id)
         .concat(isDateInMonth(saved.date, month) ? [saved] : [])
-        .sort(compareReceiptsNewestFirst),
+        .sort(compareReceiptsOldestFirst),
     );
     setStatus(`更新しました: ${saved.storeName}`);
   }

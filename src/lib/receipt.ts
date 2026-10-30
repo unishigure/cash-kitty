@@ -97,15 +97,15 @@ export async function updateReceipt(receipt: Receipt, input: ReceiptInput) {
   return updated;
 }
 
-export function compareReceiptsNewestFirst(a: Receipt, b: Receipt) {
-  return b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt);
+export function compareReceiptsOldestFirst(a: Receipt, b: Receipt) {
+  return a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt);
 }
 
 export async function listReceiptsBetween(from: YearMonth, to: YearMonth) {
   const receipts = await withStore("readonly", (store) =>
     store.index("date").getAll(IDBKeyRange.bound(`${from}-01`, `${to}-31`)),
   );
-  return (receipts as Receipt[]).sort(compareReceiptsNewestFirst);
+  return (receipts as Receipt[]).sort(compareReceiptsOldestFirst);
 }
 
 export function listReceiptsByMonth(month: YearMonth) {
