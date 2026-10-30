@@ -138,9 +138,9 @@ export function ReceiptImport() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-3xl font-bold">レシート取込</h1>
-      <p role="status" aria-live="polite">
+      <output className="block" aria-live="polite">
         {status}
-      </p>
+      </output>
 
       <div className="grid items-start gap-4 md:grid-cols-2">
         <fieldset className="grid gap-3 border border-gray-400 p-4">

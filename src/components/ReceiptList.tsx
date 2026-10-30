@@ -85,9 +85,9 @@ export function ReceiptList() {
 
       <MonthPicker month={month} onChange={setMonth} />
 
-      <p role="status" aria-live="polite">
+      <output className="block" aria-live="polite">
         {status}
-      </p>
+      </output>
 
       {receipts && (
         <>
