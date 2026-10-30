@@ -81,8 +81,6 @@ export function ReceiptList() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-bold">明細一覧</h1>
-
       <MonthPicker month={month} onChange={setMonth} />
 
       <output className="block" aria-live="polite">

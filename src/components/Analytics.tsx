@@ -209,7 +209,6 @@ export function Analytics() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-bold">分析</h1>
       <MonthPicker month={month} onChange={setMonth} />
       {error && <p role="alert">{error}</p>}
 

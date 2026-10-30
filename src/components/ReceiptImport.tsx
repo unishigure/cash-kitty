@@ -137,8 +137,7 @@ export function ReceiptImport() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-bold">レシート取込</h1>
-      <output className="block" aria-live="polite">
+      <output className="block bg-blue-800/20 p-2" aria-live="polite">
         {status}
       </output>
 
