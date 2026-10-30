@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { formatMonth, type YearMonth } from "../../lib/month";
-import { formatYen } from "../../lib/ui";
+import { formatMonth, type YearMonth } from "@/lib/month";
+import { formatYen } from "@/lib/ui";
 
 export function StatTile({
   label,

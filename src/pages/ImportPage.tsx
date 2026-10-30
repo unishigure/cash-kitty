@@ -4,10 +4,10 @@ import {
   emptyDraft,
   parseDraft,
   ReceiptFields,
-} from "../components/receipt/ReceiptFields";
-import { addReceipt } from "../lib/receipt";
-import { checkModelAvailability, extractReceipt } from "../lib/receipt-ai";
-import { buttonClass, formatError, formatYen } from "../lib/ui";
+} from "@/components/receipt/ReceiptFields";
+import { addReceipt } from "@/lib/receipt";
+import { checkModelAvailability, extractReceipt } from "@/lib/receipt-ai";
+import { buttonClass, formatError, formatYen } from "@/lib/ui";
 
 export function ImportPage() {
   const [modelReady, setModelReady] = useState(false);

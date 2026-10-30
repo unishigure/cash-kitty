@@ -1,5 +1,5 @@
-import { chartColors } from "../../lib/chart";
-import { formatYen } from "../../lib/ui";
+import { chartColors } from "@/lib/chart";
+import { formatYen } from "@/lib/ui";
 
 export function CategoryBreakdown({
   data,

@@ -1,8 +1,8 @@
-import { formatShortDate } from "../../lib/month";
-import { deleteReceipt, type Receipt } from "../../lib/receipt";
-import { formatYen } from "../../lib/ui";
-import { ReceiptDetailDialog } from "./ReceiptDetailDialog";
-import { ReceiptEditDialog } from "./ReceiptEditDialog";
+import { ReceiptDetailDialog } from "@/components/receipt/ReceiptDetailDialog";
+import { ReceiptEditDialog } from "@/components/receipt/ReceiptEditDialog";
+import { formatShortDate } from "@/lib/month";
+import { deleteReceipt, type Receipt } from "@/lib/receipt";
+import { formatYen } from "@/lib/ui";
 
 export type OpenedReceipt = { receipt: Receipt; mode: "detail" | "edit" };
 

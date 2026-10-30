@@ -1,4 +1,4 @@
-import { toYearMonth, type YearMonth } from "./month";
+import { toYearMonth, type YearMonth } from "@/lib/month";
 
 export type ReceiptFilter = {
   month?: YearMonth;

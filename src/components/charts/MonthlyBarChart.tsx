@@ -1,14 +1,9 @@
 import { useState } from "react";
-import { useElementWidth } from "../../hooks/useElementWidth";
-import {
-  chartColors,
-  columnPath,
-  formatAxisYen,
-  niceTicks,
-} from "../../lib/chart";
-import { formatMonth, type YearMonth } from "../../lib/month";
-import { formatYen } from "../../lib/ui";
-import { ChartTooltip, TooltipRow } from "./ChartTooltip";
+import { ChartTooltip, TooltipRow } from "@/components/charts/ChartTooltip";
+import { useElementWidth } from "@/hooks/useElementWidth";
+import { chartColors, columnPath, formatAxisYen, niceTicks } from "@/lib/chart";
+import { formatMonth, type YearMonth } from "@/lib/month";
+import { formatYen } from "@/lib/ui";
 
 const height = 240;
 const margin = { top: 28, right: 8, bottom: 28, left: 48 };

@@ -1,25 +1,25 @@
 import { useEffect, useState } from "react";
-import { MonthPicker } from "../components/MonthPicker";
+import { MonthPicker } from "@/components/MonthPicker";
 import {
   type OpenedReceipt,
   ReceiptDialogs,
-} from "../components/receipt/ReceiptDialogs";
-import { ReceiptPanel } from "../components/receipt/ReceiptPanel";
+} from "@/components/receipt/ReceiptDialogs";
+import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
 import {
   formatFullDate,
   formatMonth,
   isDateInMonth,
   toYearMonth,
   type YearMonth,
-} from "../lib/month";
+} from "@/lib/month";
 import {
   compareReceiptsOldestFirst,
   listReceiptsByMonth,
   matchesQuery,
   type Receipt,
-} from "../lib/receipt";
-import { parseReceiptFilter, receiptsHash } from "../lib/route";
-import { formatError, today } from "../lib/ui";
+} from "@/lib/receipt";
+import { parseReceiptFilter, receiptsHash } from "@/lib/route";
+import { formatError, today } from "@/lib/ui";
 
 export function ReceiptsPage() {
   const [initialFilter] = useState(() => parseReceiptFilter(location.hash));

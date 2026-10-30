@@ -1,5 +1,5 @@
-import { shiftMonth, toYearMonth, type YearMonth } from "../lib/month";
-import { buttonClass, inputClass } from "../lib/ui";
+import { shiftMonth, toYearMonth, type YearMonth } from "@/lib/month";
+import { buttonClass, inputClass } from "@/lib/ui";
 
 export function MonthPicker({
   month,

@@ -5,8 +5,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { useElementWidth } from "../../hooks/useElementWidth";
-import { chartColors } from "../../lib/chart";
+import { ChartTooltip, TooltipRow } from "@/components/charts/ChartTooltip";
+import { useElementWidth } from "@/hooks/useElementWidth";
+import { chartColors } from "@/lib/chart";
 import {
   addDays,
   daysBetween,
@@ -14,10 +15,9 @@ import {
   formatFullDate,
   shiftMonth,
   type YearMonth,
-} from "../../lib/month";
-import { quartiles } from "../../lib/stats";
-import { formatYen, today } from "../../lib/ui";
-import { ChartTooltip, TooltipRow } from "./ChartTooltip";
+} from "@/lib/month";
+import { quartiles } from "@/lib/stats";
+import { formatYen, today } from "@/lib/ui";
 
 const gap = 3;
 const labelWidth = 24;

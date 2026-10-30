@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { CategoryBreakdown } from "../components/charts/CategoryBreakdown";
-import { DailyHeatmap } from "../components/charts/DailyHeatmap";
-import { MonthlyBarChart } from "../components/charts/MonthlyBarChart";
-import { MonthPicker } from "../components/MonthPicker";
+import { CategoryBreakdown } from "@/components/charts/CategoryBreakdown";
+import { DailyHeatmap } from "@/components/charts/DailyHeatmap";
+import { MonthlyBarChart } from "@/components/charts/MonthlyBarChart";
+import { MonthPicker } from "@/components/MonthPicker";
 import {
   type OpenedReceipt,
   ReceiptDialogs,
-} from "../components/receipt/ReceiptDialogs";
-import { ReceiptPanel } from "../components/receipt/ReceiptPanel";
-import { StatsSection } from "../components/stats/StatsSection";
-import { ComparisonTile, StatTile } from "../components/stats/StatTile";
-import { useMediaQuery } from "../hooks/useMediaQuery";
+} from "@/components/receipt/ReceiptDialogs";
+import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
+import { StatsSection } from "@/components/stats/StatsSection";
+import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import {
   daysInMonth,
   formatFullDate,
@@ -19,16 +19,16 @@ import {
   shiftMonth,
   toYearMonth,
   type YearMonth,
-} from "../lib/month";
+} from "@/lib/month";
 import {
   compareReceiptsOldestFirst,
   listReceiptsBetween,
   matchesQuery,
   type Receipt,
-} from "../lib/receipt";
-import { receiptsHash } from "../lib/route";
-import { categoryTotals, dailyTotals, totalOfMonth } from "../lib/stats";
-import { formatError, formatYen, sidePanelQuery, today } from "../lib/ui";
+} from "@/lib/receipt";
+import { receiptsHash } from "@/lib/route";
+import { categoryTotals, dailyTotals, totalOfMonth } from "@/lib/stats";
+import { formatError, formatYen, sidePanelQuery, today } from "@/lib/ui";
 
 function elapsedDays(month: YearMonth) {
   const todayDate = today();

@@ -1,11 +1,11 @@
-import "./style.css";
+import "@/style.css";
 import { useEffect, useSyncExternalStore } from "react";
-import { useMediaQuery } from "./hooks/useMediaQuery";
-import { hashPath } from "./lib/route";
-import { sidePanelQuery } from "./lib/ui";
-import { ImportPage } from "./pages/ImportPage";
-import { ReceiptsPage } from "./pages/ReceiptsPage";
-import { StatsPage } from "./pages/StatsPage";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { hashPath } from "@/lib/route";
+import { sidePanelQuery } from "@/lib/ui";
+import { ImportPage } from "@/pages/ImportPage";
+import { ReceiptsPage } from "@/pages/ReceiptsPage";
+import { StatsPage } from "@/pages/StatsPage";
 
 const routes = [
   { hash: "#/import", label: "取込", Page: ImportPage },

@@ -1,7 +1,7 @@
 import { useId } from "react";
-import { formatShortDate } from "../../lib/month";
-import type { Receipt } from "../../lib/receipt";
-import { formatYen, inputClass } from "../../lib/ui";
+import { formatShortDate } from "@/lib/month";
+import type { Receipt } from "@/lib/receipt";
+import { formatYen, inputClass } from "@/lib/ui";
 
 function FilterChip({
   label,

@@ -1,4 +1,4 @@
-import type { YearMonth } from "./month";
+import type { YearMonth } from "@/lib/month";
 
 export const categories = [
   "食費",

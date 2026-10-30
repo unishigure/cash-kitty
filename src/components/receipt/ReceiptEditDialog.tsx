@@ -1,13 +1,13 @@
 import { type SubmitEvent, useState } from "react";
-import { useModalDialog } from "../../hooks/useModalDialog";
-import { type Receipt, updateReceipt } from "../../lib/receipt";
-import { buttonClass, formatError } from "../../lib/ui";
 import {
   type Draft,
   draftFromReceipt,
   parseDraft,
   ReceiptFields,
-} from "./ReceiptFields";
+} from "@/components/receipt/ReceiptFields";
+import { useModalDialog } from "@/hooks/useModalDialog";
+import { type Receipt, updateReceipt } from "@/lib/receipt";
+import { buttonClass, formatError } from "@/lib/ui";
 
 export function ReceiptEditDialog({
   receipt,

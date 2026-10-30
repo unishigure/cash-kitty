@@ -1,5 +1,5 @@
-import { daysInMonth, isDateInMonth, type YearMonth } from "./month";
-import type { Receipt } from "./receipt";
+import { daysInMonth, isDateInMonth, type YearMonth } from "@/lib/month";
+import type { Receipt } from "@/lib/receipt";
 
 export function totalOfMonth(
   receipts: Receipt[],
