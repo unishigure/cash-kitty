@@ -1,0 +1,18 @@
+{
+  "name": "cash-kitty",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "fix": "bun lint --fix && bun fmt",
+    "ci": "bun run --parallel --no-exit-on-error \"bun fmt --check\" \"bun lint\" \"bun check\""
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/dom-chromium-ai": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "latest"
+  }
+}
