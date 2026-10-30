@@ -31,16 +31,16 @@ export function ComparisonTile({
   baseMonth: YearMonth;
   baseUptoDay?: number;
   current: number;
-  base: number;
+  base: number | undefined;
 }) {
-  const baseLabel = `${formatMonth(baseMonth)}${baseUptoDay ? `（${baseUptoDay}日まで）` : ""}: ${formatYen(base)}`;
-  if (base === 0) {
+  if (!base) {
     return (
       <StatTile label={label} value="—">
         <p className="text-sm text-gray-600">比較できるデータがありません</p>
       </StatTile>
     );
   }
+  const baseLabel = `${formatMonth(baseMonth)}${baseUptoDay ? `（${baseUptoDay}日まで）` : ""}: ${formatYen(base)}`;
   const diff = current - base;
   const increased = diff > 0;
   const percent = Math.abs((diff / base) * 100).toFixed(1);

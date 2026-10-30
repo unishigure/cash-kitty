@@ -14,6 +14,7 @@ import {
 } from "@/lib/month";
 import {
   compareReceiptsOldestFirst,
+  listAllReceipts,
   listReceiptsByMonth,
   matchesQuery,
   type Receipt,
@@ -26,6 +27,7 @@ export function ReceiptsPage() {
   const [month, setMonth] = useState(
     () => initialFilter.month ?? toYearMonth(today()),
   );
+  const [allPeriods, setAllPeriods] = useState(initialFilter.all ?? false);
   const [date, setDate] = useState(initialFilter.date);
   const [category, setCategory] = useState(initialFilter.category);
   const [receipts, setReceipts] = useState<Receipt[]>();
@@ -37,7 +39,7 @@ export function ReceiptsPage() {
     let cancelled = false;
     setStatus("読み込み中…");
 
-    listReceiptsByMonth(month)
+    (allPeriods ? listAllReceipts() : listReceiptsByMonth(month))
       .then((list) => {
         if (cancelled) return;
         setReceipts(list);
@@ -50,14 +52,19 @@ export function ReceiptsPage() {
     return () => {
       cancelled = true;
     };
-  }, [month]);
+  }, [month, allPeriods]);
 
   useEffect(() => {
-    history.replaceState(null, "", receiptsHash({ month, date, category }));
-  }, [month, date, category]);
+    history.replaceState(
+      null,
+      "",
+      receiptsHash({ month, all: allPeriods, date, category }),
+    );
+  }, [month, allPeriods, date, category]);
 
   function selectMonth(next: YearMonth) {
     setMonth(next);
+    setAllPeriods(false);
     setDate(undefined);
   }
 
@@ -70,7 +77,7 @@ export function ReceiptsPage() {
     setReceipts((list) =>
       list
         ?.filter(({ id }) => id !== saved.id)
-        .concat(isDateInMonth(saved.date, month) ? [saved] : [])
+        .concat(allPeriods || isDateInMonth(saved.date, month) ? [saved] : [])
         .sort(compareReceiptsOldestFirst),
     );
     setStatus(`更新しました: ${saved.storeName}`);
@@ -85,7 +92,14 @@ export function ReceiptsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <MonthPicker month={month} onChange={selectMonth} />
+      <MonthPicker
+        month={allPeriods ? undefined : month}
+        onChange={selectMonth}
+        onSelectAll={() => {
+          setAllPeriods(true);
+          setDate(undefined);
+        }}
+      />
 
       <output className="block" aria-live="polite">
         {status}
@@ -97,6 +111,7 @@ export function ReceiptsPage() {
           periodLabel={formatMonth(month)}
           dateLabel={date && formatFullDate(date)}
           category={category}
+          allPeriods={allPeriods}
           onClearDate={() => setDate(undefined)}
           onClearCategory={() => setCategory(undefined)}
           query={query}

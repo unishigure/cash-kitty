@@ -35,6 +35,7 @@ export function ReceiptPanel({
   periodLabel,
   dateLabel,
   category,
+  allPeriods,
   query,
   onQueryChange,
   onClearDate,
@@ -46,6 +47,7 @@ export function ReceiptPanel({
   periodLabel: string;
   dateLabel?: string;
   category?: string;
+  allPeriods: boolean;
   query: string;
   onQueryChange: (query: string) => void;
   onClearDate?: () => void;
@@ -75,7 +77,7 @@ export function ReceiptPanel({
 
       <ul className="flex flex-wrap gap-2" aria-label="絞り込み条件">
         <FilterChip
-          label={dateLabel ?? periodLabel}
+          label={dateLabel ?? (allPeriods ? "全期間" : periodLabel)}
           onClear={dateLabel ? onClearDate : undefined}
         />
         {category && <FilterChip label={category} onClear={onClearCategory} />}
@@ -101,8 +103,10 @@ export function ReceiptPanel({
               key={receipt.id}
               className="relative -mx-4 flex items-baseline gap-3 border-b border-gray-200 px-4 py-2 text-sm -outline-offset-2 hover:bg-gray-50 has-[button:focus-visible]:outline-2"
             >
-              <span className="w-22 shrink-0 text-gray-600 tabular-nums">
-                {formatShortDate(receipt.date)}
+              <span
+                className={`shrink-0 text-gray-600 tabular-nums ${allPeriods ? "w-28" : "w-22"}`}
+              >
+                {formatShortDate(receipt.date, { withYear: allPeriods })}
               </span>
               <span className="min-w-0 flex-1">
                 <button

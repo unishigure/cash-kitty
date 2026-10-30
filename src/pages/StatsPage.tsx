@@ -22,6 +22,7 @@ import {
 } from "@/lib/month";
 import {
   compareReceiptsOldestFirst,
+  listAllReceipts,
   listReceiptsBetween,
   matchesQuery,
   type Receipt,
@@ -53,6 +54,8 @@ export function StatsPage() {
   const [opened, setOpened] = useState<OpenedReceipt>();
   const showsSidePanel = useMediaQuery(sidePanelQuery);
   const [receipts, setReceipts] = useState<Receipt[]>();
+  const [allPeriods, setAllPeriods] = useState(false);
+  const [allReceipts, setAllReceipts] = useState<Receipt[]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -77,6 +80,21 @@ export function StatsPage() {
     };
   }, [month]);
 
+  useEffect(() => {
+    if (!allPeriods) return;
+    let cancelled = false;
+    listAllReceipts()
+      .then((list) => {
+        if (!cancelled) setAllReceipts(list);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) setError(formatError(error));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [allPeriods]);
+
   const previousMonth = shiftMonth(month, -1);
   const lastYearMonth = shiftMonth(month, -12);
   const list = receipts ?? [];
@@ -94,11 +112,13 @@ export function StatsPage() {
   const previousTotal = totalOfMonth(list, previousMonth, compareUptoDay);
   const lastYearTotal = totalOfMonth(list, lastYearMonth, compareUptoDay);
 
-  const categories = categoryTotals(list, month);
+  const categories = allPeriods
+    ? categoryTotals(allReceipts ?? [], undefined)
+    : categoryTotals(list, month);
   const totalsByDate = dailyTotals(list);
-  const filteredReceipts = list.filter(
+  const filteredReceipts = (allPeriods ? (allReceipts ?? []) : list).filter(
     (r) =>
-      isDateInMonth(r.date, month) &&
+      (allPeriods || isDateInMonth(r.date, month)) &&
       (!selectedDate || r.date === selectedDate) &&
       (!selectedCategory || r.category === selectedCategory) &&
       (!query.trim() || matchesQuery(r, query.trim())),
@@ -106,7 +126,23 @@ export function StatsPage() {
 
   function selectMonth(next: YearMonth) {
     setMonth(next);
+    setAllPeriods(false);
     setSelectedDate(undefined);
+  }
+
+  function selectAllPeriods() {
+    setAllPeriods(true);
+    setSelectedDate(undefined);
+  }
+
+  function selectBar(next: YearMonth) {
+    if (!allPeriods && next === month) selectAllPeriods();
+    else selectMonth(next);
+  }
+
+  function updateLists(update: (list: Receipt[]) => Receipt[]) {
+    setReceipts((current) => current && update(current));
+    setAllReceipts((current) => current && update(current));
   }
 
   function selectDate(date: string) {
@@ -120,7 +156,7 @@ export function StatsPage() {
 
   function selectCategory(category: string) {
     if (!showsSidePanel) {
-      location.hash = receiptsHash({ month, category });
+      location.hash = receiptsHash({ month, all: allPeriods, category });
       return;
     }
     setSelectedCategory((current) =>
@@ -130,7 +166,11 @@ export function StatsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <MonthPicker month={month} onChange={selectMonth} />
+      <MonthPicker
+        month={allPeriods ? undefined : month}
+        onChange={selectMonth}
+        onSelectAll={selectAllPeriods}
+      />
       {error && <p role="alert">{error}</p>}
 
       {receipts && (
@@ -141,10 +181,19 @@ export function StatsPage() {
           <div className="flex min-w-0 flex-col gap-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <StatTile
-                label={`${formatMonth(month)}の支出`}
-                value={formatYen(thisTotal)}
+                label={
+                  allPeriods ? "全期間の支出" : `${formatMonth(month)}の支出`
+                }
+                value={formatYen(
+                  allPeriods
+                    ? (allReceipts ?? []).reduce(
+                        (sum, r) => sum + r.totalAmount,
+                        0,
+                      )
+                    : thisTotal,
+                )}
               >
-                {isPartialMonth && (
+                {!allPeriods && isPartialMonth && (
                   <p className="text-sm text-gray-600">{elapsed}日までの集計</p>
                 )}
               </StatTile>
@@ -153,14 +202,14 @@ export function StatsPage() {
                 baseMonth={previousMonth}
                 baseUptoDay={compareUptoDay}
                 current={thisTotal}
-                base={previousTotal}
+                base={allPeriods ? undefined : previousTotal}
               />
               <ComparisonTile
                 label="前年同月比"
                 baseMonth={lastYearMonth}
                 baseUptoDay={compareUptoDay}
                 current={thisTotal}
-                base={lastYearTotal}
+                base={allPeriods ? undefined : lastYearTotal}
               />
             </div>
 
@@ -170,14 +219,18 @@ export function StatsPage() {
             >
               <MonthlyBarChart
                 data={monthlyTotals}
-                selected={month}
-                onSelect={selectMonth}
+                selected={allPeriods ? undefined : month}
+                onSelect={selectBar}
               />
             </StatsSection>
 
             <StatsSection
               title="カテゴリー別の構成"
-              period={`${formatMonth(month)}${isPartialMonth ? `（${elapsed}日まで）` : ""}`}
+              period={
+                allPeriods
+                  ? "全期間"
+                  : `${formatMonth(month)}${isPartialMonth ? `（${elapsed}日まで）` : ""}`
+              }
             >
               <CategoryBreakdown
                 data={categories}
@@ -208,6 +261,7 @@ export function StatsPage() {
               periodLabel={formatMonth(month)}
               dateLabel={selectedDate && formatFullDate(selectedDate)}
               category={selectedCategory}
+              allPeriods={allPeriods}
               query={query}
               onQueryChange={setQuery}
               onClearDate={() => setSelectedDate(undefined)}
@@ -222,14 +276,14 @@ export function StatsPage() {
         opened={opened}
         onOpenedChange={setOpened}
         onSaved={(saved) =>
-          setReceipts((current) =>
-            current
-              ?.map((r) => (r.id === saved.id ? saved : r))
+          updateLists((list) =>
+            list
+              .map((r) => (r.id === saved.id ? saved : r))
               .sort(compareReceiptsOldestFirst),
           )
         }
         onDeleted={(deleted) =>
-          setReceipts((current) => current?.filter((r) => r.id !== deleted.id))
+          updateLists((list) => list.filter((r) => r.id !== deleted.id))
         }
         onError={(error) => setError(formatError(error))}
       />

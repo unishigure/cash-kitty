@@ -32,10 +32,13 @@ export function quartiles(values: number[]) {
   return [at(0.25), at(0.5), at(0.75)] as const;
 }
 
-export function categoryTotals(receipts: Receipt[], month: YearMonth) {
+export function categoryTotals(
+  receipts: Receipt[],
+  month: YearMonth | undefined,
+) {
   const totals = new Map<string, { total: number; count: number }>();
   for (const receipt of receipts) {
-    if (!isDateInMonth(receipt.date, month)) continue;
+    if (month && !isDateInMonth(receipt.date, month)) continue;
     const current = totals.get(receipt.category) ?? { total: 0, count: 0 };
     totals.set(receipt.category, {
       total: current.total + receipt.totalAmount,

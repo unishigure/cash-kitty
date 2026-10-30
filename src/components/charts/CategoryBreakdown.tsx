@@ -14,7 +14,7 @@ export function CategoryBreakdown({
   const max = data[0]?.total ?? 0;
 
   if (total === 0) {
-    return <p className="text-sm text-gray-600">この月の支出はありません。</p>;
+    return <p className="text-sm text-gray-600">支出はありません。</p>;
   }
 
   return (

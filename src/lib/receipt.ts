@@ -112,6 +112,11 @@ export function listReceiptsByMonth(month: YearMonth) {
   return listReceiptsBetween(month, month);
 }
 
+export async function listAllReceipts() {
+  const receipts = await withStore("readonly", (store) => store.getAll());
+  return (receipts as Receipt[]).sort(compareReceiptsOldestFirst);
+}
+
 export async function deleteReceipt(id: string) {
   await withStore("readwrite", (store) => store.delete(id));
 }

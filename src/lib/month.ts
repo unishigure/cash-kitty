@@ -48,8 +48,8 @@ export function daysBetween(from: string, to: string) {
   return Math.round(ms / 86_400_000);
 }
 
-export function formatShortDate(date: string) {
-  const [, month, day] = date.split("-").map(Number);
+export function formatShortDate(date: string, { withYear = false } = {}) {
+  const [year, month, day] = date.split("-").map(Number);
   const weekday = "日月火水木金土"[new Date(`${date}T00:00`).getDay()];
-  return `${month}/${day}（${weekday}）`;
+  return `${withYear ? `${year}/` : ""}${month}/${day}（${weekday}）`;
 }

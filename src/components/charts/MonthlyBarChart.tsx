@@ -14,7 +14,7 @@ export function MonthlyBarChart({
   onSelect,
 }: {
   data: { month: YearMonth; total: number }[];
-  selected: YearMonth;
+  selected: YearMonth | undefined;
   onSelect: (month: YearMonth) => void;
 }) {
   const [containerRef, width] = useElementWidth<HTMLDivElement>();
