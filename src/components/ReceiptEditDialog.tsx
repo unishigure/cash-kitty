@@ -47,6 +47,7 @@ export function ReceiptEditDialog({
   return (
     <dialog
       ref={dialogRef}
+      closedby="any"
       className="m-auto w-full max-w-md border border-gray-400 p-0 backdrop:bg-black/40"
       aria-labelledby="receipt-edit-title"
       onClose={onClose}
