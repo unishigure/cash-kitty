@@ -35,6 +35,7 @@ export function ReceiptSidePanel({
   category,
   onClearDate,
   onClearCategory,
+  onOpen,
 }: {
   receipts: Receipt[];
   periodLabel: string;
@@ -42,6 +43,7 @@ export function ReceiptSidePanel({
   category?: string;
   onClearDate: () => void;
   onClearCategory: () => void;
+  onOpen: (receipt: Receipt) => void;
 }) {
   const total = receipts.reduce((sum, r) => sum + r.totalAmount, 0);
 
@@ -77,13 +79,19 @@ export function ReceiptSidePanel({
           {receipts.map((receipt) => (
             <li
               key={receipt.id}
-              className="flex items-baseline gap-3 border-b border-gray-200 py-2 text-sm"
+              className="relative -mx-4 flex items-baseline gap-3 border-b border-gray-200 px-4 py-2 text-sm -outline-offset-2 hover:bg-gray-50 has-[button:focus-visible]:outline-2"
             >
               <span className="w-22 shrink-0 text-gray-600 tabular-nums">
                 {formatShortDate(receipt.date)}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate">{receipt.storeName}</span>
+                <button
+                  type="button"
+                  className="block w-full cursor-pointer truncate text-left outline-none after:absolute after:inset-0"
+                  onClick={() => onOpen(receipt)}
+                >
+                  {receipt.storeName}
+                </button>
                 <span className="block text-xs text-gray-600">
                   {receipt.category}
                   {receipt.memo && `・${receipt.memo}`}

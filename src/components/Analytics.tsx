@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { categoryTotals, dailyTotals, totalOfMonth } from "../lib/analytics";
 import {
   daysInMonth,
@@ -9,13 +10,17 @@ import {
   toYearMonth,
   type YearMonth,
 } from "../lib/month";
-import { listReceiptsBetween, type Receipt } from "../lib/receipt";
+import {
+  compareReceiptsOldestFirst,
+  listReceiptsBetween,
+  type Receipt,
+} from "../lib/receipt";
 import { formatError, formatYen, today } from "../lib/ui";
 import { CategoryBreakdown } from "./charts/CategoryBreakdown";
 import { DailyHeatmap } from "./charts/DailyHeatmap";
 import { MonthlyBarChart } from "./charts/MonthlyBarChart";
-import { useMediaQuery } from "../hooks/useMediaQuery";
 import { MonthPicker } from "./MonthPicker";
+import { type OpenedReceipt, ReceiptDialogs } from "./ReceiptDialogs";
 import { ReceiptSidePanel } from "./ReceiptSidePanel";
 
 function elapsedDays(month: YearMonth) {
@@ -164,6 +169,7 @@ export function Analytics() {
   const [month, setMonth] = useState(() => toYearMonth(today()));
   const [selectedDate, setSelectedDate] = useState<string>();
   const [selectedCategory, setSelectedCategory] = useState<string>();
+  const [opened, setOpened] = useState<OpenedReceipt>();
   const showsSidePanel = useMediaQuery("(min-width: 1024px)");
   const [receipts, setReceipts] = useState<Receipt[]>();
   const [loading, setLoading] = useState(true);
@@ -333,10 +339,27 @@ export function Analytics() {
               category={selectedCategory}
               onClearDate={() => setSelectedDate(undefined)}
               onClearCategory={() => setSelectedCategory(undefined)}
+              onOpen={(receipt) => setOpened({ receipt, mode: "detail" })}
             />
           )}
         </div>
       )}
+
+      <ReceiptDialogs
+        opened={opened}
+        onOpenedChange={setOpened}
+        onSaved={(saved) =>
+          setReceipts((current) =>
+            current
+              ?.map((r) => (r.id === saved.id ? saved : r))
+              .sort(compareReceiptsOldestFirst),
+          )
+        }
+        onDeleted={(deleted) =>
+          setReceipts((current) => current?.filter((r) => r.id !== deleted.id))
+        }
+        onError={(error) => setError(formatError(error))}
+      />
     </div>
   );
 }

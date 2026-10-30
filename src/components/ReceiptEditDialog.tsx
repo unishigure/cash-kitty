@@ -1,4 +1,5 @@
-import { type SubmitEvent, useEffect, useRef, useState } from "react";
+import { type SubmitEvent, useState } from "react";
+import { useModalDialog } from "../hooks/useModalDialog";
 import { type Receipt, updateReceipt } from "../lib/receipt";
 import { buttonClass, formatError } from "../lib/ui";
 import {
@@ -17,15 +18,10 @@ export function ReceiptEditDialog({
   onSaved: (receipt: Receipt) => void;
   onClose: () => void;
 }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const dialogRef = useModalDialog();
   const [draft, setDraft] = useState(() => draftFromReceipt(receipt));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (dialog && !dialog.open) dialog.showModal();
-  }, []);
 
   function updateDraft<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));

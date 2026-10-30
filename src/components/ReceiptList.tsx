@@ -2,19 +2,18 @@ import { useEffect, useState } from "react";
 import { formatShortDate, isDateInMonth, toYearMonth } from "../lib/month";
 import {
   compareReceiptsOldestFirst,
-  deleteReceipt,
   listReceiptsByMonth,
   type Receipt,
 } from "../lib/receipt";
 import { formatError, formatYen, today } from "../lib/ui";
 import { MonthPicker } from "./MonthPicker";
-import { ReceiptEditDialog } from "./ReceiptEditDialog";
+import { type OpenedReceipt, ReceiptDialogs } from "./ReceiptDialogs";
 
 export function ReceiptList() {
   const [month, setMonth] = useState(() => toYearMonth(today()));
   const [receipts, setReceipts] = useState<Receipt[]>();
   const [status, setStatus] = useState("");
-  const [editing, setEditing] = useState<Receipt>();
+  const [opened, setOpened] = useState<OpenedReceipt>();
 
   useEffect(() => {
     let cancelled = false;
@@ -36,25 +35,12 @@ export function ReceiptList() {
     };
   }, [month]);
 
-  async function handleDelete(receipt: Receipt) {
-    if (
-      !confirm(
-        `${formatShortDate(receipt.date)} ${receipt.storeName} ${formatYen(receipt.totalAmount)} を削除しますか？`,
-      )
-    ) {
-      return;
-    }
-    try {
-      await deleteReceipt(receipt.id);
-      setReceipts((list) => list?.filter(({ id }) => id !== receipt.id));
-      setStatus(`削除しました: ${receipt.storeName}`);
-    } catch (error) {
-      setStatus(formatError(error));
-    }
+  function handleDeleted(receipt: Receipt) {
+    setReceipts((list) => list?.filter(({ id }) => id !== receipt.id));
+    setStatus(`削除しました: ${receipt.storeName}`);
   }
 
   function handleSaved(saved: Receipt) {
-    setEditing(undefined);
     setReceipts((list) =>
       list
         ?.filter(({ id }) => id !== saved.id)
@@ -115,19 +101,25 @@ export function ReceiptList() {
                     <th className="px-2 py-1 font-normal">店舗名</th>
                     <th className="px-2 py-1 font-normal">カテゴリー</th>
                     <th className="px-2 py-1 text-right font-normal">金額</th>
-                    <th className="px-2 py-1">
-                      <span className="sr-only">操作</span>
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {receipts.map((receipt) => (
-                    <tr key={receipt.id} className="border-b border-gray-200">
+                    <tr
+                      key={receipt.id}
+                      className="relative border-b border-gray-200 -outline-offset-2 hover:bg-gray-50 has-[button:focus-visible]:outline-2"
+                    >
                       <td className="px-2 py-2 whitespace-nowrap">
                         {formatShortDate(receipt.date)}
                       </td>
                       <td className="px-2 py-2">
-                        {receipt.storeName}
+                        <button
+                          type="button"
+                          className="cursor-pointer text-left outline-none after:absolute after:inset-0"
+                          onClick={() => setOpened({ receipt, mode: "detail" })}
+                        >
+                          {receipt.storeName}
+                        </button>
                         {receipt.memo && (
                           <p className="text-sm text-gray-600">
                             {receipt.memo}
@@ -140,22 +132,6 @@ export function ReceiptList() {
                       <td className="px-2 py-2 text-right whitespace-nowrap tabular-nums">
                         {formatYen(receipt.totalAmount)}
                       </td>
-                      <td className="px-2 py-2 text-right whitespace-nowrap">
-                        <button
-                          className="mr-3 cursor-pointer text-sm text-gray-600 underline hover:text-gray-900"
-                          type="button"
-                          onClick={() => setEditing(receipt)}
-                        >
-                          編集
-                        </button>
-                        <button
-                          className="cursor-pointer text-sm text-gray-600 underline hover:text-red-700"
-                          type="button"
-                          onClick={() => void handleDelete(receipt)}
-                        >
-                          削除
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -165,13 +141,13 @@ export function ReceiptList() {
         </>
       )}
 
-      {editing && (
-        <ReceiptEditDialog
-          receipt={editing}
-          onSaved={handleSaved}
-          onClose={() => setEditing(undefined)}
-        />
-      )}
+      <ReceiptDialogs
+        opened={opened}
+        onOpenedChange={setOpened}
+        onSaved={handleSaved}
+        onDeleted={handleDeleted}
+        onError={(error) => setStatus(formatError(error))}
+      />
     </div>
   );
 }
