@@ -16,6 +16,7 @@ import {
   matchesQuery,
   type Receipt,
 } from "../lib/receipt";
+import { receiptsHash } from "../lib/route";
 import { formatError, formatYen, sidePanelQuery, today } from "../lib/ui";
 import { CategoryBreakdown } from "./charts/CategoryBreakdown";
 import { DailyHeatmap } from "./charts/DailyHeatmap";
@@ -231,13 +232,19 @@ export function Analytics() {
   }
 
   function selectDate(date: string) {
+    if (!showsSidePanel) {
+      location.hash = receiptsHash({ month: toYearMonth(date), date });
+      return;
+    }
     setMonth(toYearMonth(date));
-    setSelectedDate((current) =>
-      showsSidePanel && current !== date ? date : undefined,
-    );
+    setSelectedDate((current) => (current !== date ? date : undefined));
   }
 
   function selectCategory(category: string) {
+    if (!showsSidePanel) {
+      location.hash = receiptsHash({ month, category });
+      return;
+    }
     setSelectedCategory((current) =>
       current === category ? undefined : category,
     );
@@ -308,7 +315,7 @@ export function Analytics() {
               <CategoryBreakdown
                 data={categories}
                 selected={showsSidePanel ? selectedCategory : undefined}
-                onSelect={showsSidePanel ? selectCategory : undefined}
+                onSelect={selectCategory}
               />
             </Section>
 

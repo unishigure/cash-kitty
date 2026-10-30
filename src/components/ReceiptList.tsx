@@ -1,18 +1,30 @@
 import { useEffect, useState } from "react";
-import { formatMonth, isDateInMonth, toYearMonth } from "../lib/month";
+import {
+  formatFullDate,
+  formatMonth,
+  isDateInMonth,
+  toYearMonth,
+  type YearMonth,
+} from "../lib/month";
 import {
   compareReceiptsOldestFirst,
   listReceiptsByMonth,
   matchesQuery,
   type Receipt,
 } from "../lib/receipt";
+import { parseReceiptFilter, receiptsHash } from "../lib/route";
 import { formatError, today } from "../lib/ui";
 import { MonthPicker } from "./MonthPicker";
 import { type OpenedReceipt, ReceiptDialogs } from "./ReceiptDialogs";
 import { ReceiptPanel } from "./ReceiptPanel";
 
 export function ReceiptList() {
-  const [month, setMonth] = useState(() => toYearMonth(today()));
+  const [initialFilter] = useState(() => parseReceiptFilter(location.hash));
+  const [month, setMonth] = useState(
+    () => initialFilter.month ?? toYearMonth(today()),
+  );
+  const [date, setDate] = useState(initialFilter.date);
+  const [category, setCategory] = useState(initialFilter.category);
   const [receipts, setReceipts] = useState<Receipt[]>();
   const [status, setStatus] = useState("");
   const [opened, setOpened] = useState<OpenedReceipt>();
@@ -37,6 +49,15 @@ export function ReceiptList() {
     };
   }, [month]);
 
+  useEffect(() => {
+    history.replaceState(null, "", receiptsHash({ month, date, category }));
+  }, [month, date, category]);
+
+  function selectMonth(next: YearMonth) {
+    setMonth(next);
+    setDate(undefined);
+  }
+
   function handleDeleted(receipt: Receipt) {
     setReceipts((list) => list?.filter(({ id }) => id !== receipt.id));
     setStatus(`削除しました: ${receipt.storeName}`);
@@ -52,13 +73,16 @@ export function ReceiptList() {
     setStatus(`更新しました: ${saved.storeName}`);
   }
 
-  const visible = query.trim()
-    ? receipts?.filter((receipt) => matchesQuery(receipt, query.trim()))
-    : receipts;
+  const visible = receipts?.filter(
+    (receipt) =>
+      (!date || receipt.date === date) &&
+      (!category || receipt.category === category) &&
+      (!query.trim() || matchesQuery(receipt, query.trim())),
+  );
 
   return (
     <div className="flex flex-col gap-4">
-      <MonthPicker month={month} onChange={setMonth} />
+      <MonthPicker month={month} onChange={selectMonth} />
 
       <output className="block" aria-live="polite">
         {status}
@@ -68,6 +92,10 @@ export function ReceiptList() {
         <ReceiptPanel
           receipts={visible}
           periodLabel={formatMonth(month)}
+          dateLabel={date && formatFullDate(date)}
+          category={category}
+          onClearDate={() => setDate(undefined)}
+          onClearCategory={() => setCategory(undefined)}
           query={query}
           onQueryChange={setQuery}
           onOpen={(receipt) => setOpened({ receipt, mode: "detail" })}

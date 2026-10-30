@@ -4,6 +4,7 @@ import { Analytics } from "./components/Analytics";
 import { ReceiptImport } from "./components/ReceiptImport";
 import { ReceiptList } from "./components/ReceiptList";
 import { useMediaQuery } from "./hooks/useMediaQuery";
+import { hashPath } from "./lib/route";
 import { sidePanelQuery } from "./lib/ui";
 
 const routes = [
@@ -53,7 +54,8 @@ export function App() {
   const available = routes.filter(
     (route) => !(showsSidePanel && "coveredBySidePanel" in route),
   );
-  const requested = routes.find((route) => route.hash === hash) ?? routes[0];
+  const requested =
+    routes.find((route) => route.hash === hashPath(hash)) ?? routes[0];
   const current = available.includes(requested) ? requested : statsRoute;
   const widthClass = `max-w-240 ${"wide" in current ? "lg:max-w-360" : ""}`;
 
