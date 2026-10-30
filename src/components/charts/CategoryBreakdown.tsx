@@ -18,7 +18,7 @@ export function CategoryBreakdown({
   }
 
   return (
-    <table className="w-full border-collapse text-sm">
+    <table className="-mx-2 w-[calc(100%+1rem)] border-collapse text-sm">
       <thead className="sr-only">
         <tr>
           <th>カテゴリー</th>
@@ -31,13 +31,19 @@ export function CategoryBreakdown({
         {data.map((d) => (
           <tr
             key={d.category}
-            className={d.category === selected ? "bg-blue-50" : undefined}
+            className={`${onSelect ? "relative -outline-offset-2 has-[button:focus-visible]:outline-2" : ""} ${
+              d.category === selected
+                ? "bg-blue-50"
+                : onSelect
+                  ? "hover:bg-gray-50"
+                  : ""
+            }`}
           >
-            <th className="w-0 py-1 pr-3 text-left font-normal whitespace-nowrap">
+            <th className="w-0 py-1 pr-3 pl-2 text-left font-normal whitespace-nowrap">
               {onSelect ? (
                 <button
                   type="button"
-                  className="cursor-pointer underline-offset-2 hover:underline"
+                  className="cursor-pointer outline-none after:absolute after:inset-0"
                   aria-pressed={d.category === selected}
                   onClick={() => onSelect(d.category)}
                 >
@@ -61,7 +67,7 @@ export function CategoryBreakdown({
             <td className="w-0 py-1 pl-3 text-right whitespace-nowrap tabular-nums">
               {formatYen(d.total)}
             </td>
-            <td className="w-0 py-1 pl-3 text-right whitespace-nowrap text-gray-600 tabular-nums">
+            <td className="w-0 py-1 pr-2 pl-3 text-right whitespace-nowrap text-gray-600 tabular-nums">
               {((d.total / total) * 100).toFixed(1)}%
             </td>
           </tr>
