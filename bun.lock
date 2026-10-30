@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "cash-kitty",
+      "name": "cash-kitty-v2",
       "dependencies": {
         "bun-plugin-tailwind": "latest",
         "react": "latest",
