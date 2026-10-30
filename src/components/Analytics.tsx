@@ -124,49 +124,6 @@ function Section({
   );
 }
 
-function DataTable({
-  headers,
-  rows,
-}: {
-  headers: string[];
-  rows: (string | number)[][];
-}) {
-  return (
-    <details className="text-sm">
-      <summary className="cursor-pointer text-gray-600">表で見る</summary>
-      <table className="mt-2 w-full border-collapse">
-        <thead>
-          <tr className="border-b border-gray-400 text-left text-gray-600">
-            {headers.map((header, index) => (
-              <th
-                key={header}
-                className={`px-2 py-1 font-normal ${index > 0 ? "text-right" : ""}`}
-              >
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(([head, ...cells]) => (
-            <tr key={head} className="border-b border-gray-200">
-              <td className="px-2 py-1">{head}</td>
-              {cells.map((cell, index) => (
-                <td
-                  key={headers[index + 1]}
-                  className="px-2 py-1 text-right tabular-nums"
-                >
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </details>
-  );
-}
-
 export function Analytics() {
   const [month, setMonth] = useState(() => toYearMonth(today()));
   const [selectedDate, setSelectedDate] = useState<string>();
@@ -250,10 +207,6 @@ export function Analytics() {
     );
   }
 
-  const spendingDays = [...totalsByDate]
-    .filter(([date]) => date >= `${chartStart}-01`)
-    .sort(([a], [b]) => b.localeCompare(a));
-
   return (
     <div className="flex flex-col gap-4">
       <MonthPicker month={month} onChange={selectMonth} />
@@ -299,13 +252,6 @@ export function Analytics() {
                 selected={month}
                 onSelect={selectMonth}
               />
-              <DataTable
-                headers={["月", "支出"]}
-                rows={monthlyTotals.map((d) => [
-                  formatMonth(d.month),
-                  formatYen(d.total),
-                ])}
-              />
             </Section>
 
             <Section
@@ -330,13 +276,6 @@ export function Analytics() {
                 selectedMonth={month}
                 selectedDate={selectedDate}
                 onSelect={selectDate}
-              />
-              <DataTable
-                headers={["日付", "支出"]}
-                rows={spendingDays.map(([date, total]) => [
-                  formatFullDate(date),
-                  formatYen(total),
-                ])}
               />
             </Section>
           </div>
