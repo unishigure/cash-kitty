@@ -1,6 +1,5 @@
 import { ReceiptDetailDialog } from "@/components/receipt/ReceiptDetailDialog";
 import { ReceiptEditDialog } from "@/components/receipt/ReceiptEditDialog";
-import { formatShortDate } from "@/lib/month";
 import { deleteReceipt, type Receipt } from "@/lib/receipt";
 import { formatYen } from "@/lib/ui";
 
@@ -25,7 +24,7 @@ export function ReceiptDialogs({
   async function handleDelete() {
     if (
       !confirm(
-        `${formatShortDate(receipt.date)} ${receipt.storeName} ${formatYen(receipt.totalAmount)} を削除しますか？`,
+        `${receipt.date} ${receipt.storeName} ${formatYen(receipt.totalAmount)} を削除しますか？`,
       )
     ) {
       return;

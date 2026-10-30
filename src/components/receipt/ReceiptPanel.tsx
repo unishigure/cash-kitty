@@ -1,5 +1,4 @@
 import { useId } from "react";
-import { formatShortDate } from "@/lib/month";
 import type { Receipt } from "@/lib/receipt";
 import { formatYen, inputClass } from "@/lib/ui";
 
@@ -103,10 +102,8 @@ export function ReceiptPanel({
               key={receipt.id}
               className="relative -mx-4 flex items-baseline gap-3 border-b border-gray-200 px-4 py-2 text-sm -outline-offset-2 hover:bg-gray-50 has-[button:focus-visible]:outline-2"
             >
-              <span
-                className={`shrink-0 text-gray-600 tabular-nums ${allPeriods ? "w-28" : "w-22"}`}
-              >
-                {formatShortDate(receipt.date, { withYear: allPeriods })}
+              <span className="w-22 shrink-0 text-gray-600 tabular-nums">
+                {receipt.date}
               </span>
               <span className="min-w-0 flex-1">
                 <button
