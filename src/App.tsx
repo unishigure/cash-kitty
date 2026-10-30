@@ -5,8 +5,8 @@ import { ReceiptImport } from "./components/ReceiptImport";
 import { ReceiptList } from "./components/ReceiptList";
 
 const routes = [
-  { hash: "#/import", label: "レシート取込", Page: ReceiptImport },
-  { hash: "#/receipts", label: "明細一覧", Page: ReceiptList },
+  { hash: "#/import", label: "取込", Page: ReceiptImport },
+  { hash: "#/receipts", label: "明細", Page: ReceiptList },
   { hash: "#/analytics", label: "統計", Page: Analytics },
 ] as const;
 
