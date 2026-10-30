@@ -1,7 +1,7 @@
 import "./style.css";
 import { useSyncExternalStore } from "react";
-import { ReceiptImport } from "./ReceiptImport";
-import { ReceiptList } from "./ReceiptList";
+import { ReceiptImport } from "./components/ReceiptImport";
+import { ReceiptList } from "./components/ReceiptList";
 
 const routes = [
   { hash: "#/import", label: "レシート取込", Page: ReceiptImport },

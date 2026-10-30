@@ -1,7 +1,13 @@
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
-import { addReceipt, type Category, categories } from "./receipt";
-import { checkModelAvailability, extractReceipt } from "./receipt-ai";
-import { buttonClass, formatError, formatYen, inputClass, today } from "./ui";
+import { addReceipt, type Category, categories } from "../lib/receipt";
+import { checkModelAvailability, extractReceipt } from "../lib/receipt-ai";
+import {
+  buttonClass,
+  formatError,
+  formatYen,
+  inputClass,
+  today,
+} from "../lib/ui";
 
 type Draft = {
   date: string;

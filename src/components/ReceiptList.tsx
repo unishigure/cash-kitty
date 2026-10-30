@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
-import { deleteReceipt, listReceiptsByMonth, type Receipt } from "./receipt";
-import { buttonClass, formatError, formatYen, inputClass, today } from "./ui";
+import {
+  deleteReceipt,
+  listReceiptsByMonth,
+  type Receipt,
+} from "../lib/receipt";
+import {
+  buttonClass,
+  formatError,
+  formatYen,
+  inputClass,
+  today,
+} from "../lib/ui";
 
 function shiftMonth(month: string, delta: number) {
   const date = new Date(`${month}-01T00:00`);
