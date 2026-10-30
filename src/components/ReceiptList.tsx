@@ -3,9 +3,10 @@ import { formatShortDate, isDateInMonth, toYearMonth } from "../lib/month";
 import {
   compareReceiptsOldestFirst,
   listReceiptsByMonth,
+  matchesQuery,
   type Receipt,
 } from "../lib/receipt";
-import { formatError, formatYen, today } from "../lib/ui";
+import { formatError, formatYen, inputClass, today } from "../lib/ui";
 import { MonthPicker } from "./MonthPicker";
 import { type OpenedReceipt, ReceiptDialogs } from "./ReceiptDialogs";
 
@@ -14,6 +15,7 @@ export function ReceiptList() {
   const [receipts, setReceipts] = useState<Receipt[]>();
   const [status, setStatus] = useState("");
   const [opened, setOpened] = useState<OpenedReceipt>();
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -50,9 +52,12 @@ export function ReceiptList() {
     setStatus(`更新しました: ${saved.storeName}`);
   }
 
-  const total = receipts?.reduce((sum, r) => sum + r.totalAmount, 0) ?? 0;
+  const visible = query.trim()
+    ? receipts?.filter((receipt) => matchesQuery(receipt, query.trim()))
+    : receipts;
+  const total = visible?.reduce((sum, r) => sum + r.totalAmount, 0) ?? 0;
   const byCategory = new Map<string, number>();
-  for (const receipt of receipts ?? []) {
+  for (const receipt of visible ?? []) {
     byCategory.set(
       receipt.category,
       (byCategory.get(receipt.category) ?? 0) + receipt.totalAmount,
@@ -62,16 +67,24 @@ export function ReceiptList() {
   return (
     <div className="flex flex-col gap-4">
       <MonthPicker month={month} onChange={setMonth} />
+      <input
+        className={inputClass}
+        type="search"
+        placeholder="店名・メモで検索"
+        aria-label="店名・メモで検索"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+      />
 
       <output className="block" aria-live="polite">
         {status}
       </output>
 
-      {receipts && (
+      {visible && (
         <>
           <section className="grid gap-2 border border-gray-400 p-4">
             <p className="flex items-baseline justify-between">
-              <span>合計（{receipts.length} 件）</span>
+              <span>合計（{visible.length} 件）</span>
               <span className="text-2xl font-bold tabular-nums">
                 {formatYen(total)}
               </span>
@@ -90,8 +103,12 @@ export function ReceiptList() {
             )}
           </section>
 
-          {receipts.length === 0 ? (
-            <p>この月の明細はありません。</p>
+          {visible.length === 0 ? (
+            <p>
+              {query.trim()
+                ? `「${query.trim()}」に一致する明細はありません。`
+                : "この月の明細はありません。"}
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
@@ -104,7 +121,7 @@ export function ReceiptList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {receipts.map((receipt) => (
+                  {visible.map((receipt) => (
                     <tr
                       key={receipt.id}
                       className="relative border-b border-gray-200 -outline-offset-2 hover:bg-gray-50 has-[button:focus-visible]:outline-2"

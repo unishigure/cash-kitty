@@ -115,3 +115,14 @@ export function listReceiptsByMonth(month: YearMonth) {
 export async function deleteReceipt(id: string) {
   await withStore("readwrite", (store) => store.delete(id));
 }
+
+function normalizeForSearch(text: string) {
+  return text.normalize("NFKC").toLowerCase();
+}
+
+export function matchesQuery(receipt: Receipt, query: string) {
+  const haystack = normalizeForSearch(`${receipt.storeName} ${receipt.memo}`);
+  return normalizeForSearch(query)
+    .split(/\s+/)
+    .every((term) => haystack.includes(term));
+}

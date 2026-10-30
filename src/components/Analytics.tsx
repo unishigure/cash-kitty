@@ -13,6 +13,7 @@ import {
 import {
   compareReceiptsOldestFirst,
   listReceiptsBetween,
+  matchesQuery,
   type Receipt,
 } from "../lib/receipt";
 import { formatError, formatYen, today } from "../lib/ui";
@@ -169,6 +170,7 @@ export function Analytics() {
   const [month, setMonth] = useState(() => toYearMonth(today()));
   const [selectedDate, setSelectedDate] = useState<string>();
   const [selectedCategory, setSelectedCategory] = useState<string>();
+  const [query, setQuery] = useState("");
   const [opened, setOpened] = useState<OpenedReceipt>();
   const showsSidePanel = useMediaQuery("(min-width: 1024px)");
   const [receipts, setReceipts] = useState<Receipt[]>();
@@ -219,7 +221,8 @@ export function Analytics() {
     (r) =>
       isDateInMonth(r.date, month) &&
       (!selectedDate || r.date === selectedDate) &&
-      (!selectedCategory || r.category === selectedCategory),
+      (!selectedCategory || r.category === selectedCategory) &&
+      (!query.trim() || matchesQuery(r, query.trim())),
   );
 
   function selectMonth(next: YearMonth) {
@@ -337,6 +340,8 @@ export function Analytics() {
               periodLabel={formatMonth(month)}
               dateLabel={selectedDate && formatFullDate(selectedDate)}
               category={selectedCategory}
+              query={query}
+              onQueryChange={setQuery}
               onClearDate={() => setSelectedDate(undefined)}
               onClearCategory={() => setSelectedCategory(undefined)}
               onOpen={(receipt) => setOpened({ receipt, mode: "detail" })}

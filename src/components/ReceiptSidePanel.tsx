@@ -1,6 +1,6 @@
 import { formatShortDate } from "../lib/month";
 import type { Receipt } from "../lib/receipt";
-import { formatYen } from "../lib/ui";
+import { formatYen, inputClass } from "../lib/ui";
 
 function FilterChip({
   label,
@@ -33,6 +33,8 @@ export function ReceiptSidePanel({
   periodLabel,
   dateLabel,
   category,
+  query,
+  onQueryChange,
   onClearDate,
   onClearCategory,
   onOpen,
@@ -41,6 +43,8 @@ export function ReceiptSidePanel({
   periodLabel: string;
   dateLabel?: string;
   category?: string;
+  query: string;
+  onQueryChange: (query: string) => void;
   onClearDate: () => void;
   onClearCategory: () => void;
   onOpen: (receipt: Receipt) => void;
@@ -71,6 +75,15 @@ export function ReceiptSidePanel({
         />
         {category && <FilterChip label={category} onClear={onClearCategory} />}
       </ul>
+
+      <input
+        className={`${inputClass} text-sm`}
+        type="search"
+        placeholder="店名・メモで検索"
+        aria-label="店名・メモで検索"
+        value={query}
+        onChange={(event) => onQueryChange(event.target.value)}
+      />
 
       {receipts.length === 0 ? (
         <p className="text-sm text-gray-600">該当する明細はありません。</p>
