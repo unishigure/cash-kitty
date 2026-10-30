@@ -86,15 +86,26 @@ export async function addReceipt(input: ReceiptInput) {
   return receipt;
 }
 
+export async function updateReceipt(receipt: Receipt, input: ReceiptInput) {
+  const updated: Receipt = {
+    ...receipt,
+    ...input,
+    updatedAt: new Date().toISOString(),
+  };
+  await withStore("readwrite", (store) => store.put(updated));
+  return updated;
+}
+
+export function compareReceiptsNewestFirst(a: Receipt, b: Receipt) {
+  return b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt);
+}
+
 /** month は YYYY-MM 形式。日付の新しい順に返す */
 export async function listReceiptsByMonth(month: string) {
   const receipts = await withStore("readonly", (store) =>
     store.index("date").getAll(IDBKeyRange.bound(`${month}-01`, `${month}-31`)),
   );
-  return (receipts as Receipt[]).sort(
-    (a, b) =>
-      b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
-  );
+  return (receipts as Receipt[]).sort(compareReceiptsNewestFirst);
 }
 
 export async function deleteReceipt(id: string) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  compareReceiptsNewestFirst,
   deleteReceipt,
   listReceiptsByMonth,
   type Receipt,
@@ -11,11 +12,16 @@ import {
   inputClass,
   today,
 } from "../lib/ui";
+import { ReceiptEditDialog } from "./ReceiptEditDialog";
 
 function shiftMonth(month: string, delta: number) {
   const date = new Date(`${month}-01T00:00`);
   date.setMonth(date.getMonth() + delta);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function isInMonth(receipt: Receipt, month: string) {
+  return receipt.date.startsWith(`${month}-`);
 }
 
 function formatDate(date: string) {
@@ -28,6 +34,7 @@ export function ReceiptList() {
   const [month, setMonth] = useState(() => today().slice(0, 7));
   const [receipts, setReceipts] = useState<Receipt[]>();
   const [status, setStatus] = useState("");
+  const [editing, setEditing] = useState<Receipt>();
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +71,17 @@ export function ReceiptList() {
     } catch (error) {
       setStatus(formatError(error));
     }
+  }
+
+  function handleSaved(saved: Receipt) {
+    setEditing(undefined);
+    setReceipts((list) =>
+      list
+        ?.filter(({ id }) => id !== saved.id)
+        .concat(isInMonth(saved, month) ? [saved] : [])
+        .sort(compareReceiptsNewestFirst),
+    );
+    setStatus(`更新しました: ${saved.storeName}`);
   }
 
   const total = receipts?.reduce((sum, r) => sum + r.totalAmount, 0) ?? 0;
@@ -171,7 +189,14 @@ export function ReceiptList() {
                       <td className="px-2 py-2 text-right whitespace-nowrap tabular-nums">
                         {formatYen(receipt.totalAmount)}
                       </td>
-                      <td className="px-2 py-2 text-right">
+                      <td className="px-2 py-2 text-right whitespace-nowrap">
+                        <button
+                          className="mr-3 cursor-pointer text-sm text-gray-600 underline hover:text-gray-900"
+                          type="button"
+                          onClick={() => setEditing(receipt)}
+                        >
+                          編集
+                        </button>
                         <button
                           className="cursor-pointer text-sm text-gray-600 underline hover:text-red-700"
                           type="button"
@@ -187,6 +212,14 @@ export function ReceiptList() {
             </div>
           )}
         </>
+      )}
+
+      {editing && (
+        <ReceiptEditDialog
+          receipt={editing}
+          onSaved={handleSaved}
+          onClose={() => setEditing(undefined)}
+        />
       )}
     </div>
   );

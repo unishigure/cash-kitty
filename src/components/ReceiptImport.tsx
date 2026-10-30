@@ -1,31 +1,13 @@
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
-import { addReceipt, type Category, categories } from "../lib/receipt";
+import { addReceipt } from "../lib/receipt";
 import { checkModelAvailability, extractReceipt } from "../lib/receipt-ai";
+import { buttonClass, formatError, formatYen } from "../lib/ui";
 import {
-  buttonClass,
-  formatError,
-  formatYen,
-  inputClass,
-  today,
-} from "../lib/ui";
-
-type Draft = {
-  date: string;
-  storeName: string;
-  totalAmount: string;
-  category: Category;
-  memo: string;
-};
-
-function emptyDraft(): Draft {
-  return {
-    date: today(),
-    storeName: "",
-    totalAmount: "",
-    category: "その他",
-    memo: "",
-  };
-}
+  type Draft,
+  emptyDraft,
+  parseDraft,
+  ReceiptFields,
+} from "./ReceiptFields";
 
 export function ReceiptImport() {
   const [modelReady, setModelReady] = useState(false);
@@ -133,21 +115,15 @@ export function ReceiptImport() {
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    const totalAmount = Number(draft.totalAmount);
-    if (!Number.isInteger(totalAmount) || totalAmount < 0) {
-      setStatus("エラー: 合計金額は 0 以上の整数で入力してください。");
+    const parsed = parseDraft(draft);
+    if (!parsed.ok) {
+      setStatus(`エラー: ${parsed.error}`);
       return;
     }
 
     setSaving(true);
     try {
-      const receipt = await addReceipt({
-        date: draft.date,
-        storeName: draft.storeName.trim(),
-        totalAmount,
-        category: draft.category,
-        memo: draft.memo.trim(),
-      });
+      const receipt = await addReceipt(parsed.input);
       reset();
       setStatus(
         `保存しました: ${receipt.storeName} ${formatYen(receipt.totalAmount)}`,
@@ -208,68 +184,7 @@ export function ReceiptImport() {
             disabled={analyzing || saving}
           >
             <legend className="px-1">内容の確認</legend>
-            <label className="grid gap-1">
-              日付
-              <input
-                className={inputClass}
-                type="date"
-                required
-                value={draft.date}
-                onChange={(event) => updateDraft("date", event.target.value)}
-              />
-            </label>
-            <label className="grid gap-1">
-              店舗名
-              <input
-                className={inputClass}
-                type="text"
-                required
-                value={draft.storeName}
-                onChange={(event) =>
-                  updateDraft("storeName", event.target.value)
-                }
-              />
-            </label>
-            <label className="grid gap-1">
-              合計金額（円）
-              <input
-                className={inputClass}
-                type="number"
-                inputMode="numeric"
-                min={0}
-                step={1}
-                required
-                value={draft.totalAmount}
-                onChange={(event) =>
-                  updateDraft("totalAmount", event.target.value)
-                }
-              />
-            </label>
-            <label className="grid gap-1">
-              カテゴリー
-              <select
-                className={inputClass}
-                value={draft.category}
-                onChange={(event) =>
-                  updateDraft("category", event.target.value as Category)
-                }
-              >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="grid gap-1">
-              メモ
-              <textarea
-                className={`${inputClass} resize-y`}
-                rows={2}
-                value={draft.memo}
-                onChange={(event) => updateDraft("memo", event.target.value)}
-              />
-            </label>
+            <ReceiptFields draft={draft} onChange={updateDraft} />
             <div className="flex justify-end gap-2">
               <button className={buttonClass} type="button" onClick={reset}>
                 クリア
