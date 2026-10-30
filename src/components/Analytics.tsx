@@ -22,6 +22,13 @@ function elapsedDays(month: YearMonth) {
   return Number(todayDate.slice(8, 10));
 }
 
+function barChartEndMonth(month: YearMonth) {
+  const currentMonth = toYearMonth(today());
+  const isInLatestYear =
+    month <= currentMonth && month > shiftMonth(currentMonth, -12);
+  return isInLatestYear ? currentMonth : month;
+}
+
 function formatOptionalYen(value: number | undefined) {
   return value === undefined ? "—" : formatYen(value);
 }
@@ -153,7 +160,7 @@ export function Analytics() {
     setLoading(true);
     setError("");
 
-    listReceiptsBetween(shiftMonth(month, -12), month)
+    listReceiptsBetween(shiftMonth(month, -12), barChartEndMonth(month))
       .then((list) => {
         if (!cancelled) setReceipts(list);
       })
@@ -173,8 +180,10 @@ export function Analytics() {
   const lastYearMonth = shiftMonth(month, -12);
   const list = receipts ?? [];
 
+  const chartEnd = barChartEndMonth(month);
+  const chartStart = shiftMonth(chartEnd, -11);
   const monthlyTotals = Array.from({ length: 12 }, (_, index) => {
-    const m = shiftMonth(month, index - 11);
+    const m = shiftMonth(chartStart, index);
     return { month: m, total: totalOfMonth(list, m) };
   });
   const elapsed = elapsedDays(month);
@@ -226,7 +235,8 @@ export function Analytics() {
 
           <Section title="月別の支出推移">
             <p className="text-sm text-gray-600">
-              直近 12 か月。棒を選ぶとその月に切り替わります。
+              {formatMonth(chartStart)}〜{formatMonth(chartEnd)}
+              。棒を選ぶとその月に切り替わります。
             </p>
             <MonthlyBarChart
               data={monthlyTotals}
