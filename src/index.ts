@@ -1,10 +1,15 @@
+import { serve } from "bun";
 import index from "./index.html";
 
-const server = Bun.serve({
-  port: 3000,
+const server = serve({
   routes: {
-    "/": index,
+    "/*": index,
+  },
+
+  development: process.env.NODE_ENV !== "production" && {
+    hmr: true,
+    console: true,
   },
 });
 
-console.log(`Server running on ${server.url}`);
+console.log(`🚀 Server running at ${server.url}`);

@@ -1,16 +1,26 @@
 {
   "name": "cash-kitty",
-  "module": "src/index.ts",
-  "type": "module",
+  "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
+    "dev": "bun --hot src/index.ts",
     "fix": "bun lint --fix && bun fmt",
-    "ci": "bun run --parallel --no-exit-on-error \"bun fmt --check\" \"bun lint\" \"bun check\""
+    "ci": "bun run --parallel --no-exit-on-error \"bun fmt --check\" \"bun lint\" \"bun check\"",
+    "start": "NODE_ENV=production bun src/index.ts",
+    "build": "bun run build.ts"
+  },
+  "dependencies": {
+    "bun-plugin-tailwind": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwindcss": "latest"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/dom-chromium-ai": "latest"
+    "@types/dom-chromium-ai": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
   },
   "peerDependencies": {
     "typescript": "latest"

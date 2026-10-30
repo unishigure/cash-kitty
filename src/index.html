@@ -4,30 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gemini Nano 画像解析</title>
-    <link rel="stylesheet" href="./style.css" />
-    <script type="module" src="./script.ts"></script>
   </head>
   <body>
-    <h1>Gemini Nano 画像解析</h1>
-    <p>
-      画像は端末内で解析され、サーバーには送信されません。<br />
-      初回はモデルのダウンロードが必要です。
-    </p>
-    <p id="status" role="status">画像入力の対応状況を確認中…</p>
-    <form id="analysis-form">
-      <fieldset id="inputs" disabled>
-        <legend>解析する画像と指示</legend>
-        <label for="image">画像</label>
-        <input id="image" type="file" accept="image/*" required />
-        <img id="preview" alt="選択した画像のプレビュー" hidden />
-        <label for="prompt">解析指示</label>
-        <textarea id="prompt" rows="4" required>
-このレシートから合計金額を読み取ってください。</textarea>
-        <button id="analyze" type="submit" disabled>解析する</button>
-      </fieldset>
-    </form>
-    <h2>解析結果</h2>
-    <p id="timing"></p>
-    <pre id="result" aria-live="polite">まだ解析していません。</pre>
+    <div id="root"></div>
+    <script type="module" src="./frontend.tsx"></script>
   </body>
 </html>
