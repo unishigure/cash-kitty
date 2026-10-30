@@ -93,10 +93,21 @@ function StatTile({
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  period,
+  children,
+}: {
+  title: string;
+  period?: string;
+  children: ReactNode;
+}) {
   return (
     <section className="grid gap-3 border border-gray-400 p-4">
-      <h2 className="text-xl font-bold">{title}</h2>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+        <h2 className="text-xl font-bold">{title}</h2>
+        {period && <p className="text-sm text-gray-600">{period}</p>}
+      </div>
       {children}
     </section>
   );
@@ -230,11 +241,10 @@ export function Analytics() {
             />
           </div>
 
-          <Section title="月別の支出推移">
-            <p className="text-sm text-gray-600">
-              {formatMonth(chartStart)}〜{formatMonth(chartEnd)}
-              。棒を選ぶとその月に切り替わります。
-            </p>
+          <Section
+            title="月別の支出推移"
+            period={`${formatMonth(chartStart)}〜${formatMonth(chartEnd)}`}
+          >
             <MonthlyBarChart
               data={monthlyTotals}
               selected={month}
@@ -249,11 +259,10 @@ export function Analytics() {
             />
           </Section>
 
-          <Section title="日ごとの支出">
-            <p className="text-sm text-gray-600">
-              {formatMonth(chartStart)}〜{formatMonth(chartEnd)}
-              。色が濃いほど支出が多い日です。マスを選ぶとその月に切り替わります。
-            </p>
+          <Section
+            title="日ごとの支出"
+            period={`${formatMonth(chartStart)}〜${formatMonth(chartEnd)}`}
+          >
             <DailyHeatmap
               start={chartStart}
               end={chartEnd}
