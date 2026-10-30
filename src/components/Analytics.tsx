@@ -22,7 +22,7 @@ import { DailyHeatmap } from "./charts/DailyHeatmap";
 import { MonthlyBarChart } from "./charts/MonthlyBarChart";
 import { MonthPicker } from "./MonthPicker";
 import { type OpenedReceipt, ReceiptDialogs } from "./ReceiptDialogs";
-import { ReceiptSidePanel } from "./ReceiptSidePanel";
+import { ReceiptPanel } from "./ReceiptPanel";
 
 function elapsedDays(month: YearMonth) {
   const todayDate = today();
@@ -335,7 +335,8 @@ export function Analytics() {
           </div>
 
           {showsSidePanel && (
-            <ReceiptSidePanel
+            <ReceiptPanel
+              sticky
               receipts={filteredReceipts}
               periodLabel={formatMonth(month)}
               dateLabel={selectedDate && formatFullDate(selectedDate)}

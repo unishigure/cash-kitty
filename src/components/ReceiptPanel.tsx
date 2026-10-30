@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { formatShortDate } from "../lib/month";
 import type { Receipt } from "../lib/receipt";
 import { formatYen, inputClass } from "../lib/ui";
@@ -28,7 +29,8 @@ function FilterChip({
   );
 }
 
-export function ReceiptSidePanel({
+export function ReceiptPanel({
+  sticky = false,
   receipts,
   periodLabel,
   dateLabel,
@@ -39,25 +41,28 @@ export function ReceiptSidePanel({
   onClearCategory,
   onOpen,
 }: {
+  sticky?: boolean;
   receipts: Receipt[];
   periodLabel: string;
   dateLabel?: string;
   category?: string;
   query: string;
   onQueryChange: (query: string) => void;
-  onClearDate: () => void;
-  onClearCategory: () => void;
+  onClearDate?: () => void;
+  onClearCategory?: () => void;
   onOpen: (receipt: Receipt) => void;
 }) {
   const total = receipts.reduce((sum, r) => sum + r.totalAmount, 0);
+  const titleId = useId();
+  const Root = sticky ? "aside" : "section";
 
   return (
-    <aside
-      className="sticky top-20 flex max-h-[calc(100dvh-6rem)] flex-col gap-3 border border-gray-400 p-4"
-      aria-labelledby="receipt-side-panel-title"
+    <Root
+      className={`flex flex-col gap-3 border border-gray-400 p-4 ${sticky ? "sticky top-20 max-h-[calc(100dvh-6rem)]" : ""}`}
+      aria-labelledby={titleId}
     >
       <div className="flex items-baseline justify-between gap-4">
-        <h2 id="receipt-side-panel-title" className="text-xl font-bold">
+        <h2 id={titleId} className="text-xl font-bold">
           明細
         </h2>
         <p className="text-sm text-gray-600">
@@ -88,7 +93,9 @@ export function ReceiptSidePanel({
       {receipts.length === 0 ? (
         <p className="text-sm text-gray-600">該当する明細はありません。</p>
       ) : (
-        <ul className="-mx-4 overflow-y-auto border-t border-gray-200 px-4">
+        <ul
+          className={`-mx-4 border-t border-gray-200 px-4 ${sticky ? "overflow-y-auto" : ""}`}
+        >
           {receipts.map((receipt) => (
             <li
               key={receipt.id}
@@ -117,6 +124,6 @@ export function ReceiptSidePanel({
           ))}
         </ul>
       )}
-    </aside>
+    </Root>
   );
 }
