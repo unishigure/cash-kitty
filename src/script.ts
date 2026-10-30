@@ -107,9 +107,14 @@ form.addEventListener("submit", async (event) => {
       ],
       {
         responseConstraint: {
-          shop_name: "string",
-          total: "number",
-          date: "yyyy-MM-dd",
+          type: "object",
+          properties: {
+            shop_name: { type: "string" },
+            total: { type: "integer", minimum: 0 },
+            date: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
+          },
+          required: ["total"],
+          additionalProperties: false,
         },
       },
     );
