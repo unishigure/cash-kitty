@@ -3,12 +3,21 @@ import { useEffect, useSyncExternalStore } from "react";
 import { Analytics } from "./components/Analytics";
 import { ReceiptImport } from "./components/ReceiptImport";
 import { ReceiptList } from "./components/ReceiptList";
+import { useMediaQuery } from "./hooks/useMediaQuery";
+import { sidePanelQuery } from "./lib/ui";
 
 const routes = [
   { hash: "#/import", label: "取込", Page: ReceiptImport },
-  { hash: "#/receipts", label: "明細", Page: ReceiptList },
+  {
+    hash: "#/receipts",
+    label: "明細",
+    Page: ReceiptList,
+    coveredBySidePanel: true,
+  },
   { hash: "#/analytics", label: "統計", Page: Analytics, wide: true },
 ] as const;
+
+const statsRoute = routes[2];
 
 type Route = (typeof routes)[number];
 
@@ -18,9 +27,11 @@ function subscribe(callback: () => void) {
 }
 
 function NavLinks({
+  routes,
   current,
   className,
 }: {
+  routes: readonly Route[];
   current: Route;
   className: string;
 }) {
@@ -38,18 +49,28 @@ function NavLinks({
 
 export function App() {
   const hash = useSyncExternalStore(subscribe, () => location.hash);
-  const current = routes.find((route) => route.hash === hash) ?? routes[0];
+  const showsSidePanel = useMediaQuery(sidePanelQuery);
+  const available = routes.filter(
+    (route) => !(showsSidePanel && "coveredBySidePanel" in route),
+  );
+  const requested = routes.find((route) => route.hash === hash) ?? routes[0];
+  const current = available.includes(requested) ? requested : statsRoute;
   const widthClass = `max-w-240 ${"wide" in current ? "lg:max-w-360" : ""}`;
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [current]);
 
+  useEffect(() => {
+    if (current !== requested) location.replace(current.hash);
+  }, [current, requested]);
+
   return (
     <div className="flex min-h-dvh flex-col font-sans leading-[1.6]">
       <header className="sticky top-0 z-20 hidden border-b border-gray-400 bg-white md:block">
         <nav className={`mx-auto flex gap-4 px-4 pt-4 ${widthClass}`}>
           <NavLinks
+            routes={available}
             current={current}
             className="-mb-px border-b-2 border-transparent px-1 pb-2 hover:border-gray-400 aria-[current=page]:border-gray-800 aria-[current=page]:font-bold"
           />
@@ -64,6 +85,7 @@ export function App() {
 
       <nav className="sticky bottom-0 z-20 grid grid-cols-3 border-t border-gray-400 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
         <NavLinks
+          routes={available}
           current={current}
           className="flex h-14 items-center justify-center border-t-2 border-transparent text-sm aria-[current=page]:border-gray-800 aria-[current=page]:font-bold"
         />

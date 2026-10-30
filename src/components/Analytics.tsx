@@ -16,7 +16,7 @@ import {
   matchesQuery,
   type Receipt,
 } from "../lib/receipt";
-import { formatError, formatYen, today } from "../lib/ui";
+import { formatError, formatYen, sidePanelQuery, today } from "../lib/ui";
 import { CategoryBreakdown } from "./charts/CategoryBreakdown";
 import { DailyHeatmap } from "./charts/DailyHeatmap";
 import { MonthlyBarChart } from "./charts/MonthlyBarChart";
@@ -172,7 +172,7 @@ export function Analytics() {
   const [selectedCategory, setSelectedCategory] = useState<string>();
   const [query, setQuery] = useState("");
   const [opened, setOpened] = useState<OpenedReceipt>();
-  const showsSidePanel = useMediaQuery("(min-width: 1024px)");
+  const showsSidePanel = useMediaQuery(sidePanelQuery);
   const [receipts, setReceipts] = useState<Receipt[]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
