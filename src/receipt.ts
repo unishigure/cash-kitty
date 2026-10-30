@@ -60,6 +60,20 @@ function openDb() {
   return dbPromise;
 }
 
+async function withStore<T>(
+  mode: IDBTransactionMode,
+  run: (store: IDBObjectStore) => IDBRequest<T>,
+) {
+  const db = await openDb();
+  return new Promise<T>((resolve, reject) => {
+    const tx = db.transaction(storeName, mode);
+    const request = run(tx.objectStore(storeName));
+    tx.oncomplete = () => resolve(request.result);
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
 export async function addReceipt(input: ReceiptInput) {
   const now = new Date().toISOString();
   const receipt: Receipt = {
@@ -68,13 +82,21 @@ export async function addReceipt(input: ReceiptInput) {
     createdAt: now,
     updatedAt: now,
   };
-  const db = await openDb();
-  await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    tx.objectStore(storeName).add(receipt);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
-  });
+  await withStore("readwrite", (store) => store.add(receipt));
   return receipt;
+}
+
+/** month は YYYY-MM 形式。日付の新しい順に返す */
+export async function listReceiptsByMonth(month: string) {
+  const receipts = await withStore("readonly", (store) =>
+    store.index("date").getAll(IDBKeyRange.bound(`${month}-01`, `${month}-31`)),
+  );
+  return (receipts as Receipt[]).sort(
+    (a, b) =>
+      b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
+  );
+}
+
+export async function deleteReceipt(id: string) {
+  await withStore("readwrite", (store) => store.delete(id));
 }

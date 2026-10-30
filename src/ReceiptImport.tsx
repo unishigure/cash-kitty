@@ -1,6 +1,7 @@
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
 import { addReceipt, type Category, categories } from "./receipt";
 import { checkModelAvailability, extractReceipt } from "./receipt-ai";
+import { buttonClass, formatError, formatYen, inputClass, today } from "./ui";
 
 type Draft = {
   date: string;
@@ -9,12 +10,6 @@ type Draft = {
   category: Category;
   memo: string;
 };
-
-function today() {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  return now.toISOString().slice(0, 10);
-}
 
 function emptyDraft(): Draft {
   return {
@@ -25,15 +20,6 @@ function emptyDraft(): Draft {
     memo: "",
   };
 }
-
-function formatError(error: unknown) {
-  console.error(error);
-  return `エラー: ${error instanceof Error ? `${error.name}: ${error.message}` : String(error)}`;
-}
-
-const inputClass = "w-full border border-gray-400 p-2";
-const buttonClass =
-  "cursor-pointer border border-gray-400 bg-gray-100 px-4 py-2 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function ReceiptImport() {
   const [modelReady, setModelReady] = useState(false);
@@ -158,7 +144,7 @@ export function ReceiptImport() {
       });
       reset();
       setStatus(
-        `保存しました: ${receipt.storeName} ¥${receipt.totalAmount.toLocaleString()}`,
+        `保存しました: ${receipt.storeName} ${formatYen(receipt.totalAmount)}`,
       );
     } catch (error) {
       setStatus(formatError(error));
