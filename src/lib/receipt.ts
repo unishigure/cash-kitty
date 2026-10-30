@@ -26,10 +26,15 @@ export type Receipt = {
   fullText?: string;
   createdAt: string;
   updatedAt: string;
-  // Google Drive 同期用（未同期の間は undefined）
   fileId?: string;
   driveModifiedTime?: string;
 };
+
+export type YearMonth = `${number}-${number}`;
+
+export function toYearMonth(date: string) {
+  return date.slice(0, 7) as YearMonth;
+}
 
 export type ReceiptInput = Pick<
   Receipt,
@@ -100,8 +105,7 @@ export function compareReceiptsNewestFirst(a: Receipt, b: Receipt) {
   return b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt);
 }
 
-/** month は YYYY-MM 形式。日付の新しい順に返す */
-export async function listReceiptsByMonth(month: string) {
+export async function listReceiptsByMonth(month: YearMonth) {
   const receipts = await withStore("readonly", (store) =>
     store.index("date").getAll(IDBKeyRange.bound(`${month}-01`, `${month}-31`)),
   );

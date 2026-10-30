@@ -4,6 +4,8 @@ import {
   deleteReceipt,
   listReceiptsByMonth,
   type Receipt,
+  toYearMonth,
+  type YearMonth,
 } from "../lib/receipt";
 import {
   buttonClass,
@@ -14,13 +16,15 @@ import {
 } from "../lib/ui";
 import { ReceiptEditDialog } from "./ReceiptEditDialog";
 
-function shiftMonth(month: string, delta: number) {
+function shiftMonth(month: YearMonth, delta: number) {
   const date = new Date(`${month}-01T00:00`);
   date.setMonth(date.getMonth() + delta);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  return toYearMonth(
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+  );
 }
 
-function isInMonth(receipt: Receipt, month: string) {
+function isInMonth(receipt: Receipt, month: YearMonth) {
   return receipt.date.startsWith(`${month}-`);
 }
 
@@ -31,7 +35,7 @@ function formatDate(date: string) {
 }
 
 export function ReceiptList() {
-  const [month, setMonth] = useState(() => today().slice(0, 7));
+  const [month, setMonth] = useState(() => toYearMonth(today()));
   const [receipts, setReceipts] = useState<Receipt[]>();
   const [status, setStatus] = useState("");
   const [editing, setEditing] = useState<Receipt>();
@@ -113,7 +117,7 @@ export function ReceiptList() {
           required
           value={month}
           onChange={(event) => {
-            if (event.target.value) setMonth(event.target.value);
+            if (event.target.value) setMonth(toYearMonth(event.target.value));
           }}
         />
         <button
