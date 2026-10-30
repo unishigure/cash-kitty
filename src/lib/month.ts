@@ -25,3 +25,25 @@ export function formatMonth(month: YearMonth) {
   const [year, monthNumber] = month.split("-").map(Number);
   return `${year}年${monthNumber}月`;
 }
+
+export function addDays(date: string, days: number) {
+  const d = new Date(`${date}T00:00`);
+  d.setDate(d.getDate() + days);
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+export function formatFullDate(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  const weekday = "日月火水木金土"[new Date(`${date}T00:00`).getDay()];
+  return `${year}年${month}月${day}日（${weekday}）`;
+}
+
+export function daysBetween(from: string, to: string) {
+  const ms =
+    new Date(`${to}T00:00`).getTime() - new Date(`${from}T00:00`).getTime();
+  return Math.round(ms / 86_400_000);
+}

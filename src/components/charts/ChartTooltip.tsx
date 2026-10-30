@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-const tooltipWidth = 200;
+const tooltipWidth = 232;
 
 export function ChartTooltip({
   x,
@@ -44,7 +44,9 @@ export function TooltipRow({
           style={{ backgroundColor: color }}
         />
       )}
-      <span className="font-semibold tabular-nums">{value}</span>
+      <span className="font-semibold whitespace-nowrap tabular-nums">
+        {value}
+      </span>
       <span className="whitespace-nowrap text-gray-600">{label}</span>
     </div>
   );

@@ -1,7 +1,8 @@
 export const chartColors = {
   series1: "#2a78d6",
   series1Muted: "#86b6ef",
-  series2: "#eb6834",
+  heatEmpty: "#ebebe8",
+  heat: ["#9ec5f4", "#5598e7", "#256abf", "#104281"],
   surface: "#ffffff",
   grid: "#e1e0d9",
   baseline: "#c3c2b7",

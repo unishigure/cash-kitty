@@ -1,8 +1,8 @@
 import { type ReactNode, useEffect, useState } from "react";
-import { cumulativeByDay, totalOfMonth } from "../lib/analytics";
-import { chartColors } from "../lib/chart";
+import { dailyTotals, totalOfMonth } from "../lib/analytics";
 import {
   daysInMonth,
+  formatFullDate,
   formatMonth,
   shiftMonth,
   toYearMonth,
@@ -10,7 +10,7 @@ import {
 } from "../lib/month";
 import { listReceiptsBetween, type Receipt } from "../lib/receipt";
 import { formatError, formatYen, today } from "../lib/ui";
-import { CumulativeLineChart } from "./charts/CumulativeLineChart";
+import { DailyHeatmap } from "./charts/DailyHeatmap";
 import { MonthlyBarChart } from "./charts/MonthlyBarChart";
 import { MonthPicker } from "./MonthPicker";
 
@@ -27,10 +27,6 @@ function barChartEndMonth(month: YearMonth) {
   const isInLatestYear =
     month <= currentMonth && month > shiftMonth(currentMonth, -12);
   return isInLatestYear ? currentMonth : month;
-}
-
-function formatOptionalYen(value: number | undefined) {
-  return value === undefined ? "—" : formatYen(value);
 }
 
 function ComparisonTile({
@@ -193,9 +189,10 @@ export function Analytics() {
   const previousTotal = totalOfMonth(list, previousMonth, compareUptoDay);
   const lastYearTotal = totalOfMonth(list, lastYearMonth, compareUptoDay);
 
-  const currentCumulative = cumulativeByDay(list, month, elapsed);
-  const previousCumulative = cumulativeByDay(list, previousMonth);
-  const lineDays = Math.max(daysInMonth(month), daysInMonth(previousMonth));
+  const totalsByDate = dailyTotals(list);
+  const spendingDays = [...totalsByDate]
+    .filter(([date]) => date >= `${chartStart}-01`)
+    .sort(([a], [b]) => b.localeCompare(a));
 
   return (
     <div className="flex flex-col gap-4">
@@ -252,29 +249,23 @@ export function Analytics() {
             />
           </Section>
 
-          <Section title="月内の累積支出">
-            <CumulativeLineChart
-              title="月内の累積支出"
-              days={lineDays}
-              series={[
-                {
-                  label: formatMonth(month),
-                  color: chartColors.series1,
-                  values: currentCumulative,
-                },
-                {
-                  label: formatMonth(previousMonth),
-                  color: chartColors.series2,
-                  values: previousCumulative,
-                },
-              ]}
+          <Section title="日ごとの支出">
+            <p className="text-sm text-gray-600">
+              {formatMonth(chartStart)}〜{formatMonth(chartEnd)}
+              。色が濃いほど支出が多い日です。マスを選ぶとその月に切り替わります。
+            </p>
+            <DailyHeatmap
+              start={chartStart}
+              end={chartEnd}
+              totals={totalsByDate}
+              selected={month}
+              onSelect={setMonth}
             />
             <DataTable
-              headers={["日", formatMonth(month), formatMonth(previousMonth)]}
-              rows={Array.from({ length: lineDays }, (_, index) => [
-                `${index + 1}日`,
-                formatOptionalYen(currentCumulative[index]),
-                formatOptionalYen(previousCumulative[index]),
+              headers={["日付", "支出"]}
+              rows={spendingDays.map(([date, total]) => [
+                formatFullDate(date),
+                formatYen(total),
               ])}
             />
           </Section>
