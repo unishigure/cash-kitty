@@ -28,7 +28,7 @@ export function ReceiptImport() {
         if (cancelled) return;
         if (availability === "unsupported" || availability === "unavailable") {
           setStatus(
-            "この環境では AI 読み取りを利用できません。手入力で登録できます。",
+            "この環境では AI 読み取りを利用できません。手動での登録が可能です。",
           );
           return;
         }
