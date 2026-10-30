@@ -4,6 +4,7 @@ import {
   daysInMonth,
   formatFullDate,
   formatMonth,
+  isDateInMonth,
   shiftMonth,
   toYearMonth,
   type YearMonth,
@@ -13,7 +14,9 @@ import { formatError, formatYen, today } from "../lib/ui";
 import { CategoryBreakdown } from "./charts/CategoryBreakdown";
 import { DailyHeatmap } from "./charts/DailyHeatmap";
 import { MonthlyBarChart } from "./charts/MonthlyBarChart";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { MonthPicker } from "./MonthPicker";
+import { ReceiptSidePanel } from "./ReceiptSidePanel";
 
 function elapsedDays(month: YearMonth) {
   const todayDate = today();
@@ -159,6 +162,9 @@ function DataTable({
 
 export function Analytics() {
   const [month, setMonth] = useState(() => toYearMonth(today()));
+  const [selectedDate, setSelectedDate] = useState<string>();
+  const [selectedCategory, setSelectedCategory] = useState<string>();
+  const showsSidePanel = useMediaQuery("(min-width: 1024px)");
   const [receipts, setReceipts] = useState<Receipt[]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -203,89 +209,132 @@ export function Analytics() {
 
   const categories = categoryTotals(list, month);
   const totalsByDate = dailyTotals(list);
+  const filteredReceipts = list.filter(
+    (r) =>
+      isDateInMonth(r.date, month) &&
+      (!selectedDate || r.date === selectedDate) &&
+      (!selectedCategory || r.category === selectedCategory),
+  );
+
+  function selectMonth(next: YearMonth) {
+    setMonth(next);
+    setSelectedDate(undefined);
+  }
+
+  function selectDate(date: string) {
+    setMonth(toYearMonth(date));
+    setSelectedDate((current) =>
+      showsSidePanel && current !== date ? date : undefined,
+    );
+  }
+
+  function selectCategory(category: string) {
+    setSelectedCategory((current) =>
+      current === category ? undefined : category,
+    );
+  }
+
   const spendingDays = [...totalsByDate]
     .filter(([date]) => date >= `${chartStart}-01`)
     .sort(([a], [b]) => b.localeCompare(a));
 
   return (
     <div className="flex flex-col gap-4">
-      <MonthPicker month={month} onChange={setMonth} />
+      <MonthPicker month={month} onChange={selectMonth} />
       {error && <p role="alert">{error}</p>}
 
       {receipts && (
         <div
-          className={`flex flex-col gap-4 transition-opacity ${loading ? "opacity-50" : ""}`}
+          className={`grid items-start gap-4 transition-opacity lg:grid-cols-[minmax(0,1fr)_22rem] ${loading ? "opacity-50" : ""}`}
           aria-busy={loading}
         >
-          <div className="grid gap-4 sm:grid-cols-3">
-            <StatTile
-              label={`${formatMonth(month)}の支出`}
-              value={formatYen(thisTotal)}
+          <div className="flex min-w-0 flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <StatTile
+                label={`${formatMonth(month)}の支出`}
+                value={formatYen(thisTotal)}
+              >
+                {isPartialMonth && (
+                  <p className="text-sm text-gray-600">{elapsed}日までの集計</p>
+                )}
+              </StatTile>
+              <ComparisonTile
+                label="前月比"
+                baseMonth={previousMonth}
+                baseUptoDay={compareUptoDay}
+                current={thisTotal}
+                base={previousTotal}
+              />
+              <ComparisonTile
+                label="前年同月比"
+                baseMonth={lastYearMonth}
+                baseUptoDay={compareUptoDay}
+                current={thisTotal}
+                base={lastYearTotal}
+              />
+            </div>
+
+            <Section
+              title="月別の支出推移"
+              period={`${formatMonth(chartStart)}〜${formatMonth(chartEnd)}`}
             >
-              {isPartialMonth && (
-                <p className="text-sm text-gray-600">{elapsed}日までの集計</p>
-              )}
-            </StatTile>
-            <ComparisonTile
-              label="前月比"
-              baseMonth={previousMonth}
-              baseUptoDay={compareUptoDay}
-              current={thisTotal}
-              base={previousTotal}
-            />
-            <ComparisonTile
-              label="前年同月比"
-              baseMonth={lastYearMonth}
-              baseUptoDay={compareUptoDay}
-              current={thisTotal}
-              base={lastYearTotal}
-            />
+              <MonthlyBarChart
+                data={monthlyTotals}
+                selected={month}
+                onSelect={selectMonth}
+              />
+              <DataTable
+                headers={["月", "支出"]}
+                rows={monthlyTotals.map((d) => [
+                  formatMonth(d.month),
+                  formatYen(d.total),
+                ])}
+              />
+            </Section>
+
+            <Section
+              title="カテゴリー別の構成"
+              period={`${formatMonth(month)}${isPartialMonth ? `（${elapsed}日まで）` : ""}`}
+            >
+              <CategoryBreakdown
+                data={categories}
+                selected={showsSidePanel ? selectedCategory : undefined}
+                onSelect={showsSidePanel ? selectCategory : undefined}
+              />
+            </Section>
+
+            <Section
+              title="日ごとの支出"
+              period={`${formatMonth(chartStart)}〜${formatMonth(chartEnd)}`}
+            >
+              <DailyHeatmap
+                start={chartStart}
+                end={chartEnd}
+                totals={totalsByDate}
+                selectedMonth={month}
+                selectedDate={selectedDate}
+                onSelect={selectDate}
+              />
+              <DataTable
+                headers={["日付", "支出"]}
+                rows={spendingDays.map(([date, total]) => [
+                  formatFullDate(date),
+                  formatYen(total),
+                ])}
+              />
+            </Section>
           </div>
 
-          <Section
-            title="月別の支出推移"
-            period={`${formatMonth(chartStart)}〜${formatMonth(chartEnd)}`}
-          >
-            <MonthlyBarChart
-              data={monthlyTotals}
-              selected={month}
-              onSelect={setMonth}
+          {showsSidePanel && (
+            <ReceiptSidePanel
+              receipts={filteredReceipts}
+              periodLabel={formatMonth(month)}
+              dateLabel={selectedDate && formatFullDate(selectedDate)}
+              category={selectedCategory}
+              onClearDate={() => setSelectedDate(undefined)}
+              onClearCategory={() => setSelectedCategory(undefined)}
             />
-            <DataTable
-              headers={["月", "支出"]}
-              rows={monthlyTotals.map((d) => [
-                formatMonth(d.month),
-                formatYen(d.total),
-              ])}
-            />
-          </Section>
-
-          <Section
-            title="カテゴリー別の構成"
-            period={`${formatMonth(month)}${isPartialMonth ? `（${elapsed}日まで）` : ""}`}
-          >
-            <CategoryBreakdown data={categories} />
-          </Section>
-
-          <Section
-            title="日ごとの支出"
-            period={`${formatMonth(chartStart)}〜${formatMonth(chartEnd)}`}
-          >
-            <DailyHeatmap
-              start={chartStart}
-              end={chartEnd}
-              totals={totalsByDate}
-              selected={month}
-              onSelect={setMonth}
-            />
-            <DataTable
-              headers={["日付", "支出"]}
-              rows={spendingDays.map(([date, total]) => [
-                formatFullDate(date),
-                formatYen(total),
-              ])}
-            />
-          </Section>
+          )}
         </div>
       )}
     </div>

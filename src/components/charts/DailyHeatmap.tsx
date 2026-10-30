@@ -14,7 +14,6 @@ import {
   daysInMonth,
   formatFullDate,
   shiftMonth,
-  toYearMonth,
   type YearMonth,
 } from "../../lib/month";
 import { formatYen, today } from "../../lib/ui";
@@ -35,14 +34,16 @@ export function DailyHeatmap({
   start,
   end,
   totals,
-  selected,
+  selectedMonth,
+  selectedDate,
   onSelect,
 }: {
   start: YearMonth;
   end: YearMonth;
   totals: Map<string, number>;
-  selected: YearMonth;
-  onSelect: (month: YearMonth) => void;
+  selectedMonth: YearMonth;
+  selectedDate?: string;
+  onSelect: (date: string) => void;
 }) {
   const [containerRef, width] = useElementWidth<HTMLDivElement>();
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -136,7 +137,7 @@ export function DailyHeatmap({
   return (
     <div ref={containerRef} className="relative grid min-w-0 gap-2">
       <p id={hintId} className="sr-only">
-        矢印キーで日を移動し、Enter でその月に切り替えます。
+        矢印キーで日を移動し、Enter でその日を選択します。
       </p>
       <div className="flex min-w-0">
         <div
@@ -166,7 +167,7 @@ export function DailyHeatmap({
                 <span
                   key={month}
                   className={`absolute top-0 text-xs leading-none ${
-                    month === selected
+                    month === selectedMonth
                       ? "font-semibold text-gray-900"
                       : "text-gray-600"
                   }`}
@@ -181,9 +182,11 @@ export function DailyHeatmap({
                   type="button"
                   data-date={cell.date}
                   className={`absolute cursor-pointer rounded-xs outline-offset-1 focus-visible:outline-2 focus-visible:outline-gray-900 ${
-                    cell.date === hovered?.cell.date
-                      ? "ring-1 ring-gray-900"
-                      : ""
+                    cell.date === selectedDate
+                      ? "ring-2 ring-gray-900"
+                      : cell.date === hovered?.cell.date
+                        ? "ring-1 ring-gray-900"
+                        : ""
                   }`}
                   style={{
                     left: cell.week * pitch,
@@ -203,7 +206,8 @@ export function DailyHeatmap({
                   }}
                   onBlur={() => setHovered(undefined)}
                   onKeyDown={(event) => handleKeyDown(event, cell)}
-                  onClick={() => onSelect(toYearMonth(cell.date))}
+                  aria-pressed={cell.date === selectedDate}
+                  onClick={() => onSelect(cell.date)}
                 />
               ))}
             </div>

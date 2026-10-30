@@ -3,8 +3,12 @@ import { formatYen } from "../../lib/ui";
 
 export function CategoryBreakdown({
   data,
+  selected,
+  onSelect,
 }: {
   data: { category: string; total: number; count: number }[];
+  selected?: string;
+  onSelect?: (category: string) => void;
 }) {
   const total = data.reduce((sum, d) => sum + d.total, 0);
   const max = data[0]?.total ?? 0;
@@ -25,9 +29,23 @@ export function CategoryBreakdown({
       </thead>
       <tbody>
         {data.map((d) => (
-          <tr key={d.category}>
+          <tr
+            key={d.category}
+            className={d.category === selected ? "bg-blue-50" : undefined}
+          >
             <th className="w-0 py-1 pr-3 text-left font-normal whitespace-nowrap">
-              {d.category}
+              {onSelect ? (
+                <button
+                  type="button"
+                  className="cursor-pointer underline-offset-2 hover:underline"
+                  aria-pressed={d.category === selected}
+                  onClick={() => onSelect(d.category)}
+                >
+                  {d.category}
+                </button>
+              ) : (
+                d.category
+              )}
               <span className="ml-1 text-xs text-gray-600">{d.count}件</span>
             </th>
             <td className="py-1" aria-hidden="true">

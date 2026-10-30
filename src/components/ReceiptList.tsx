@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { isDateInMonth, toYearMonth } from "../lib/month";
+import { formatShortDate, isDateInMonth, toYearMonth } from "../lib/month";
 import {
   compareReceiptsOldestFirst,
   deleteReceipt,
@@ -9,12 +9,6 @@ import {
 import { formatError, formatYen, today } from "../lib/ui";
 import { MonthPicker } from "./MonthPicker";
 import { ReceiptEditDialog } from "./ReceiptEditDialog";
-
-function formatDate(date: string) {
-  const [, month, day] = date.split("-");
-  const weekday = "日月火水木金土"[new Date(`${date}T00:00`).getDay()];
-  return `${Number(month)}/${Number(day)}（${weekday}）`;
-}
 
 export function ReceiptList() {
   const [month, setMonth] = useState(() => toYearMonth(today()));
@@ -45,7 +39,7 @@ export function ReceiptList() {
   async function handleDelete(receipt: Receipt) {
     if (
       !confirm(
-        `${formatDate(receipt.date)} ${receipt.storeName} ${formatYen(receipt.totalAmount)} を削除しますか？`,
+        `${formatShortDate(receipt.date)} ${receipt.storeName} ${formatYen(receipt.totalAmount)} を削除しますか？`,
       )
     ) {
       return;
@@ -130,7 +124,7 @@ export function ReceiptList() {
                   {receipts.map((receipt) => (
                     <tr key={receipt.id} className="border-b border-gray-200">
                       <td className="px-2 py-2 whitespace-nowrap">
-                        {formatDate(receipt.date)}
+                        {formatShortDate(receipt.date)}
                       </td>
                       <td className="px-2 py-2">
                         {receipt.storeName}
