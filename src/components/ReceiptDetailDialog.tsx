@@ -3,13 +3,6 @@ import { formatFullDate } from "../lib/month";
 import type { Receipt } from "../lib/receipt";
 import { buttonClass, formatYen } from "../lib/ui";
 
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString("ja-JP", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
-
 export function ReceiptDetailDialog({
   receipt,
   onEdit,
@@ -27,8 +20,6 @@ export function ReceiptDetailDialog({
     ["日付", formatFullDate(receipt.date)],
     ["カテゴリー", receipt.category],
     ["メモ", receipt.memo || "—"],
-    ["登録日時", formatDateTime(receipt.createdAt)],
-    ["更新日時", formatDateTime(receipt.updatedAt)],
   ];
 
   return (
@@ -44,7 +35,7 @@ export function ReceiptDetailDialog({
           <h2 id="receipt-detail-title" className="text-xl font-bold">
             {receipt.storeName}
           </h2>
-          <p className="text-3xl font-semibold">
+          <p className="text-right text-3xl font-semibold">
             {formatYen(receipt.totalAmount)}
           </p>
         </div>
@@ -53,7 +44,9 @@ export function ReceiptDetailDialog({
           {rows.map(([label, value]) => (
             <div key={label} className="contents">
               <dt className="text-sm text-gray-600">{label}</dt>
-              <dd className="wrap-anywhere whitespace-pre-wrap">{value}</dd>
+              <dd className="text-right wrap-anywhere whitespace-pre-wrap">
+                {value}
+              </dd>
             </div>
           ))}
         </dl>
