@@ -1,21 +1,21 @@
 import "./style.css";
 import { useEffect, useSyncExternalStore } from "react";
-import { Analytics } from "./components/Analytics";
-import { ReceiptImport } from "./components/ReceiptImport";
-import { ReceiptList } from "./components/ReceiptList";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { hashPath } from "./lib/route";
 import { sidePanelQuery } from "./lib/ui";
+import { ImportPage } from "./pages/ImportPage";
+import { ReceiptsPage } from "./pages/ReceiptsPage";
+import { StatsPage } from "./pages/StatsPage";
 
 const routes = [
-  { hash: "#/import", label: "取込", Page: ReceiptImport },
+  { hash: "#/import", label: "取込", Page: ImportPage },
   {
     hash: "#/receipts",
     label: "明細",
-    Page: ReceiptList,
+    Page: ReceiptsPage,
     coveredBySidePanel: true,
   },
-  { hash: "#/analytics", label: "統計", Page: Analytics, wide: true },
+  { hash: "#/stats", label: "統計", Page: StatsPage, wide: true },
 ] as const;
 
 const statsRoute = routes[2];

@@ -1,6 +1,16 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { CategoryBreakdown } from "../components/charts/CategoryBreakdown";
+import { DailyHeatmap } from "../components/charts/DailyHeatmap";
+import { MonthlyBarChart } from "../components/charts/MonthlyBarChart";
+import { MonthPicker } from "../components/MonthPicker";
+import {
+  type OpenedReceipt,
+  ReceiptDialogs,
+} from "../components/receipt/ReceiptDialogs";
+import { ReceiptPanel } from "../components/receipt/ReceiptPanel";
+import { StatsSection } from "../components/stats/StatsSection";
+import { ComparisonTile, StatTile } from "../components/stats/StatTile";
 import { useMediaQuery } from "../hooks/useMediaQuery";
-import { categoryTotals, dailyTotals, totalOfMonth } from "../lib/analytics";
 import {
   daysInMonth,
   formatFullDate,
@@ -17,13 +27,8 @@ import {
   type Receipt,
 } from "../lib/receipt";
 import { receiptsHash } from "../lib/route";
+import { categoryTotals, dailyTotals, totalOfMonth } from "../lib/stats";
 import { formatError, formatYen, sidePanelQuery, today } from "../lib/ui";
-import { CategoryBreakdown } from "./charts/CategoryBreakdown";
-import { DailyHeatmap } from "./charts/DailyHeatmap";
-import { MonthlyBarChart } from "./charts/MonthlyBarChart";
-import { MonthPicker } from "./MonthPicker";
-import { type OpenedReceipt, ReceiptDialogs } from "./ReceiptDialogs";
-import { ReceiptPanel } from "./ReceiptPanel";
 
 function elapsedDays(month: YearMonth) {
   const todayDate = today();
@@ -40,91 +45,7 @@ function barChartEndMonth(month: YearMonth) {
   return isInLatestYear ? currentMonth : month;
 }
 
-function ComparisonTile({
-  label,
-  baseMonth,
-  baseUptoDay,
-  current,
-  base,
-}: {
-  label: string;
-  baseMonth: YearMonth;
-  baseUptoDay?: number;
-  current: number;
-  base: number;
-}) {
-  const baseLabel = `${formatMonth(baseMonth)}${baseUptoDay ? `（${baseUptoDay}日まで）` : ""}: ${formatYen(base)}`;
-  if (base === 0) {
-    return (
-      <StatTile label={label} value="—">
-        <p className="text-sm text-gray-600">比較できるデータがありません</p>
-      </StatTile>
-    );
-  }
-  const diff = current - base;
-  const increased = diff > 0;
-  const percent = Math.abs((diff / base) * 100).toFixed(1);
-  return (
-    <StatTile
-      label={label}
-      value={
-        diff === 0
-          ? "±¥0"
-          : `${increased ? "+" : "−"}${formatYen(Math.abs(diff))}`
-      }
-    >
-      {diff !== 0 && (
-        <p
-          className={`text-sm ${increased ? "text-red-700" : "text-green-800"}`}
-        >
-          <span aria-hidden="true">{increased ? "▲" : "▼"} </span>
-          {percent}% {increased ? "増" : "減"}
-        </p>
-      )}
-      <p className="text-sm text-gray-600">{baseLabel}</p>
-    </StatTile>
-  );
-}
-
-function StatTile({
-  label,
-  value,
-  children,
-}: {
-  label: string;
-  value: string;
-  children?: ReactNode;
-}) {
-  return (
-    <div className="grid content-start gap-1 border border-gray-400 p-4">
-      <p className="text-sm text-gray-600">{label}</p>
-      <p className="text-2xl font-semibold">{value}</p>
-      {children}
-    </div>
-  );
-}
-
-function Section({
-  title,
-  period,
-  children,
-}: {
-  title: string;
-  period?: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="grid gap-3 border border-gray-400 p-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-        <h2 className="text-xl font-bold">{title}</h2>
-        {period && <p className="text-sm text-gray-600">{period}</p>}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-export function Analytics() {
+export function StatsPage() {
   const [month, setMonth] = useState(() => toYearMonth(today()));
   const [selectedDate, setSelectedDate] = useState<string>();
   const [selectedCategory, setSelectedCategory] = useState<string>();
@@ -243,7 +164,7 @@ export function Analytics() {
               />
             </div>
 
-            <Section
+            <StatsSection
               title="月別の支出推移"
               period={`${formatMonth(chartStart)}〜${formatMonth(chartEnd)}`}
             >
@@ -252,9 +173,9 @@ export function Analytics() {
                 selected={month}
                 onSelect={selectMonth}
               />
-            </Section>
+            </StatsSection>
 
-            <Section
+            <StatsSection
               title="カテゴリー別の構成"
               period={`${formatMonth(month)}${isPartialMonth ? `（${elapsed}日まで）` : ""}`}
             >
@@ -263,9 +184,9 @@ export function Analytics() {
                 selected={showsSidePanel ? selectedCategory : undefined}
                 onSelect={selectCategory}
               />
-            </Section>
+            </StatsSection>
 
-            <Section
+            <StatsSection
               title="日ごとの支出"
               period={`${formatMonth(chartStart)}〜${formatMonth(chartEnd)}`}
             >
@@ -277,7 +198,7 @@ export function Analytics() {
                 selectedDate={selectedDate}
                 onSelect={selectDate}
               />
-            </Section>
+            </StatsSection>
           </div>
 
           {showsSidePanel && (

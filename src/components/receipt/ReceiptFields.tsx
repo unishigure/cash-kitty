@@ -3,8 +3,8 @@ import {
   categories,
   type Receipt,
   type ReceiptInput,
-} from "../lib/receipt";
-import { inputClass, today } from "../lib/ui";
+} from "../../lib/receipt";
+import { inputClass, today } from "../../lib/ui";
 
 export type Draft = {
   date: string;

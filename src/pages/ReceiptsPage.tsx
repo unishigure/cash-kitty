@@ -1,4 +1,10 @@
 import { useEffect, useState } from "react";
+import { MonthPicker } from "../components/MonthPicker";
+import {
+  type OpenedReceipt,
+  ReceiptDialogs,
+} from "../components/receipt/ReceiptDialogs";
+import { ReceiptPanel } from "../components/receipt/ReceiptPanel";
 import {
   formatFullDate,
   formatMonth,
@@ -14,11 +20,8 @@ import {
 } from "../lib/receipt";
 import { parseReceiptFilter, receiptsHash } from "../lib/route";
 import { formatError, today } from "../lib/ui";
-import { MonthPicker } from "./MonthPicker";
-import { type OpenedReceipt, ReceiptDialogs } from "./ReceiptDialogs";
-import { ReceiptPanel } from "./ReceiptPanel";
 
-export function ReceiptList() {
+export function ReceiptsPage() {
   const [initialFilter] = useState(() => parseReceiptFilter(location.hash));
   const [month, setMonth] = useState(
     () => initialFilter.month ?? toYearMonth(today()),

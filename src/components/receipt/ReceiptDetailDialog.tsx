@@ -1,7 +1,7 @@
-import { useModalDialog } from "../hooks/useModalDialog";
-import { formatFullDate } from "../lib/month";
-import type { Receipt } from "../lib/receipt";
-import { buttonClass, formatYen } from "../lib/ui";
+import { useModalDialog } from "../../hooks/useModalDialog";
+import { formatFullDate } from "../../lib/month";
+import type { Receipt } from "../../lib/receipt";
+import { buttonClass, formatYen } from "../../lib/ui";
 
 export function ReceiptDetailDialog({
   receipt,

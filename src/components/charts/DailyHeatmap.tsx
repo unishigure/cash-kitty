@@ -6,7 +6,6 @@ import {
   useState,
 } from "react";
 import { useElementWidth } from "../../hooks/useElementWidth";
-import { quartiles } from "../../lib/analytics";
 import { chartColors } from "../../lib/chart";
 import {
   addDays,
@@ -16,6 +15,7 @@ import {
   shiftMonth,
   type YearMonth,
 } from "../../lib/month";
+import { quartiles } from "../../lib/stats";
 import { formatYen, today } from "../../lib/ui";
 import { ChartTooltip, TooltipRow } from "./ChartTooltip";
 

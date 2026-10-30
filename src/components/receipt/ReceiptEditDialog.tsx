@@ -1,7 +1,7 @@
 import { type SubmitEvent, useState } from "react";
-import { useModalDialog } from "../hooks/useModalDialog";
-import { type Receipt, updateReceipt } from "../lib/receipt";
-import { buttonClass, formatError } from "../lib/ui";
+import { useModalDialog } from "../../hooks/useModalDialog";
+import { type Receipt, updateReceipt } from "../../lib/receipt";
+import { buttonClass, formatError } from "../../lib/ui";
 import {
   type Draft,
   draftFromReceipt,

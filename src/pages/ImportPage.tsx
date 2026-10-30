@@ -1,15 +1,15 @@
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
-import { addReceipt } from "../lib/receipt";
-import { checkModelAvailability, extractReceipt } from "../lib/receipt-ai";
-import { buttonClass, formatError, formatYen } from "../lib/ui";
 import {
   type Draft,
   emptyDraft,
   parseDraft,
   ReceiptFields,
-} from "./ReceiptFields";
+} from "../components/receipt/ReceiptFields";
+import { addReceipt } from "../lib/receipt";
+import { checkModelAvailability, extractReceipt } from "../lib/receipt-ai";
+import { buttonClass, formatError, formatYen } from "../lib/ui";
 
-export function ReceiptImport() {
+export function ImportPage() {
   const [modelReady, setModelReady] = useState(false);
   const [status, setStatus] = useState("AI 読み取りの対応状況を確認中…");
   const [file, setFile] = useState<File>();

@@ -1,6 +1,6 @@
-import { formatShortDate } from "../lib/month";
-import { deleteReceipt, type Receipt } from "../lib/receipt";
-import { formatYen } from "../lib/ui";
+import { formatShortDate } from "../../lib/month";
+import { deleteReceipt, type Receipt } from "../../lib/receipt";
+import { formatYen } from "../../lib/ui";
 import { ReceiptDetailDialog } from "./ReceiptDetailDialog";
 import { ReceiptEditDialog } from "./ReceiptEditDialog";
 
