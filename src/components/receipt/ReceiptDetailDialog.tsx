@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { CategoryChip } from "@/components/CategoryChip";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
+import { ModalDialog } from "@/components/ModalDialog";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { loadReceiptImage } from "@/lib/drive-sync";
 import { formatFullDate } from "@/lib/date";
@@ -60,10 +61,8 @@ export function ReceiptDetailDialog({
   ];
 
   return (
-    <dialog
+    <ModalDialog
       ref={dialogRef}
-      closedby="any"
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-8 border border-black p-0 text-std-16N-170 text-solid-gray-800 shadow-3 backdrop:bg-opacity-gray-600"
       aria-labelledby="receipt-detail-title"
       onClose={onClose}
     >
@@ -128,6 +127,6 @@ export function ReceiptDetailDialog({
           </button>
         </div>
       </div>
-    </dialog>
+    </ModalDialog>
   );
 }

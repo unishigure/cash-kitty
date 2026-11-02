@@ -5,6 +5,7 @@ import {
   parseDraft,
   ReceiptFields,
 } from "@/components/receipt/ReceiptFields";
+import { ModalDialog } from "@/components/ModalDialog";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { type Receipt, updateReceipt } from "@/lib/receipt";
 import { buttonClass, formatError, primaryButtonClass } from "@/lib/ui";
@@ -45,10 +46,8 @@ export function ReceiptEditDialog({
   }
 
   return (
-    <dialog
+    <ModalDialog
       ref={dialogRef}
-      closedby="any"
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-8 border border-black p-0 text-std-16N-170 text-solid-gray-800 shadow-3 backdrop:bg-opacity-gray-600"
       aria-labelledby="receipt-edit-title"
       onClose={onClose}
     >
@@ -83,6 +82,6 @@ export function ReceiptEditDialog({
           </div>
         </fieldset>
       </form>
-    </dialog>
+    </ModalDialog>
   );
 }
