@@ -1,4 +1,4 @@
-import type { YearMonth } from "@/lib/month";
+import { isDateInMonth, type YearMonth } from "@/lib/month";
 
 export const categories = [
   "食費",
@@ -342,9 +342,40 @@ function normalizeForSearch(text: string) {
   return text.normalize("NFKC").toLowerCase();
 }
 
-export function matchesQuery(receipt: Receipt, query: string) {
+function matchesQuery(receipt: Receipt, query: string) {
   const haystack = normalizeForSearch(`${receipt.storeName} ${receipt.memo}`);
   return normalizeForSearch(query)
     .split(/\s+/)
     .every((term) => haystack.includes(term));
+}
+
+export type ReceiptConditions = {
+  month?: YearMonth;
+  date?: string;
+  category?: string;
+  query: string;
+};
+
+export function filterReceipts(
+  receipts: Receipt[],
+  { month, date, category, query }: ReceiptConditions,
+) {
+  const trimmed = query.trim();
+  return receipts.filter(
+    (receipt) =>
+      (!month || isDateInMonth(receipt.date, month)) &&
+      (!date || receipt.date === date) &&
+      (!category || receipt.category === category) &&
+      (!trimmed || matchesQuery(receipt, trimmed)),
+  );
+}
+
+export function replaceReceipt(receipts: Receipt[], saved: Receipt) {
+  return removeReceipt(receipts, saved.id)
+    .concat(saved)
+    .sort(compareReceiptsOldestFirst);
+}
+
+export function removeReceipt(receipts: Receipt[], id: string) {
+  return receipts.filter((receipt) => receipt.id !== id);
 }

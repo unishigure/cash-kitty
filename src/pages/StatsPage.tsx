@@ -18,17 +18,17 @@ import {
   daysInMonth,
   formatFullDate,
   formatMonth,
-  isDateInMonth,
   shiftMonth,
   toYearMonth,
   type YearMonth,
 } from "@/lib/month";
 import {
-  compareReceiptsOldestFirst,
+  filterReceipts,
   listAllReceipts,
   listReceiptsBetween,
-  matchesQuery,
   type Receipt,
+  removeReceipt,
+  replaceReceipt,
 } from "@/lib/receipt";
 import { receiptsHash } from "@/lib/route";
 import { categoryTotals, dailyTotals, totalOfMonth } from "@/lib/stats";
@@ -121,13 +121,12 @@ export function StatsPage() {
     ? categoryTotals(allList, undefined)
     : categoryTotals(list, month);
   const totalsByDate = dailyTotals(list);
-  const filteredReceipts = (allPeriods ? allList : list).filter(
-    (r) =>
-      (allPeriods || isDateInMonth(r.date, month)) &&
-      (!selectedDate || r.date === selectedDate) &&
-      (!selectedCategory || r.category === selectedCategory) &&
-      (!query.trim() || matchesQuery(r, query.trim())),
-  );
+  const filteredReceipts = filterReceipts(allPeriods ? allList : list, {
+    month: allPeriods ? undefined : month,
+    date: selectedDate,
+    category: selectedCategory,
+    query,
+  });
 
   function selectMonth(next: YearMonth) {
     setMonth(next);
@@ -284,15 +283,9 @@ export function StatsPage() {
       <ReceiptDialogs
         opened={opened}
         onOpenedChange={setOpened}
-        onSaved={(saved) =>
-          updateLists((list) =>
-            list
-              .map((r) => (r.id === saved.id ? saved : r))
-              .sort(compareReceiptsOldestFirst),
-          )
-        }
+        onSaved={(saved) => updateLists((list) => replaceReceipt(list, saved))}
         onDeleted={(deleted) =>
-          updateLists((list) => list.filter((r) => r.id !== deleted.id))
+          updateLists((list) => removeReceipt(list, deleted.id))
         }
         onError={(error) => setError(formatError(error))}
       />

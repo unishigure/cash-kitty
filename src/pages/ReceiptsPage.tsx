@@ -15,11 +15,12 @@ import {
   type YearMonth,
 } from "@/lib/month";
 import {
-  compareReceiptsOldestFirst,
+  filterReceipts,
   listAllReceipts,
   listReceiptsByMonth,
-  matchesQuery,
   type Receipt,
+  removeReceipt,
+  replaceReceipt,
 } from "@/lib/receipt";
 import { parseReceiptFilter, receiptsHash } from "@/lib/route";
 import { errorStatus, type Status, today } from "@/lib/ui";
@@ -72,26 +73,24 @@ export function ReceiptsPage() {
   }
 
   function handleDeleted(receipt: Receipt) {
-    setReceipts((list) => list?.filter(({ id }) => id !== receipt.id));
+    setReceipts((list) => list && removeReceipt(list, receipt.id));
     setStatus({ tone: "success", text: `削除しました: ${receipt.storeName}` });
   }
 
   function handleSaved(saved: Receipt) {
-    setReceipts((list) =>
-      list
-        ?.filter(({ id }) => id !== saved.id)
-        .concat(allPeriods || isDateInMonth(saved.date, month) ? [saved] : [])
-        .sort(compareReceiptsOldestFirst),
+    const stillVisible = allPeriods || isDateInMonth(saved.date, month);
+    setReceipts(
+      (list) =>
+        list &&
+        (stillVisible
+          ? replaceReceipt(list, saved)
+          : removeReceipt(list, saved.id)),
     );
     setStatus({ tone: "success", text: `更新しました: ${saved.storeName}` });
   }
 
-  const visible = receipts?.filter(
-    (receipt) =>
-      (!date || receipt.date === date) &&
-      (!category || receipt.category === category) &&
-      (!query.trim() || matchesQuery(receipt, query.trim())),
-  );
+  const visible =
+    receipts && filterReceipts(receipts, { date, category, query });
 
   return (
     <div className="flex flex-col gap-4">
