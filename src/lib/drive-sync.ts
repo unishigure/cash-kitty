@@ -31,8 +31,8 @@ import {
   type Receipt,
   subscribeLocalChanges,
 } from "@/lib/receipt";
-import { createStore } from "@/lib/store";
 import { errorMessage } from "@/lib/status";
+import { createStore } from "@/lib/store";
 
 export type DriveState = {
   status: "unconfigured" | "disconnected" | "connecting" | "connected";

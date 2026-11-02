@@ -19,8 +19,8 @@ import {
   today,
   type YearMonth,
 } from "@/lib/date";
-import { quartiles } from "@/lib/stats";
 import { formatYen } from "@/lib/format";
+import { quartiles } from "@/lib/stats";
 
 const gap = 3;
 const labelWidth = 24;

@@ -11,11 +11,10 @@ import {
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
 import { StatsSection } from "@/components/stats/StatsSection";
 import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
-import type { Category } from "@/lib/category";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useReceiptsRevision } from "@/hooks/useDrive";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { excludeFixedCosts, useFixedCosts } from "@/lib/fixed-costs";
+import type { Category } from "@/lib/category";
 import {
   daysInMonth,
   formatFullDate,
@@ -25,6 +24,8 @@ import {
   toYearMonth,
   type YearMonth,
 } from "@/lib/date";
+import { excludeFixedCosts, useFixedCosts } from "@/lib/fixed-costs";
+import { formatYen } from "@/lib/format";
 import {
   filterReceipts,
   listAllReceipts,
@@ -41,7 +42,6 @@ import {
   totalOfMonth,
 } from "@/lib/stats";
 import { errorStatus, type Status } from "@/lib/status";
-import { formatYen } from "@/lib/format";
 import { sidePanelQuery } from "@/lib/styles";
 
 function elapsedDays(month: YearMonth) {

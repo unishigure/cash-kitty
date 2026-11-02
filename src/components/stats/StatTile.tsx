@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { cardClass } from "@/lib/styles";
 import { formatYen } from "@/lib/format";
+import { cardClass } from "@/lib/styles";
 
 export function StatTile({
   label,

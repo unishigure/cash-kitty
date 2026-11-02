@@ -4,7 +4,7 @@ import { ChipLabel } from "@/components/ChipLabel";
 import { HelpPopover } from "@/components/HelpPopover";
 import { Notice } from "@/components/Notice";
 import { useDriveState } from "@/hooks/useDrive";
-import { type Category, categories, type ChipHue } from "@/lib/category";
+import { type Category, type ChipHue, categories } from "@/lib/category";
 import { formatDateTime } from "@/lib/date";
 import {
   connectDrive,
@@ -13,13 +13,13 @@ import {
   requestSync,
 } from "@/lib/drive-sync";
 import { setFixedCategories, useFixedCosts } from "@/lib/fixed-costs";
-import { getTheme, setTheme, type Theme, themes } from "@/lib/theme";
 import {
   buttonClass,
   cardClass,
   dangerButtonClass,
   primaryButtonClass,
 } from "@/lib/styles";
+import { getTheme, setTheme, type Theme, themes } from "@/lib/theme";
 
 const statusChips: Record<
   DriveState["status"],

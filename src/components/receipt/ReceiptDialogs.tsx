@@ -1,7 +1,7 @@
 import { ReceiptDetailDialog } from "@/components/receipt/ReceiptDetailDialog";
 import { ReceiptEditDialog } from "@/components/receipt/ReceiptEditDialog";
-import { deleteReceipt, type Receipt } from "@/lib/receipt";
 import { formatYen } from "@/lib/format";
+import { deleteReceipt, type Receipt } from "@/lib/receipt";
 
 export type OpenedReceipt = { receipt: Receipt; mode: "detail" | "edit" };
 

@@ -1,8 +1,8 @@
 import { useId, useState } from "react";
 import { DatePicker } from "@/components/DatePicker";
 import { Select } from "@/components/Select";
-import { today } from "@/lib/date";
 import { type Category, categories } from "@/lib/category";
+import { today } from "@/lib/date";
 import type { Receipt, ReceiptInput } from "@/lib/receipt";
 import { inputClass } from "@/lib/styles";
 

@@ -2,10 +2,10 @@ import { useId } from "react";
 import { CategoryChip } from "@/components/CategoryChip";
 import { Icon } from "@/components/Icon";
 import type { Category } from "@/lib/category";
+import { formatYen } from "@/lib/format";
 import type { Receipt } from "@/lib/receipt";
 import { sumAmount } from "@/lib/stats";
 import { cardClass, inputClass } from "@/lib/styles";
-import { formatYen } from "@/lib/format";
 
 function FilterChip({
   label,

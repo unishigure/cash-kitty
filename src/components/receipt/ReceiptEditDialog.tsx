@@ -1,16 +1,16 @@
 import { type SubmitEvent, useState } from "react";
+import { ModalDialog } from "@/components/ModalDialog";
+import { Notice } from "@/components/Notice";
 import {
   draftFromReceipt,
   parseDraft,
   ReceiptFields,
   useDraft,
 } from "@/components/receipt/ReceiptFields";
-import { ModalDialog } from "@/components/ModalDialog";
-import { Notice } from "@/components/Notice";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { type Receipt, updateReceipt } from "@/lib/receipt";
-import { buttonClass, primaryButtonClass } from "@/lib/styles";
 import { errorStatus, type Status } from "@/lib/status";
+import { buttonClass, primaryButtonClass } from "@/lib/styles";
 
 export function ReceiptEditDialog({
   receipt,
