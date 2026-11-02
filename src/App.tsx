@@ -102,7 +102,7 @@ export function App() {
       <header className="sticky top-0 z-20 border-b border-solid-gray-420 bg-white">
         <div className="mx-auto flex h-14 max-w-240 items-stretch gap-4 px-4 md:h-16 md:gap-8 lg:max-w-360">
           <p className="self-center text-std-20B-150 whitespace-nowrap text-solid-gray-900">
-            Cash Kitty
+            <span className="text-key-900">Cash</span> Kitty
           </p>
           <nav className="hidden gap-2 md:flex" aria-label="メイン">
             <NavLinks

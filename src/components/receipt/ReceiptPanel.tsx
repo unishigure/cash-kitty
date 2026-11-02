@@ -16,13 +16,13 @@ function FilterChip({
 }) {
   return (
     <li
-      className={`flex min-h-8 items-center gap-1 rounded-full border border-blue-700 bg-blue-50 text-dns-14B-120 text-blue-800 ${onClear ? "pr-1 pl-3" : "px-3"}`}
+      className={`flex min-h-8 items-center gap-1 rounded-full border border-key-900 bg-key-50 text-dns-14B-120 text-key-1000 ${onClear ? "pr-1 pl-3" : "px-3"}`}
     >
       {label}
       {onClear && (
         <button
           type="button"
-          className="grid size-6 cursor-pointer place-items-center rounded-full hover:bg-blue-200"
+          className="grid size-6 cursor-pointer place-items-center rounded-full hover:bg-key-200"
           aria-label={`${label}の絞り込みを解除`}
           onClick={onClear}
         >
