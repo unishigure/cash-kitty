@@ -1,11 +1,11 @@
 import { useId } from "react";
 import { CategoryChip } from "@/components/CategoryChip";
 import { Icon } from "@/components/Icon";
-import type { Category } from "@/lib/category";
-import { formatYen } from "@/lib/format";
-import type { Receipt } from "@/lib/receipt";
-import { sumAmount } from "@/lib/stats";
-import { cardClass, inputClass } from "@/lib/styles";
+import type { Category } from "@/lib/receipt/category";
+import { formatYen } from "@/lib/ui/format";
+import type { Receipt } from "@/lib/receipt/receipt";
+import { sumAmount } from "@/lib/receipt/stats";
+import { cardClass, inputClass } from "@/lib/ui/styles";
 
 function FilterChip({
   label,

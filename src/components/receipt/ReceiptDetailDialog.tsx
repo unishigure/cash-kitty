@@ -3,16 +3,16 @@ import { CategoryChip } from "@/components/CategoryChip";
 import { ModalDialog } from "@/components/ModalDialog";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useModalDialog } from "@/hooks/useModalDialog";
-import { formatFullDate } from "@/lib/date";
-import { loadReceiptImage } from "@/lib/drive-sync";
-import { formatYen } from "@/lib/format";
-import type { Receipt } from "@/lib/receipt";
-import { errorMessage } from "@/lib/status";
+import { formatFullDate } from "@/lib/utils/date";
+import { loadReceiptImage } from "@/lib/drive/sync";
+import { formatYen } from "@/lib/ui/format";
+import type { Receipt } from "@/lib/receipt/receipt";
+import { errorMessage } from "@/lib/ui/status";
 import {
   buttonClass,
   dangerButtonClass,
   primaryButtonClass,
-} from "@/lib/styles";
+} from "@/lib/ui/styles";
 
 function useReceiptImage(receipt: Receipt) {
   const [url, setUrl] = useState<string>();

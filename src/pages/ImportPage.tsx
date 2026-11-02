@@ -14,12 +14,12 @@ import {
   useDraft,
 } from "@/components/receipt/ReceiptFields";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
-import { formatYen } from "@/lib/format";
-import { compressImage } from "@/lib/image";
-import { addReceipt } from "@/lib/receipt";
-import { checkModelAvailability, extractReceipt } from "@/lib/receipt-ai";
-import { errorStatus, type Status } from "@/lib/status";
-import { buttonClass, cardClass, primaryButtonClass } from "@/lib/styles";
+import { formatYen } from "@/lib/ui/format";
+import { compressImage } from "@/lib/receipt/image";
+import { addReceipt } from "@/lib/receipt/receipt";
+import { checkModelAvailability, extractReceipt } from "@/lib/receipt/ai";
+import { errorStatus, type Status } from "@/lib/ui/status";
+import { buttonClass, cardClass, primaryButtonClass } from "@/lib/ui/styles";
 
 const canReadClipboard = typeof navigator.clipboard?.read === "function";
 

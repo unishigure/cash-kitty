@@ -1,10 +1,10 @@
 import { useId, useState } from "react";
 import { DatePicker } from "@/components/DatePicker";
 import { Select } from "@/components/Select";
-import { type Category, categories } from "@/lib/category";
-import { today } from "@/lib/date";
-import type { Receipt, ReceiptInput } from "@/lib/receipt";
-import { inputClass } from "@/lib/styles";
+import { type Category, categories } from "@/lib/receipt/category";
+import { today } from "@/lib/utils/date";
+import type { Receipt, ReceiptInput } from "@/lib/receipt/receipt";
+import { inputClass } from "@/lib/ui/styles";
 
 const labelClass = "grid gap-1 text-std-16B-170 text-solid-gray-800";
 

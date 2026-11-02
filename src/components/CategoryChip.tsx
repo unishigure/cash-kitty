@@ -1,5 +1,5 @@
 import { ChipLabel } from "@/components/ChipLabel";
-import { type Category, categoryHues } from "@/lib/category";
+import { type Category, categoryHues } from "@/lib/receipt/category";
 
 export function CategoryChip({
   category,

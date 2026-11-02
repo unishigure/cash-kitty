@@ -1,4 +1,4 @@
-import type { ReceiptImage } from "@/lib/receipt";
+import type { ReceiptImage } from "@/lib/receipt/receipt";
 
 export async function compressImage(
   file: Blob,

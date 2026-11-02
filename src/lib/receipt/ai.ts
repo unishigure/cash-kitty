@@ -1,4 +1,4 @@
-import { type Category, categories } from "@/lib/category";
+import { type Category, categories } from "@/lib/receipt/category";
 
 export const modelOptions: LanguageModelCreateCoreOptions = {
   expectedInputs: [{ type: "text", languages: ["ja"] }, { type: "image" }],

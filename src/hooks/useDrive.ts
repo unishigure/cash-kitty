@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
-import { getDriveState, subscribeDrive } from "@/lib/drive-sync";
-import { subscribeRemoteChanges } from "@/lib/receipt";
+import { getDriveState, subscribeDrive } from "@/lib/drive/sync";
+import { subscribeRemoteChanges } from "@/lib/receipt/receipt";
 
 export function useDriveState() {
   return useSyncExternalStore(subscribeDrive, getDriveState);

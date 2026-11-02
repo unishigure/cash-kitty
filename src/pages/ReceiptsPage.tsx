@@ -15,7 +15,7 @@ import {
   today,
   toYearMonth,
   type YearMonth,
-} from "@/lib/date";
+} from "@/lib/utils/date";
 import {
   filterReceipts,
   listAllReceipts,
@@ -23,9 +23,9 @@ import {
   type Receipt,
   removeReceipt,
   replaceReceipt,
-} from "@/lib/receipt";
-import { parseReceiptFilter, receiptsHash } from "@/lib/route";
-import { errorStatus, type Status } from "@/lib/status";
+} from "@/lib/receipt/receipt";
+import { parseReceiptFilter, receiptsHash } from "@/lib/utils/route";
+import { errorStatus, type Status } from "@/lib/ui/status";
 
 export function ReceiptsPage() {
   const [initialFilter] = useState(() => parseReceiptFilter(location.hash));

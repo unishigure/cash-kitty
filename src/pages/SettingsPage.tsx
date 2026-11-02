@@ -4,22 +4,26 @@ import { ChipLabel } from "@/components/ChipLabel";
 import { HelpPopover } from "@/components/HelpPopover";
 import { Notice } from "@/components/Notice";
 import { useDriveState } from "@/hooks/useDrive";
-import { type Category, type ChipHue, categories } from "@/lib/category";
-import { formatDateTime } from "@/lib/date";
+import {
+  type Category,
+  type ChipHue,
+  categories,
+} from "@/lib/receipt/category";
+import { formatDateTime } from "@/lib/utils/date";
 import {
   connectDrive,
   type DriveState,
   disconnectDrive,
   requestSync,
-} from "@/lib/drive-sync";
-import { setFixedCategories, useFixedCosts } from "@/lib/fixed-costs";
+} from "@/lib/drive/sync";
+import { setFixedCategories, useFixedCosts } from "@/lib/receipt/fixed-costs";
 import {
   buttonClass,
   cardClass,
   dangerButtonClass,
   primaryButtonClass,
-} from "@/lib/styles";
-import { getTheme, setTheme, type Theme, themes } from "@/lib/theme";
+} from "@/lib/ui/styles";
+import { getTheme, setTheme, type Theme, themes } from "@/lib/ui/theme";
 
 const statusChips: Record<
   DriveState["status"],

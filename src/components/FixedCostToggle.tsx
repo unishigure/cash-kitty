@@ -1,5 +1,5 @@
 import { Switch } from "@/components/Switch";
-import { setExcludeFixed, useFixedCosts } from "@/lib/fixed-costs";
+import { setExcludeFixed, useFixedCosts } from "@/lib/receipt/fixed-costs";
 
 export function FixedCostToggle() {
   const { exclude } = useFixedCosts();

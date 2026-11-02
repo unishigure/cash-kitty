@@ -1,7 +1,7 @@
-import type { Category } from "@/lib/category";
-import { isDateInMonth, type YearMonth } from "@/lib/date";
-import { transact, withStore } from "@/lib/db";
-import { createSignal } from "@/lib/store";
+import type { Category } from "@/lib/receipt/category";
+import { isDateInMonth, type YearMonth } from "@/lib/utils/date";
+import { transact, withStore } from "@/lib/receipt/db";
+import { createSignal } from "@/lib/utils/store";
 
 export type Receipt = {
   id: string;

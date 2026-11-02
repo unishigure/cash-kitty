@@ -8,9 +8,9 @@ import {
   useDraft,
 } from "@/components/receipt/ReceiptFields";
 import { useModalDialog } from "@/hooks/useModalDialog";
-import { type Receipt, updateReceipt } from "@/lib/receipt";
-import { errorStatus, type Status } from "@/lib/status";
-import { buttonClass, primaryButtonClass } from "@/lib/styles";
+import { type Receipt, updateReceipt } from "@/lib/receipt/receipt";
+import { errorStatus, type Status } from "@/lib/ui/status";
+import { buttonClass, primaryButtonClass } from "@/lib/ui/styles";
 
 export function ReceiptEditDialog({
   receipt,

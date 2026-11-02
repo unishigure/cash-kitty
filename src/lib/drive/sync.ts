@@ -7,7 +7,7 @@ import {
   saveReceiptFile,
   UnauthorizedError,
   uploadImage,
-} from "@/lib/drive";
+} from "@/lib/drive/api";
 import {
   beginAuthRedirect,
   canSilentReconnect,
@@ -17,7 +17,7 @@ import {
   getValidToken,
   googleClientId,
   signOut,
-} from "@/lib/google-auth";
+} from "@/lib/drive/auth";
 import {
   applyRemoteDeletions,
   applyRemoteReceipts,
@@ -30,9 +30,9 @@ import {
   putLocalImage,
   type Receipt,
   subscribeLocalChanges,
-} from "@/lib/receipt";
-import { errorMessage } from "@/lib/status";
-import { createStore } from "@/lib/store";
+} from "@/lib/receipt/receipt";
+import { errorMessage } from "@/lib/ui/status";
+import { createStore } from "@/lib/utils/store";
 
 export type DriveState = {
   status: "unconfigured" | "disconnected" | "connecting" | "connected";

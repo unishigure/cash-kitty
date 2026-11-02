@@ -14,7 +14,7 @@ import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useReceiptsRevision } from "@/hooks/useDrive";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import type { Category } from "@/lib/category";
+import type { Category } from "@/lib/receipt/category";
 import {
   daysInMonth,
   formatFullDate,
@@ -23,9 +23,9 @@ import {
   today,
   toYearMonth,
   type YearMonth,
-} from "@/lib/date";
-import { excludeFixedCosts, useFixedCosts } from "@/lib/fixed-costs";
-import { formatYen } from "@/lib/format";
+} from "@/lib/utils/date";
+import { excludeFixedCosts, useFixedCosts } from "@/lib/receipt/fixed-costs";
+import { formatYen } from "@/lib/ui/format";
 import {
   filterReceipts,
   listAllReceipts,
@@ -33,16 +33,16 @@ import {
   type Receipt,
   removeReceipt,
   replaceReceipt,
-} from "@/lib/receipt";
-import { receiptsHash } from "@/lib/route";
+} from "@/lib/receipt/receipt";
+import { receiptsHash } from "@/lib/utils/route";
 import {
   categoryTotals,
   dailyTotals,
   sumAmount,
   totalOfMonth,
-} from "@/lib/stats";
-import { errorStatus, type Status } from "@/lib/status";
-import { sidePanelQuery } from "@/lib/styles";
+} from "@/lib/receipt/stats";
+import { errorStatus, type Status } from "@/lib/ui/status";
+import { sidePanelQuery } from "@/lib/ui/styles";
 
 function elapsedDays(month: YearMonth) {
   const todayDate = today();

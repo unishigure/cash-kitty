@@ -1,5 +1,5 @@
-import { toCategory } from "@/lib/category";
-import type { Receipt } from "@/lib/receipt";
+import { toCategory } from "@/lib/receipt/category";
+import type { Receipt } from "@/lib/receipt/receipt";
 
 const dbName = "cash-kitty-v2";
 const dbVersion = 2;

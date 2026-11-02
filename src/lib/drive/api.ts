@@ -1,5 +1,5 @@
-import { toCategory } from "@/lib/category";
-import type { Receipt } from "@/lib/receipt";
+import { toCategory } from "@/lib/receipt/category";
+import type { Receipt } from "@/lib/receipt/receipt";
 
 const driveApi = "https://www.googleapis.com/drive/v3";
 const uploadApi = "https://www.googleapis.com/upload/drive/v3";
