@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { Icon } from "@/components/Icon";
 import type { Receipt } from "@/lib/receipt";
 import { cardClass, formatYen, inputClass } from "@/lib/ui";
 
@@ -21,17 +22,7 @@ function FilterChip({
           aria-label={`${label}の絞り込みを解除`}
           onClick={onClear}
         >
-          <svg
-            className="size-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            aria-hidden="true"
-          >
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
+          <Icon name="close" className="size-4" strokeWidth={2.5} />
         </button>
       )}
     </li>

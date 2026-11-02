@@ -1,22 +1,6 @@
+import { Icon } from "@/components/Icon";
 import { shiftMonth, toYearMonth, type YearMonth } from "@/lib/month";
 import { iconButtonClass, inputClass, today } from "@/lib/ui";
-
-function Icon({ path }: { path: string }) {
-  return (
-    <svg
-      className="size-5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d={path} />
-    </svg>
-  );
-}
 
 export function MonthPicker({
   month,
@@ -37,7 +21,7 @@ export function MonthPicker({
         aria-label="前の月"
         onClick={() => onChange(month ? shiftMonth(base, -1) : base)}
       >
-        <Icon path="M15 5l-7 7 7 7" />
+        <Icon name="chevronLeft" className="size-5" strokeWidth={2.5} />
       </button>
       <div className="relative min-w-0 flex-1">
         <input
@@ -72,7 +56,7 @@ export function MonthPicker({
           disabled={!month}
           onClick={onSelectAll}
         >
-          <Icon path="M6 6l12 12M18 6L6 18" />
+          <Icon name="close" className="size-5" strokeWidth={2.5} />
         </button>
       )}
       <button
@@ -81,7 +65,7 @@ export function MonthPicker({
         aria-label="次の月"
         onClick={() => onChange(month ? shiftMonth(base, 1) : base)}
       >
-        <Icon path="M9 5l7 7-7 7" />
+        <Icon name="chevronRight" className="size-5" strokeWidth={2.5} />
       </button>
     </div>
   );
