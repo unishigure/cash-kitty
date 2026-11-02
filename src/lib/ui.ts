@@ -1,9 +1,3 @@
-export function today() {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  return now.toISOString().slice(0, 10);
-}
-
 export function formatError(error: unknown) {
   console.error(error);
   return `エラー: ${error instanceof Error ? `${error.name}: ${error.message}` : String(error)}`;

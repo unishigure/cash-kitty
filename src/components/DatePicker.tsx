@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from "react";
 import { Calendar } from "@/components/Calendar";
 import { Icon } from "@/components/Icon";
+import { parseDate, toISODate } from "@/lib/date";
 import { iconButtonClass } from "@/lib/ui";
 
 type Parts = { year: string; month: string; day: string };
@@ -24,13 +25,7 @@ function compose({ year, month, day }: Parts) {
   ) {
     return "";
   }
-  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-}
-
-function toDate(value: string) {
-  if (!value) return undefined;
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year ?? 0, (month ?? 1) - 1, day);
+  return toISODate(date);
 }
 
 const fields = [
@@ -131,7 +126,12 @@ export function DatePicker({
         className="m-0 mt-2 max-w-[calc(100vw-1rem)] overflow-x-auto rounded-8 border border-solid-gray-420 bg-white p-0 text-solid-gray-800 shadow-1 inset-auto [position-anchor:--date-picker] [position-area:bottom_span-right] [position-try-fallbacks:bottom,flip-block,top]"
         onToggle={(event) => setOpen(event.newState === "open")}
       >
-        {open && <Calendar selected={toDate(selected)} onSelect={pick} />}
+        {open && (
+          <Calendar
+            selected={selected ? parseDate(selected) : undefined}
+            onSelect={pick}
+          />
+        )}
       </div>
     </div>
   );

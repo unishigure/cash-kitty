@@ -1,4 +1,4 @@
-import { isDateInMonth, type YearMonth } from "@/lib/month";
+import { isDateInMonth, type YearMonth } from "@/lib/date";
 
 export const categories = [
   "食費",

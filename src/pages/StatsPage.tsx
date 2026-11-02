@@ -20,9 +20,10 @@ import {
   formatFullDate,
   formatMonth,
   shiftMonth,
+  today,
   toYearMonth,
   type YearMonth,
-} from "@/lib/month";
+} from "@/lib/date";
 import {
   filterReceipts,
   listAllReceipts,
@@ -33,7 +34,7 @@ import {
 } from "@/lib/receipt";
 import { receiptsHash } from "@/lib/route";
 import { categoryTotals, dailyTotals, totalOfMonth } from "@/lib/stats";
-import { formatError, formatYen, sidePanelQuery, today } from "@/lib/ui";
+import { formatError, formatYen, sidePanelQuery } from "@/lib/ui";
 
 function elapsedDays(month: YearMonth) {
   const todayDate = today();

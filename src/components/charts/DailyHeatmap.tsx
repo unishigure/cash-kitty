@@ -13,11 +13,14 @@ import {
   daysBetween,
   daysInMonth,
   formatFullDate,
+  formatShortMonth,
+  parseDate,
   shiftMonth,
+  today,
   type YearMonth,
-} from "@/lib/month";
+} from "@/lib/date";
 import { quartiles } from "@/lib/stats";
-import { formatYen, today } from "@/lib/ui";
+import { formatYen } from "@/lib/ui";
 
 const gap = 3;
 const labelWidth = 24;
@@ -59,7 +62,7 @@ export function DailyHeatmap({
   const firstDate = `${start}-01`;
   const lastDate = `${end}-${daysInMonth(end)}`;
   const todayDate = today();
-  const offset = new Date(`${firstDate}T00:00`).getDay();
+  const offset = parseDate(firstDate).getDay();
   const dayCount = daysBetween(firstDate, lastDate) + 1;
   const weeks = Math.ceil((offset + dayCount) / 7);
   const cells: Cell[] = [];
@@ -185,7 +188,7 @@ export function DailyHeatmap({
                   }`}
                   style={{ left: x }}
                 >
-                  {Number(month.slice(5))}月
+                  {formatShortMonth(month)}
                 </span>
               ))}
               {cells.map((cell) => (

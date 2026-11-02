@@ -1,4 +1,4 @@
-import { isDateInMonth, type YearMonth } from "@/lib/month";
+import { isDateInMonth, type YearMonth } from "@/lib/date";
 import type { Category, Receipt } from "@/lib/receipt";
 
 export function totalOfMonth(receipts: Receipt[], month: YearMonth) {

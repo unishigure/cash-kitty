@@ -1,9 +1,9 @@
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { Select } from "@/components/Select";
+import { parseDate, today, weekdays } from "@/lib/date";
 import { buttonClass, iconButtonClass } from "@/lib/ui";
 
-const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
 const minYear = 2000;
 const maxYear = new Date().getFullYear() + 1;
 const years = Array.from(
@@ -13,9 +13,8 @@ const years = Array.from(
 
 const dateLabelFormat = new Intl.DateTimeFormat("ja-JP", { dateStyle: "full" });
 
-function today() {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+function startOfToday() {
+  return parseDate(today());
 }
 
 function isSameDay(a: Date, b: Date) {
@@ -28,7 +27,7 @@ function clamp(date: Date) {
   return date;
 }
 
-function addDays(date: Date, days: number) {
+function shiftDays(date: Date, days: number) {
   return clamp(
     new Date(date.getFullYear(), date.getMonth(), date.getDate() + days),
   );
@@ -64,7 +63,9 @@ export function Calendar({
   selected?: Date;
   onSelect: (date: Date | undefined) => void;
 }) {
-  const [focused, setFocused] = useState(() => clamp(selected ?? today()));
+  const [focused, setFocused] = useState(() =>
+    clamp(selected ?? startOfToday()),
+  );
   const tableRef = useRef<HTMLTableElement>(null);
   const year = focused.getFullYear();
   const month = focused.getMonth();
@@ -86,10 +87,10 @@ export function Calendar({
 
   function handleKeyDown(event: KeyboardEvent<HTMLTableElement>) {
     const steps: Record<string, () => Date> = {
-      ArrowLeft: () => addDays(focused, -1),
-      ArrowRight: () => addDays(focused, 1),
-      ArrowUp: () => addDays(focused, -7),
-      ArrowDown: () => addDays(focused, 7),
+      ArrowLeft: () => shiftDays(focused, -1),
+      ArrowRight: () => shiftDays(focused, 1),
+      ArrowUp: () => shiftDays(focused, -7),
+      ArrowDown: () => shiftDays(focused, 7),
       PageUp: () => withMonth(focused, year, month - 1),
       PageDown: () => withMonth(focused, year, month + 1),
     };
@@ -205,7 +206,7 @@ export function Calendar({
         <button
           className={buttonClass}
           type="button"
-          onClick={() => onSelect(today())}
+          onClick={() => onSelect(startOfToday())}
         >
           今日
         </button>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChartTooltip, TooltipRow } from "@/components/charts/ChartTooltip";
 import { useElementWidth } from "@/hooks/useElementWidth";
 import { chartColors, columnPath, formatAxisYen, niceTicks } from "@/lib/chart";
-import { formatMonth, type YearMonth } from "@/lib/month";
+import { formatMonth, formatShortMonth, type YearMonth } from "@/lib/date";
 import { formatYen } from "@/lib/ui";
 
 const height = 240;
@@ -109,7 +109,7 @@ export function MonthlyBarChart({
                         : chartColors.textMuted,
                     }}
                   >
-                    {Number(datum.month.slice(5))}月
+                    {formatShortMonth(datum.month)}
                   </text>
                 )}
               </g>

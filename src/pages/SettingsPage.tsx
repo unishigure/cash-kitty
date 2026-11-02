@@ -5,6 +5,7 @@ import { HelpPopover } from "@/components/HelpPopover";
 import { Notice } from "@/components/Notice";
 import { useDriveState } from "@/hooks/useDrive";
 import type { ChipHue } from "@/lib/chart";
+import { formatDateTime } from "@/lib/date";
 import {
   connectDrive,
   type DriveState,
@@ -30,12 +31,6 @@ const statusChips: Record<
   connecting: { label: "接続中…", hue: "blue" },
   connected: { label: "接続済み", hue: "green" },
 };
-
-function formatDateTime(iso: string) {
-  const date = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
 
 function ThemeSection() {
   const [theme, setThemeState] = useState(getTheme);

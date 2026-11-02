@@ -1,6 +1,6 @@
 import { Icon } from "@/components/Icon";
-import { shiftMonth, toYearMonth, type YearMonth } from "@/lib/month";
-import { iconButtonClass, inputClass, today } from "@/lib/ui";
+import { shiftMonth, today, toYearMonth, type YearMonth } from "@/lib/date";
+import { iconButtonClass, inputClass } from "@/lib/ui";
 
 export function MonthPicker({
   month,

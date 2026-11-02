@@ -3,7 +3,7 @@ import { CategoryChip } from "@/components/CategoryChip";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { loadReceiptImage } from "@/lib/drive-sync";
-import { formatFullDate } from "@/lib/month";
+import { formatFullDate } from "@/lib/date";
 import type { Receipt } from "@/lib/receipt";
 import {
   buttonClass,
