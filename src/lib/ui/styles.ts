@@ -14,3 +14,6 @@ export const dangerButtonClass = `${buttonBaseClass} px-4 border border-current 
 export const iconButtonClass = `${outlineButtonClass} w-12 shrink-0`;
 
 export const sidePanelQuery = "(min-width: 1024px)";
+
+export const cardLegendClass =
+  "float-left mb-1 w-full text-std-17B-170 text-solid-gray-900";

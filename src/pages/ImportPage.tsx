@@ -1,11 +1,5 @@
-import {
-  type ChangeEvent,
-  type SubmitEvent,
-  useEffect,
-  useEffectEvent,
-  useRef,
-  useState,
-} from "react";
+import { type SubmitEvent, useState } from "react";
+import { ReceiptImagePicker } from "@/components/import/ReceiptImagePicker";
 import {
   emptyDraft,
   parseDraft,
@@ -19,12 +13,12 @@ import { compressImage } from "@/lib/receipt/image";
 import { addReceipt } from "@/lib/receipt/receipt";
 import { formatYen } from "@/lib/ui/format";
 import { errorStatus, type Status } from "@/lib/ui/status";
-import { buttonClass, cardClass, primaryButtonClass } from "@/lib/ui/styles";
-
-const canReadClipboard = typeof navigator.clipboard?.read === "function";
-
-const legendClass =
-  "float-left mb-1 w-full text-std-17B-170 text-solid-gray-900";
+import {
+  buttonClass,
+  cardClass,
+  cardLegendClass,
+  primaryButtonClass,
+} from "@/lib/ui/styles";
 
 export function ImportPage() {
   const [modelReady, setModelReady] = useState(false);
@@ -33,9 +27,7 @@ export function ImportPage() {
     text: "AI 読み取りの対応状況を確認中…",
   });
   const [file, setFile] = useState<File>();
-  const [fileInputKey, setFileInputKey] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>();
+  const [pickerKey, setPickerKey] = useState(0);
   const [imageReady, setImageReady] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -66,85 +58,14 @@ export function ImportPage() {
     [],
   );
 
-  useEffect(() => {
-    if (!previewUrl) return;
-    return () => URL.revokeObjectURL(previewUrl);
-  }, [previewUrl]);
-
-  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    selectImage(event.target.files?.[0]);
-  }
-
-  function pasteImage(image: File) {
-    if (fileInputRef.current) {
-      const transfer = new DataTransfer();
-      transfer.items.add(image);
-      fileInputRef.current.files = transfer.files;
-    }
-    selectImage(image);
-  }
-
-  const handlePaste = useEffectEvent((event: ClipboardEvent) => {
-    if (analyzing || saving) return;
-    const image = [...(event.clipboardData?.files ?? [])].find((f) =>
-      f.type.startsWith("image/"),
-    );
-    if (!image) return;
-    event.preventDefault();
-    pasteImage(image);
-  });
-
-  useEffect(() => {
-    document.addEventListener("paste", handlePaste);
-    return () => document.removeEventListener("paste", handlePaste);
-  }, []);
-
-  async function pasteFromClipboard() {
-    try {
-      for (const item of await navigator.clipboard.read()) {
-        const type = item.types.find((t) => t.startsWith("image/"));
-        if (!type) continue;
-        const blob = await item.getType(type);
-        pasteImage(
-          new File([blob], `clipboard.${type.split("/")[1]}`, { type }),
-        );
-        return;
-      }
-      setStatus({
-        tone: "error",
-        text: "クリップボードに画像がありません。",
-      });
-    } catch (error) {
-      setStatus(errorStatus(error));
-    }
-  }
-
   function selectImage(selected: File | undefined) {
-    setImageReady(false);
-    setPreviewUrl(undefined);
     setFile(selected);
-    if (!selected) return;
-    if (!selected.type.startsWith("image/")) {
-      setStatus({
-        tone: "error",
-        text: "画像ファイルを選択してください。",
-      });
-      return;
-    }
-    setPreviewUrl(URL.createObjectURL(selected));
+    setImageReady(false);
   }
 
   function handlePreviewLoad() {
     setImageReady(true);
     if (modelReady) void analyze();
-  }
-
-  function handlePreviewError() {
-    setImageReady(false);
-    setStatus({
-      tone: "error",
-      text: "画像を読み込めません。別の画像を選択してください。",
-    });
   }
 
   async function analyze() {
@@ -177,8 +98,7 @@ export function ImportPage() {
 
   function reset() {
     setFile(undefined);
-    setFileInputKey((key) => key + 1);
-    setPreviewUrl(undefined);
+    setPickerKey((key) => key + 1);
     setImageReady(false);
     setDraft(emptyDraft());
   }
@@ -212,40 +132,14 @@ export function ImportPage() {
       <Notice status={status} />
 
       <div className="grid items-start gap-4 md:grid-cols-2">
-        <fieldset className={`grid gap-4 ${cardClass}`}>
-          <legend className={legendClass}>
-            <label htmlFor="receipt-image">レシート画像</label>
-          </legend>
-          <input
-            key={fileInputKey}
-            ref={fileInputRef}
-            id="receipt-image"
-            className="w-full cursor-pointer rounded-8 border border-dashed border-solid-gray-600 bg-solid-gray-50 p-4 text-dns-16N-130 hover:border-black disabled:cursor-not-allowed file:mr-3 file:min-h-12 file:cursor-pointer file:rounded-8 file:border file:border-key-900 file:bg-white file:px-4 file:text-oln-16B-100 file:text-key-900 hover:file:bg-key-200 disabled:file:cursor-not-allowed"
-            type="file"
-            accept="image/*"
-            disabled={analyzing || saving}
-            onChange={handleImageChange}
-          />
-          {canReadClipboard && (
-            <button
-              className={`${buttonClass} justify-self-center`}
-              type="button"
-              disabled={analyzing || saving}
-              onClick={() => void pasteFromClipboard()}
-            >
-              クリップボードから貼り付け
-            </button>
-          )}
-          {previewUrl && (
-            <img
-              className="max-h-120 max-w-full justify-self-center rounded-8 border border-solid-gray-200 object-contain"
-              src={previewUrl}
-              alt="選択したレシートのプレビュー"
-              hidden={!imageReady}
-              onLoad={handlePreviewLoad}
-              onError={handlePreviewError}
-            />
-          )}
+        <ReceiptImagePicker
+          key={pickerKey}
+          ready={imageReady}
+          disabled={analyzing || saving}
+          onChange={selectImage}
+          onLoad={handlePreviewLoad}
+          onError={setStatus}
+        >
           {modelReady && imageReady && (
             <button
               className={`${buttonClass} justify-self-end`}
@@ -256,14 +150,14 @@ export function ImportPage() {
               {analyzing ? "読み取り中…" : "もう一度読み取る"}
             </button>
           )}
-        </fieldset>
+        </ReceiptImagePicker>
 
         <form onSubmit={handleSubmit}>
           <fieldset
             className={`grid gap-4 disabled:opacity-60 ${cardClass}`}
             disabled={analyzing || saving}
           >
-            <legend className={legendClass}>内容の確認</legend>
+            <legend className={cardLegendClass}>内容の確認</legend>
             <ReceiptFields draft={draft} onChange={updateDraft} />
             <div className="flex justify-end gap-2">
               <button className={buttonClass} type="button" onClick={reset}>
