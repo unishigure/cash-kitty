@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChipLabel } from "@/components/ChipLabel";
-import { Icon } from "@/components/Icon";
+import { HelpPopover } from "@/components/HelpPopover";
 import { Notice } from "@/components/Notice";
 import { useDriveState } from "@/hooks/useDrive";
 import type { ChipHue } from "@/lib/chart";
@@ -10,6 +10,8 @@ import {
   disconnectDrive,
   requestSync,
 } from "@/lib/drive-sync";
+import { setFixedCategories, useFixedCosts } from "@/lib/fixed-costs";
+import { type Category, categories } from "@/lib/receipt";
 import { getTheme, setTheme, type Theme, themes } from "@/lib/theme";
 import {
   buttonClass,
@@ -68,6 +70,46 @@ function ThemeSection() {
   );
 }
 
+function FixedCostSection() {
+  const fixedCosts = useFixedCosts();
+
+  function toggle(category: Category, checked: boolean) {
+    setFixedCategories(
+      checked
+        ? [...fixedCosts.categories, category]
+        : fixedCosts.categories.filter((c) => c !== category),
+    );
+  }
+
+  return (
+    <fieldset className={`grid gap-3 ${cardClass}`}>
+      <legend className="float-left mb-1 flex w-full items-center gap-1 text-std-20B-150 text-solid-gray-900">
+        固定費
+        <HelpPopover id="settings-fixed-cost-help" label="固定費の説明">
+          統計画面で「固定費を除く」を選ぶと、
+          ここで選んだカテゴリーを支出から除きます。
+        </HelpPopover>
+      </legend>
+      <div className="flex flex-wrap gap-x-6">
+        {categories.map((category) => (
+          <label
+            key={category}
+            className="flex min-h-12 cursor-pointer items-center gap-2"
+          >
+            <input
+              type="checkbox"
+              className="size-5 cursor-pointer accent-key-900"
+              checked={fixedCosts.categories.includes(category)}
+              onChange={(event) => toggle(category, event.target.checked)}
+            />
+            {category}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
 export function SettingsPage() {
   const drive = useDriveState();
   const [disconnecting, setDisconnecting] = useState(false);
@@ -92,6 +134,7 @@ export function SettingsPage() {
   return (
     <>
       <ThemeSection />
+      <FixedCostSection />
       <section
         className={`flex flex-col gap-3 ${cardClass}`}
         aria-labelledby="settings-drive"
@@ -103,22 +146,10 @@ export function SettingsPage() {
           >
             Google Drive 連携
           </h2>
-          <button
-            type="button"
-            className="grid size-10 cursor-pointer place-items-center rounded-full text-solid-gray-700 [anchor-name:--settings-drive-help] hover:bg-solid-gray-50 focus-visible:focus-ring"
-            aria-label="Google Drive 連携の説明"
-            popoverTarget="settings-drive-help"
-          >
-            <Icon name="help" />
-          </button>
-          <p
-            id="settings-drive-help"
-            popover="auto"
-            className="m-0 mt-1 max-w-[min(20rem,calc(100vw-2rem))] rounded-8 border border-solid-gray-420 bg-white p-3 text-dns-16N-130 text-solid-gray-800 shadow-2 inset-auto [position-anchor:--settings-drive-help] [position-area:bottom] [position-try-fallbacks:flip-block]"
-          >
+          <HelpPopover id="settings-drive-help" label="Google Drive 連携の説明">
             明細とレシート画像を Google Drive
             のアプリ専用領域に保存し、端末間で同期します。
-          </p>
+          </HelpPopover>
         </div>
         <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">
           <dt className="text-solid-gray-600">状態</dt>

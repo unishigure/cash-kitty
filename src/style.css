@@ -33,6 +33,7 @@
     --color-key-300: light-dark(#9db7f9, #00118f);
     --color-key-900: light-dark(#0017c1, #7096f8);
     --color-key-1000: light-dark(#00118f, #9db7f9);
+    --color-key-1100: light-dark(#000071, #b3c8fa);
     --color-key-1200: light-dark(#000060, #c5d7fb);
     --color-blue-50: light-dark(#e8f1fe, #00234b);
     --color-blue-200: light-dark(#c5d7fb, #00316a);

@@ -13,6 +13,7 @@ import { StatsSection } from "@/components/stats/StatsSection";
 import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
 import { useReceiptsRevision } from "@/hooks/useDrive";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { excludeFixedCosts, useFixedCosts } from "@/lib/fixed-costs";
 import {
   daysInMonth,
   formatFullDate,
@@ -61,6 +62,7 @@ export function StatsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const revision = useReceiptsRevision();
+  const fixedCosts = useFixedCosts();
 
   useEffect(() => {
     let cancelled = false;
@@ -100,7 +102,8 @@ export function StatsPage() {
 
   const previousMonth = shiftMonth(month, -1);
   const lastYearMonth = shiftMonth(month, -12);
-  const list = receipts ?? [];
+  const list = excludeFixedCosts(receipts ?? [], fixedCosts);
+  const allList = excludeFixedCosts(allReceipts ?? [], fixedCosts);
 
   const chartEnd = barChartEndMonth(month);
   const chartStart = shiftMonth(chartEnd, -11);
@@ -115,10 +118,10 @@ export function StatsPage() {
   const lastYearTotal = totalOfMonth(list, lastYearMonth);
 
   const categories = allPeriods
-    ? categoryTotals(allReceipts ?? [], undefined)
+    ? categoryTotals(allList, undefined)
     : categoryTotals(list, month);
   const totalsByDate = dailyTotals(list);
-  const filteredReceipts = (allPeriods ? (allReceipts ?? []) : list).filter(
+  const filteredReceipts = (allPeriods ? allList : list).filter(
     (r) =>
       (allPeriods || isDateInMonth(r.date, month)) &&
       (!selectedDate || r.date === selectedDate) &&
@@ -192,16 +195,18 @@ export function StatsPage() {
                 }
                 value={formatYen(
                   allPeriods
-                    ? (allReceipts ?? []).reduce(
-                        (sum, r) => sum + r.totalAmount,
-                        0,
-                      )
+                    ? allList.reduce((sum, r) => sum + r.totalAmount, 0)
                     : thisTotal,
                 )}
               >
-                {!allPeriods && isPartialMonth && (
+                {(fixedCosts.exclude || (!allPeriods && isPartialMonth)) && (
                   <p className="text-dns-14N-130 text-solid-gray-600">
-                    {elapsed}日までの集計
+                    {[
+                      !allPeriods && isPartialMonth && `${elapsed}日まで`,
+                      fixedCosts.exclude && "固定費を除く",
+                    ]
+                      .filter(Boolean)
+                      .join("・")}
                   </p>
                 )}
               </StatTile>

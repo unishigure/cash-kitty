@@ -1,5 +1,6 @@
 import "@/style.css";
 import { useEffect, useSyncExternalStore } from "react";
+import { FixedCostToggle } from "@/components/FixedCostToggle";
 import { Icon } from "@/components/Icon";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { hashPath } from "@/lib/route";
@@ -53,12 +54,12 @@ function NavLinks({
   routes,
   current,
   className,
-  withIcon = false,
+  iconClassName,
 }: {
   routes: readonly NavRoute[];
   current: Route;
   className: string;
-  withIcon?: boolean;
+  iconClassName?: string;
 }) {
   return routes.map((route) => (
     <a
@@ -67,7 +68,7 @@ function NavLinks({
       className={className}
       aria-current={route === current ? "page" : undefined}
     >
-      {withIcon && <Icon name={route.icon} />}
+      <Icon name={route.icon} className={iconClassName} />
       {route.label}
     </a>
   ));
@@ -99,25 +100,29 @@ export function App() {
   return (
     <div className="flex min-h-dvh flex-col text-std-16N-170">
       <header className="sticky top-0 z-20 border-b border-solid-gray-420 bg-white">
-        <div className="mx-auto flex h-14 max-w-240 items-stretch gap-8 px-4 md:h-16 lg:max-w-360">
-          <p className="self-center text-std-20B-150 text-solid-gray-900">
+        <div className="mx-auto flex h-14 max-w-240 items-stretch gap-4 px-4 md:h-16 md:gap-8 lg:max-w-360">
+          <p className="self-center text-std-20B-150 whitespace-nowrap text-solid-gray-900">
             Cash Kitty
           </p>
           <nav className="hidden gap-2 md:flex" aria-label="メイン">
             <NavLinks
               routes={available}
               current={current}
-              className="-mb-px flex items-center border-b-4 border-transparent px-3 pt-1 text-solid-gray-800 underline-offset-[3px] hover:underline aria-[current=page]:border-key-900 aria-[current=page]:font-bold aria-[current=page]:text-key-900"
+              iconClassName="size-5"
+              className="-mb-px flex items-center gap-1.5 border-b-4 border-transparent px-3 pt-1 text-solid-gray-800 underline-offset-[3px] hover:underline aria-[current=page]:border-key-900 aria-[current=page]:font-bold aria-[current=page]:text-key-900"
             />
           </nav>
-          <a
-            href={settingsRoute.hash}
-            className="-mr-2 ml-auto flex size-12 items-center justify-center self-center rounded-8 text-solid-gray-800 hover:bg-solid-gray-50 focus-visible:focus-ring aria-[current=page]:text-key-900"
-            aria-label={settingsRoute.label}
-            aria-current={current === settingsRoute ? "page" : undefined}
-          >
-            <Icon name="gear" />
-          </a>
+          <div className="-mr-2 ml-auto flex items-center gap-2">
+            {current === statsRoute && <FixedCostToggle />}
+            <a
+              href={settingsRoute.hash}
+              className="flex size-12 items-center justify-center rounded-8 text-solid-gray-800 hover:bg-solid-gray-50 focus-visible:focus-ring aria-[current=page]:text-key-900"
+              aria-label={settingsRoute.label}
+              aria-current={current === settingsRoute ? "page" : undefined}
+            >
+              <Icon name="gear" />
+            </a>
+          </div>
         </div>
       </header>
 
@@ -134,7 +139,6 @@ export function App() {
         <NavLinks
           routes={available}
           current={current}
-          withIcon
           className="-mt-px flex h-16 flex-col items-center justify-center gap-0.5 border-t-4 border-transparent text-dns-14N-120 text-solid-gray-700 focus-visible:focus-ring-inset aria-[current=page]:border-key-900 aria-[current=page]:font-bold aria-[current=page]:text-key-900"
         />
       </nav>

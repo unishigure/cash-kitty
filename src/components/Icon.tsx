@@ -9,6 +9,7 @@ const paths = {
   chevronLeft: "M15 5l-7 7 7 7",
   chevronRight: "M9 5l7 7-7 7",
   chevronDown: "M5 9l7 7 7-7",
+  check: "M5 12l5 5 9-10",
   close: "M6 6l12 12M18 6L6 18",
 };
 
