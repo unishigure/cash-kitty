@@ -107,10 +107,9 @@ export function StatsPage() {
   });
   const elapsed = elapsedDays(month);
   const isPartialMonth = elapsed > 0 && elapsed < daysInMonth(month);
-  const compareUptoDay = isPartialMonth ? elapsed : undefined;
   const thisTotal = totalOfMonth(list, month);
-  const previousTotal = totalOfMonth(list, previousMonth, compareUptoDay);
-  const lastYearTotal = totalOfMonth(list, lastYearMonth, compareUptoDay);
+  const previousTotal = totalOfMonth(list, previousMonth);
+  const lastYearTotal = totalOfMonth(list, lastYearMonth);
 
   const categories = allPeriods
     ? categoryTotals(allReceipts ?? [], undefined)
@@ -199,15 +198,11 @@ export function StatsPage() {
               </StatTile>
               <ComparisonTile
                 label="前月比"
-                baseMonth={previousMonth}
-                baseUptoDay={compareUptoDay}
                 current={thisTotal}
                 base={allPeriods ? undefined : previousTotal}
               />
               <ComparisonTile
                 label="前年同月比"
-                baseMonth={lastYearMonth}
-                baseUptoDay={compareUptoDay}
                 current={thisTotal}
                 base={allPeriods ? undefined : lastYearTotal}
               />

@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { formatMonth, type YearMonth } from "@/lib/month";
 import { formatYen } from "@/lib/ui";
 
 export function StatTile({
@@ -22,14 +21,10 @@ export function StatTile({
 
 export function ComparisonTile({
   label,
-  baseMonth,
-  baseUptoDay,
   current,
   base,
 }: {
   label: string;
-  baseMonth: YearMonth;
-  baseUptoDay?: number;
   current: number;
   base: number | undefined;
 }) {
@@ -40,7 +35,6 @@ export function ComparisonTile({
       </StatTile>
     );
   }
-  const baseLabel = `${formatMonth(baseMonth)}${baseUptoDay ? `（${baseUptoDay}日まで）` : ""}: ${formatYen(base)}`;
   const diff = current - base;
   const increased = diff > 0;
   const percent = Math.abs((diff / base) * 100).toFixed(1);
@@ -61,7 +55,6 @@ export function ComparisonTile({
           {percent}% {increased ? "増" : "減"}
         </p>
       )}
-      <p className="text-sm text-gray-600">{baseLabel}</p>
     </StatTile>
   );
 }

@@ -1,16 +1,9 @@
-import { daysInMonth, isDateInMonth, type YearMonth } from "@/lib/month";
+import { isDateInMonth, type YearMonth } from "@/lib/month";
 import type { Receipt } from "@/lib/receipt";
 
-export function totalOfMonth(
-  receipts: Receipt[],
-  month: YearMonth,
-  uptoDay = daysInMonth(month),
-) {
+export function totalOfMonth(receipts: Receipt[], month: YearMonth) {
   return receipts
-    .filter(
-      (r) =>
-        isDateInMonth(r.date, month) && Number(r.date.slice(8, 10)) <= uptoDay,
-    )
+    .filter((r) => isDateInMonth(r.date, month))
     .reduce((sum, r) => sum + r.totalAmount, 0);
 }
 
