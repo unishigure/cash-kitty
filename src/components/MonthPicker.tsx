@@ -47,18 +47,28 @@ export function MonthPicker({
           </span>
         )}
       </div>
-      {onSelectAll && (
-        <button
-          className={iconButtonClass}
-          type="button"
-          aria-label="月の指定を解除して全期間を表示"
-          title="全期間を表示"
-          disabled={!month}
-          onClick={onSelectAll}
-        >
-          <Icon name="close" className="size-5" strokeWidth={2.5} />
-        </button>
-      )}
+      {onSelectAll &&
+        (month ? (
+          <button
+            className={iconButtonClass}
+            type="button"
+            aria-label="月の指定を解除して全期間を表示"
+            title="全期間を表示"
+            onClick={onSelectAll}
+          >
+            <Icon name="close" className="size-5" strokeWidth={2.5} />
+          </button>
+        ) : (
+          <button
+            className={iconButtonClass}
+            type="button"
+            aria-label="今月を表示"
+            title="今月を表示"
+            onClick={() => onChange(base)}
+          >
+            <Icon name="reset" className="size-5" strokeWidth={2.5} />
+          </button>
+        ))}
       <button
         className={iconButtonClass}
         type="button"
