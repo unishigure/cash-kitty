@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CategoryChip } from "@/components/CategoryChip";
 import { ChipLabel } from "@/components/ChipLabel";
 import { HelpPopover } from "@/components/HelpPopover";
 import { Notice } from "@/components/Notice";
@@ -102,7 +103,7 @@ function FixedCostSection() {
               checked={fixedCosts.categories.includes(category)}
               onChange={(event) => toggle(category, event.target.checked)}
             />
-            {category}
+            <CategoryChip category={category} />
           </label>
         ))}
       </div>
