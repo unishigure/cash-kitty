@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import { DatePicker } from "@/components/DatePicker";
 import { Select } from "@/components/Select";
 import { today } from "@/lib/date";
@@ -46,6 +46,16 @@ export function draftFromReceipt(receipt: Receipt): Draft {
     category: receipt.category,
     memo: receipt.memo,
   };
+}
+
+export function useDraft(initial: () => Draft) {
+  const [draft, setDraft] = useState(initial);
+
+  function updateDraft<K extends keyof Draft>(key: K, value: Draft[K]) {
+    setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  return [draft, setDraft, updateDraft] as const;
 }
 
 export function parseDraft(

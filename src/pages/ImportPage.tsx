@@ -9,10 +9,10 @@ import {
 import { Notice } from "@/components/Notice";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import {
-  type Draft,
   emptyDraft,
   parseDraft,
   ReceiptFields,
+  useDraft,
 } from "@/components/receipt/ReceiptFields";
 import { compressImage } from "@/lib/image";
 import { addReceipt } from "@/lib/receipt";
@@ -44,7 +44,7 @@ export function ImportPage() {
   const [imageReady, setImageReady] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [draft, setDraft, updateDraft] = useDraft(emptyDraft);
 
   useAsyncEffect(
     checkModelAvailability,
@@ -75,10 +75,6 @@ export function ImportPage() {
     if (!previewUrl) return;
     return () => URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
-
-  function updateDraft<K extends keyof Draft>(key: K, value: Draft[K]) {
-    setDraft((current) => ({ ...current, [key]: value }));
-  }
 
   function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     selectImage(event.target.files?.[0]);

@@ -1,9 +1,9 @@
 import { type SubmitEvent, useState } from "react";
 import {
-  type Draft,
   draftFromReceipt,
   parseDraft,
   ReceiptFields,
+  useDraft,
 } from "@/components/receipt/ReceiptFields";
 import { ModalDialog } from "@/components/ModalDialog";
 import { useModalDialog } from "@/hooks/useModalDialog";
@@ -20,13 +20,9 @@ export function ReceiptEditDialog({
   onClose: () => void;
 }) {
   const dialogRef = useModalDialog();
-  const [draft, setDraft] = useState(() => draftFromReceipt(receipt));
+  const [draft, , updateDraft] = useDraft(() => draftFromReceipt(receipt));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-
-  function updateDraft<K extends keyof Draft>(key: K, value: Draft[K]) {
-    setDraft((current) => ({ ...current, [key]: value }));
-  }
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
