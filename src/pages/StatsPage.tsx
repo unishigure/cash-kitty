@@ -8,7 +8,7 @@ import {
 } from "@/components/receipt/ReceiptDialogs";
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
 import { StatsSection } from "@/components/stats/StatsSection";
-import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
+import { SummaryTiles } from "@/components/stats/SummaryTiles";
 import { MonthPicker } from "@/components/ui/MonthPicker";
 import { Notice } from "@/components/ui/Notice";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
@@ -30,7 +30,6 @@ import {
   sumAmount,
   totalOfMonth,
 } from "@/lib/receipt/stats";
-import { formatYen } from "@/lib/ui/format";
 import { errorStatus, type Status } from "@/lib/ui/status";
 import { sidePanelQuery } from "@/lib/ui/styles";
 import {
@@ -188,35 +187,19 @@ export function StatsPage() {
           aria-busy={loading}
         >
           <div className="flex min-w-0 flex-col gap-4">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 *:first:col-span-2 sm:*:first:col-span-1">
-              <StatTile
-                label={
-                  allPeriods ? "全期間の支出" : `${formatMonth(month)}の支出`
-                }
-                value={formatYen(allPeriods ? sumAmount(allList) : thisTotal)}
-              >
-                {(fixedCosts.exclude || (!allPeriods && isPartialMonth)) && (
-                  <p className="text-dns-14N-130 text-solid-gray-600">
-                    {[
-                      !allPeriods && isPartialMonth && `${elapsed}日まで`,
-                      fixedCosts.exclude && "固定費を除く",
-                    ]
-                      .filter(Boolean)
-                      .join("・")}
-                  </p>
-                )}
-              </StatTile>
-              <ComparisonTile
-                label="前月比"
-                current={thisTotal}
-                base={allPeriods ? undefined : previousTotal}
-              />
-              <ComparisonTile
-                label="前年同月比"
-                current={thisTotal}
-                base={allPeriods ? undefined : lastYearTotal}
-              />
-            </div>
+            <SummaryTiles
+              label={
+                allPeriods ? "全期間の支出" : `${formatMonth(month)}の支出`
+              }
+              total={allPeriods ? sumAmount(allList) : thisTotal}
+              notes={[
+                ...(!allPeriods && isPartialMonth ? [`${elapsed}日まで`] : []),
+                ...(fixedCosts.exclude ? ["固定費を除く"] : []),
+              ]}
+              current={thisTotal}
+              previousTotal={allPeriods ? undefined : previousTotal}
+              lastYearTotal={allPeriods ? undefined : lastYearTotal}
+            />
 
             <StatsSection
               title="月別の支出推移"
