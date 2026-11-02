@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { CategoryChip } from "@/components/CategoryChip";
 import { Icon } from "@/components/Icon";
 import type { Receipt } from "@/lib/receipt";
 import { cardClass, formatYen, inputClass } from "@/lib/ui";
@@ -116,9 +117,11 @@ export function ReceiptPanel({
                 >
                   {receipt.storeName}
                 </button>
-                <span className="mt-1 block truncate text-dns-14N-120 text-solid-gray-600">
-                  {receipt.category}
-                  {receipt.memo && `・${receipt.memo}`}
+                <span className="mt-2 flex items-center gap-2 text-dns-14N-120 text-solid-gray-600">
+                  <CategoryChip category={receipt.category} size="sm" />
+                  {receipt.memo && (
+                    <span className="truncate">{receipt.memo}</span>
+                  )}
                 </span>
               </span>
               <span className="shrink-0 font-bold text-solid-gray-900 tabular-nums">

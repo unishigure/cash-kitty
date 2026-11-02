@@ -1,5 +1,5 @@
 import { isDateInMonth, type YearMonth } from "@/lib/month";
-import type { Receipt } from "@/lib/receipt";
+import type { Category, Receipt } from "@/lib/receipt";
 
 export function totalOfMonth(receipts: Receipt[], month: YearMonth) {
   return receipts
@@ -29,7 +29,7 @@ export function categoryTotals(
   receipts: Receipt[],
   month: YearMonth | undefined,
 ) {
-  const totals = new Map<string, { total: number; count: number }>();
+  const totals = new Map<Category, { total: number; count: number }>();
   for (const receipt of receipts) {
     if (month && !isDateInMonth(receipt.date, month)) continue;
     const current = totals.get(receipt.category) ?? { total: 0, count: 0 };

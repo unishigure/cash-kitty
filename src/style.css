@@ -56,6 +56,43 @@
     --chart-baseline: light-dark(#949494, #6b6b6b);
     --chart-text: light-dark(#1a1a1a, #f2f2f2);
     --chart-text-muted: light-dark(#666666, #a6a6a6);
+
+    --category-blue: light-dark(#2a78d6, #3987e5);
+    --category-blue-bg: light-dark(#e8f1fe, #000060);
+    --category-blue-border: light-dark(#264af4, #7096f8);
+    --category-blue-text: light-dark(#0031d8, #c5d7fb);
+    --category-orange: light-dark(#eb6834, #d95926);
+    --category-orange-bg: light-dark(#ffeee2, #541e00);
+    --category-orange-border: light-dark(#ac3e00, #ff8d44);
+    --category-orange-text: light-dark(#8b3200, #ffc199);
+    --category-cyan: light-dark(#1baf7a, #199e70);
+    --category-cyan-bg: light-dark(#e9f7f9, #003741);
+    --category-cyan-border: light-dark(#006f83, #2bc8e4);
+    --category-cyan-text: light-dark(#006173, #99f2ff);
+    --category-yellow: light-dark(#eda100, #c98500);
+    --category-yellow-bg: light-dark(#fbf5e0, #604b00);
+    --category-yellow-border: light-dark(#806300, #ffc700);
+    --category-yellow-text: light-dark(#6e5600, #ffe380);
+    --category-magenta: light-dark(#e87ba4, #d55181);
+    --category-magenta-bg: light-dark(#f3e5f4, #3b003b);
+    --category-magenta-border: light-dark(#aa00aa, #f661f6);
+    --category-magenta-text: light-dark(#8b008b, #ffaeff);
+    --category-green: light-dark(#008300, #008300);
+    --category-green-bg: light-dark(#e6f5ec, #032213);
+    --category-green-border: light-dark(#197a4b, #51b883);
+    --category-green-text: light-dark(#115a36, #9bd4b5);
+    --category-purple: light-dark(#6250d6, #9085e9);
+    --category-purple-bg: light-dark(#f1eafa, #21004b);
+    --category-purple-border: light-dark(#5c10be, #bb87ff);
+    --category-purple-text: light-dark(#5c10be, #ddc2ff);
+    --category-red: light-dark(#e34948, #e66767);
+    --category-red-bg: light-dark(#fdeeee, #620000);
+    --category-red-border: light-dark(#ce0000, #ff7171);
+    --category-red-text: light-dark(#a90000, #ffbbbb);
+    --category-gray: light-dark(#949494, #6b6b6b);
+    --category-gray-bg: light-dark(#f2f2f2, #262626);
+    --category-gray-border: light-dark(#4d4d4d, #bfbfbf);
+    --category-gray-text: light-dark(#333333, #e0e0e0);
   }
 
   :root[data-theme="light"] {

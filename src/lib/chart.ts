@@ -1,3 +1,28 @@
+import type { Category } from "@/lib/receipt";
+
+export const categoryHues = {
+  食費: "orange",
+  日用品: "cyan",
+  衣服: "magenta",
+  趣味: "purple",
+  交通: "blue",
+  交際: "yellow",
+  医療: "red",
+  住居: "green",
+  光熱費: "green",
+  通信: "green",
+  税金: "gray",
+  貯蓄: "gray",
+  その他: "gray",
+} satisfies Record<Category, string>;
+
+export function categoryColor(
+  category: Category,
+  part?: "bg" | "border" | "text",
+) {
+  return `var(--category-${categoryHues[category]}${part ? `-${part}` : ""})`;
+}
+
 export const chartColors = {
   series1: "var(--chart-series)",
   series1Muted: "var(--chart-series-muted)",

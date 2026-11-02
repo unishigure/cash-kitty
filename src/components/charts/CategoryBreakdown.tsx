@@ -1,4 +1,5 @@
-import { chartColors } from "@/lib/chart";
+import { categoryColor } from "@/lib/chart";
+import type { Category } from "@/lib/receipt";
 import { formatYen } from "@/lib/ui";
 
 export function CategoryBreakdown({
@@ -6,7 +7,7 @@ export function CategoryBreakdown({
   selected,
   onSelect,
 }: {
-  data: { category: string; total: number; count: number }[];
+  data: { category: Category; total: number; count: number }[];
   selected?: string;
   onSelect?: (category: string) => void;
 }) {
@@ -64,7 +65,7 @@ export function CategoryBreakdown({
                 style={{
                   width: `${(d.total / max) * 100}%`,
                   minWidth: 2,
-                  backgroundColor: chartColors.series1,
+                  backgroundColor: categoryColor(d.category),
                 }}
               />
             </td>

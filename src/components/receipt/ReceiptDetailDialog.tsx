@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
+import { CategoryChip } from "@/components/CategoryChip";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { loadReceiptImage } from "@/lib/drive-sync";
 import { formatFullDate } from "@/lib/month";
@@ -53,9 +54,9 @@ export function ReceiptDetailDialog({
   const dialogRef = useModalDialog();
   const image = useReceiptImage(receipt);
 
-  const rows = [
+  const rows: [string, ReactNode][] = [
     ["日付", formatFullDate(receipt.date)],
-    ["カテゴリー", receipt.category],
+    ["カテゴリー", <CategoryChip key="category" category={receipt.category} />],
     ["メモ", receipt.memo || "—"],
   ];
 
