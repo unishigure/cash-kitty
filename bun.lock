@@ -5,6 +5,7 @@
     "": {
       "name": "cash-kitty-v2",
       "dependencies": {
+        "@digital-go-jp/tailwind-theme-plugin": "^2.0.0",
         "bun-plugin-tailwind": "latest",
         "react": "latest",
         "react-dom": "latest",
@@ -22,6 +23,8 @@
     },
   },
   "packages": {
+    "@digital-go-jp/tailwind-theme-plugin": ["@digital-go-jp/tailwind-theme-plugin@2.0.0", "", { "peerDependencies": { "tailwindcss": "^3.4.17 || ^4.0.0" } }, "sha512-u77xBcxBshOhV75dN/1W5eVA0R0Ko0lGwni1jnG+fN7dP1TMycmFyDsvNfiWzKCCxg2+bFRINvBjnXloLUEfHQ=="],
+
     "@types/bun": ["@types/bun@1.4.4", "", { "dependencies": { "bun-types": "1.4.4" } }, "sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ=="],
 
     "@types/dom-chromium-ai": ["@types/dom-chromium-ai@0.0.18", "", {}, "sha512-/ZITAMdViQlLmEs56d/ET9qJ42EfnrBrLw5gRB4p0raDoavGDacqP9VITK8wNM0f9bPmnddHZeJ+FWIkWi6JlQ=="],

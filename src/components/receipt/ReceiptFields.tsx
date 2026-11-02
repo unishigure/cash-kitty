@@ -6,6 +6,16 @@ import {
 } from "@/lib/receipt";
 import { inputClass, today } from "@/lib/ui";
 
+const labelClass = "grid gap-1 text-std-16B-170 text-solid-gray-800";
+
+function Required() {
+  return (
+    <span className="ml-1 text-dns-14N-130 font-normal text-error-1">
+      ※必須
+    </span>
+  );
+}
+
 export type Draft = {
   date: string;
   storeName: string;
@@ -60,8 +70,11 @@ export function ReceiptFields({
 }) {
   return (
     <>
-      <label className="grid gap-1">
-        日付
+      <label className={labelClass}>
+        <span>
+          日付
+          <Required />
+        </span>
         <input
           className={inputClass}
           type="date"
@@ -70,8 +83,11 @@ export function ReceiptFields({
           onChange={(event) => onChange("date", event.target.value)}
         />
       </label>
-      <label className="grid gap-1">
-        店舗名
+      <label className={labelClass}>
+        <span>
+          店舗名
+          <Required />
+        </span>
         <input
           className={inputClass}
           type="text"
@@ -80,10 +96,13 @@ export function ReceiptFields({
           onChange={(event) => onChange("storeName", event.target.value)}
         />
       </label>
-      <label className="grid gap-1">
-        合計金額（円）
+      <label className={labelClass}>
+        <span>
+          合計金額（円）
+          <Required />
+        </span>
         <input
-          className={inputClass}
+          className={`${inputClass} text-right tabular-nums`}
           type="number"
           inputMode="numeric"
           min={0}
@@ -93,7 +112,7 @@ export function ReceiptFields({
           onChange={(event) => onChange("totalAmount", event.target.value)}
         />
       </label>
-      <label className="grid gap-1">
+      <label className={labelClass}>
         カテゴリー
         <select
           className={inputClass}
@@ -109,7 +128,7 @@ export function ReceiptFields({
           ))}
         </select>
       </label>
-      <label className="grid gap-1">
+      <label className={labelClass}>
         メモ
         <textarea
           className={`${inputClass} resize-y`}

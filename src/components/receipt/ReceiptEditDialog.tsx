@@ -7,7 +7,7 @@ import {
 } from "@/components/receipt/ReceiptFields";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { type Receipt, updateReceipt } from "@/lib/receipt";
-import { buttonClass, formatError } from "@/lib/ui";
+import { buttonClass, formatError, primaryButtonClass } from "@/lib/ui";
 
 export function ReceiptEditDialog({
   receipt,
@@ -48,20 +48,27 @@ export function ReceiptEditDialog({
     <dialog
       ref={dialogRef}
       closedby="any"
-      className="m-auto w-full max-w-md border border-gray-400 p-0 backdrop:bg-black/40"
+      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-8 border border-black p-0 text-std-16N-170 text-solid-gray-800 shadow-3 backdrop:bg-opacity-gray-600"
       aria-labelledby="receipt-edit-title"
       onClose={onClose}
     >
       <form onSubmit={handleSubmit}>
         <fieldset
-          className="grid gap-3 p-4 disabled:opacity-60"
+          className="grid gap-4 p-4 disabled:opacity-60 md:p-6"
           disabled={saving}
         >
-          <h2 id="receipt-edit-title" className="text-xl font-bold">
+          <h2
+            id="receipt-edit-title"
+            className="text-std-24B-150 text-solid-gray-900"
+          >
             明細の編集
           </h2>
           <ReceiptFields draft={draft} onChange={updateDraft} />
-          {error && <p role="alert">{error}</p>}
+          {error && (
+            <p role="alert" className="text-dns-16N-130 text-error-1">
+              {error}
+            </p>
+          )}
           <div className="flex justify-end gap-2">
             <button
               className={buttonClass}
@@ -70,7 +77,7 @@ export function ReceiptEditDialog({
             >
               キャンセル
             </button>
-            <button className={buttonClass} type="submit">
+            <button className={primaryButtonClass} type="submit">
               {saving ? "保存中…" : "保存する"}
             </button>
           </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MonthPicker } from "@/components/MonthPicker";
+import { Notice } from "@/components/Notice";
 import {
   type OpenedReceipt,
   ReceiptDialogs,
@@ -20,7 +21,7 @@ import {
   type Receipt,
 } from "@/lib/receipt";
 import { parseReceiptFilter, receiptsHash } from "@/lib/route";
-import { formatError, today } from "@/lib/ui";
+import { errorStatus, type Status, today } from "@/lib/ui";
 
 export function ReceiptsPage() {
   const [initialFilter] = useState(() => parseReceiptFilter(location.hash));
@@ -31,22 +32,22 @@ export function ReceiptsPage() {
   const [date, setDate] = useState(initialFilter.date);
   const [category, setCategory] = useState(initialFilter.category);
   const [receipts, setReceipts] = useState<Receipt[]>();
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState<Status>();
   const [opened, setOpened] = useState<OpenedReceipt>();
   const [query, setQuery] = useState("");
 
   useEffect(() => {
     let cancelled = false;
-    setStatus("読み込み中…");
+    setStatus({ tone: "neutral", text: "読み込み中…" });
 
     (allPeriods ? listAllReceipts() : listReceiptsByMonth(month))
       .then((list) => {
         if (cancelled) return;
         setReceipts(list);
-        setStatus("");
+        setStatus(undefined);
       })
       .catch((error: unknown) => {
-        if (!cancelled) setStatus(formatError(error));
+        if (!cancelled) setStatus(errorStatus(error));
       });
 
     return () => {
@@ -70,7 +71,7 @@ export function ReceiptsPage() {
 
   function handleDeleted(receipt: Receipt) {
     setReceipts((list) => list?.filter(({ id }) => id !== receipt.id));
-    setStatus(`削除しました: ${receipt.storeName}`);
+    setStatus({ tone: "success", text: `削除しました: ${receipt.storeName}` });
   }
 
   function handleSaved(saved: Receipt) {
@@ -80,7 +81,7 @@ export function ReceiptsPage() {
         .concat(allPeriods || isDateInMonth(saved.date, month) ? [saved] : [])
         .sort(compareReceiptsOldestFirst),
     );
-    setStatus(`更新しました: ${saved.storeName}`);
+    setStatus({ tone: "success", text: `更新しました: ${saved.storeName}` });
   }
 
   const visible = receipts?.filter(
@@ -101,9 +102,7 @@ export function ReceiptsPage() {
         }}
       />
 
-      <output className="block" aria-live="polite">
-        {status}
-      </output>
+      <Notice status={status} />
 
       {visible && (
         <ReceiptPanel
@@ -125,7 +124,7 @@ export function ReceiptsPage() {
         onOpenedChange={setOpened}
         onSaved={handleSaved}
         onDeleted={handleDeleted}
-        onError={(error) => setStatus(formatError(error))}
+        onError={(error) => setStatus(errorStatus(error))}
       />
     </div>
   );

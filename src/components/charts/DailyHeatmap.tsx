@@ -21,7 +21,7 @@ import { formatYen, today } from "@/lib/ui";
 
 const gap = 3;
 const labelWidth = 24;
-const focusRoom = 4;
+const focusRoom = 6;
 const top = 20;
 const weekdayLabels = ["", "月", "", "水", "", "金", ""];
 
@@ -145,7 +145,7 @@ export function DailyHeatmap({
       </p>
       <div className="flex min-w-0">
         <div
-          className="relative shrink-0 text-[11px] text-gray-600"
+          className="relative shrink-0 text-[11px] text-solid-gray-600"
           style={{
             width: labelWidth,
             height: gridHeight,
@@ -180,8 +180,8 @@ export function DailyHeatmap({
                   key={month}
                   className={`absolute top-0 text-xs leading-none ${
                     month === selectedMonth
-                      ? "font-semibold text-gray-900"
-                      : "text-gray-600"
+                      ? "font-bold text-solid-gray-900"
+                      : "text-solid-gray-600"
                   }`}
                   style={{ left: x }}
                 >
@@ -193,11 +193,11 @@ export function DailyHeatmap({
                   key={cell.date}
                   type="button"
                   data-date={cell.date}
-                  className={`absolute rounded-xs outline-offset-1 ${cell.total > 0 ? "cursor-pointer" : ""} focus-visible:outline-2 focus-visible:outline-gray-900 ${
+                  className={`absolute rounded-xs ${cell.total > 0 ? "cursor-pointer" : ""} ${
                     cell.date === selectedDate
-                      ? "ring-2 ring-gray-900"
+                      ? "ring-2 ring-black"
                       : cell.date === hovered?.cell.date
-                        ? "ring-1 ring-gray-900"
+                        ? "ring-1 ring-black"
                         : ""
                   }`}
                   style={{
@@ -230,7 +230,7 @@ export function DailyHeatmap({
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-1 text-xs text-gray-600">
+      <div className="flex items-center justify-end gap-1 text-dns-14N-120 text-solid-gray-600">
         少
         {[chartColors.heatEmpty, ...chartColors.heat].map((color) => (
           <span

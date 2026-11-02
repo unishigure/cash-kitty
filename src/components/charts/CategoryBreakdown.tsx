@@ -14,11 +14,13 @@ export function CategoryBreakdown({
   const max = data[0]?.total ?? 0;
 
   if (total === 0) {
-    return <p className="text-sm text-gray-600">支出はありません。</p>;
+    return (
+      <p className="text-dns-16N-130 text-solid-gray-600">支出はありません。</p>
+    );
   }
 
   return (
-    <table className="-mx-2 w-[calc(100%+1rem)] border-collapse text-sm">
+    <table className="-mx-2 w-[calc(100%+1rem)] border-collapse text-dns-16N-130">
       <thead className="sr-only">
         <tr>
           <th>カテゴリー</th>
@@ -31,19 +33,19 @@ export function CategoryBreakdown({
         {data.map((d) => (
           <tr
             key={d.category}
-            className={`${onSelect ? "relative -outline-offset-2 has-[button:focus-visible]:outline-2" : ""} ${
+            className={`${onSelect ? "relative has-[button:focus-visible]:focus-ring-inset" : ""} ${
               d.category === selected
-                ? "bg-blue-50"
+                ? "bg-key-50 font-bold"
                 : onSelect
-                  ? "hover:bg-gray-50"
+                  ? "hover:bg-solid-gray-50"
                   : ""
             }`}
           >
-            <th className="w-0 py-1 pr-3 pl-2 text-left font-normal whitespace-nowrap">
+            <th className="w-0 py-2 pr-3 pl-2 text-left font-[inherit] whitespace-nowrap">
               {onSelect ? (
                 <button
                   type="button"
-                  className="cursor-pointer outline-none after:absolute after:inset-0"
+                  className="cursor-pointer underline-offset-[3px] outline-none after:absolute after:inset-0 hover:underline focus-visible:shadow-none"
                   aria-pressed={d.category === selected}
                   onClick={() => onSelect(d.category)}
                 >
@@ -52,9 +54,11 @@ export function CategoryBreakdown({
               ) : (
                 d.category
               )}
-              <span className="ml-1 text-xs text-gray-600">{d.count}件</span>
+              <span className="ml-1 text-dns-14N-120 font-normal text-solid-gray-600">
+                {d.count}件
+              </span>
             </th>
-            <td className="py-1" aria-hidden="true">
+            <td className="py-2" aria-hidden="true">
               <div
                 className="h-3 rounded-r"
                 style={{
@@ -64,10 +68,10 @@ export function CategoryBreakdown({
                 }}
               />
             </td>
-            <td className="w-0 py-1 pl-3 text-right whitespace-nowrap tabular-nums">
+            <td className="w-0 py-2 pl-3 text-right whitespace-nowrap tabular-nums">
               {formatYen(d.total)}
             </td>
-            <td className="w-0 py-1 pr-2 pl-3 text-right whitespace-nowrap text-gray-600 tabular-nums">
+            <td className="w-0 py-2 pr-2 pl-3 text-right font-normal whitespace-nowrap text-solid-gray-600 tabular-nums">
               {((d.total / total) * 100).toFixed(1)}%
             </td>
           </tr>

@@ -1,5 +1,22 @@
 import { shiftMonth, toYearMonth, type YearMonth } from "@/lib/month";
-import { buttonClass, inputClass, today } from "@/lib/ui";
+import { iconButtonClass, inputClass, today } from "@/lib/ui";
+
+function Icon({ path }: { path: string }) {
+  return (
+    <svg
+      className="size-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={path} />
+    </svg>
+  );
+}
 
 export function MonthPicker({
   month,
@@ -15,12 +32,12 @@ export function MonthPicker({
   return (
     <div className="flex items-center gap-2">
       <button
-        className={buttonClass}
+        className={iconButtonClass}
         type="button"
         aria-label="前の月"
         onClick={() => onChange(month ? shiftMonth(base, -1) : base)}
       >
-        ‹
+        <Icon path="M15 5l-7 7 7 7" />
       </button>
       <div className="relative min-w-0 flex-1">
         <input
@@ -38,7 +55,7 @@ export function MonthPicker({
         />
         {!month && (
           <span
-            className="pointer-events-none absolute inset-y-px left-px flex items-center bg-white pl-2"
+            className="pointer-events-none absolute inset-y-px left-px flex items-center rounded-l-8 bg-white pl-4"
             style={{ right: "2.5rem" }}
             aria-hidden="true"
           >
@@ -48,23 +65,23 @@ export function MonthPicker({
       </div>
       {onSelectAll && (
         <button
-          className={buttonClass}
+          className={iconButtonClass}
           type="button"
           aria-label="月の指定を解除して全期間を表示"
           title="全期間を表示"
           disabled={!month}
           onClick={onSelectAll}
         >
-          ×
+          <Icon path="M6 6l12 12M18 6L6 18" />
         </button>
       )}
       <button
-        className={buttonClass}
+        className={iconButtonClass}
         type="button"
         aria-label="次の月"
         onClick={() => onChange(month ? shiftMonth(base, 1) : base)}
       >
-        ›
+        <Icon path="M9 5l7 7-7 7" />
       </button>
     </div>
   );

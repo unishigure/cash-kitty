@@ -3,6 +3,7 @@ import { CategoryBreakdown } from "@/components/charts/CategoryBreakdown";
 import { DailyHeatmap } from "@/components/charts/DailyHeatmap";
 import { MonthlyBarChart } from "@/components/charts/MonthlyBarChart";
 import { MonthPicker } from "@/components/MonthPicker";
+import { noticeClass } from "@/components/Notice";
 import {
   type OpenedReceipt,
   ReceiptDialogs,
@@ -170,7 +171,11 @@ export function StatsPage() {
         onChange={selectMonth}
         onSelectAll={selectAllPeriods}
       />
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p role="alert" className={noticeClass.error}>
+          <span>{error}</span>
+        </p>
+      )}
 
       {receipts && (
         <div
@@ -178,7 +183,7 @@ export function StatsPage() {
           aria-busy={loading}
         >
           <div className="flex min-w-0 flex-col gap-4">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 *:first:col-span-2 sm:*:first:col-span-1">
               <StatTile
                 label={
                   allPeriods ? "全期間の支出" : `${formatMonth(month)}の支出`
@@ -193,7 +198,9 @@ export function StatsPage() {
                 )}
               >
                 {!allPeriods && isPartialMonth && (
-                  <p className="text-sm text-gray-600">{elapsed}日までの集計</p>
+                  <p className="text-dns-14N-130 text-solid-gray-600">
+                    {elapsed}日までの集計
+                  </p>
                 )}
               </StatTile>
               <ComparisonTile

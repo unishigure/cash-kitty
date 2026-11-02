@@ -120,7 +120,7 @@ export function MonthlyBarChart({
         <button
           key={datum.month}
           type="button"
-          className="absolute cursor-pointer outline-offset-2"
+          className="absolute cursor-pointer rounded-4"
           style={{
             left: centerX(index) - band / 2,
             top: margin.top,

@@ -1,6 +1,6 @@
 import { useId } from "react";
 import type { Receipt } from "@/lib/receipt";
-import { formatYen, inputClass } from "@/lib/ui";
+import { cardClass, formatYen, inputClass } from "@/lib/ui";
 
 function FilterChip({
   label,
@@ -11,17 +11,27 @@ function FilterChip({
 }) {
   return (
     <li
-      className={`flex items-center gap-1 border border-gray-400 bg-gray-100 py-0.5 pl-2 text-sm ${onClear ? "pr-1" : "pr-2"}`}
+      className={`flex min-h-8 items-center gap-1 rounded-full border border-blue-700 bg-blue-50 text-dns-14B-120 text-blue-800 ${onClear ? "pr-1 pl-3" : "px-3"}`}
     >
       {label}
       {onClear && (
         <button
           type="button"
-          className="cursor-pointer px-1 text-gray-600 hover:text-gray-900"
+          className="grid size-6 cursor-pointer place-items-center rounded-full hover:bg-blue-200"
           aria-label={`${label}の絞り込みを解除`}
           onClick={onClear}
         >
-          ×
+          <svg
+            className="size-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
         </button>
       )}
     </li>
@@ -59,16 +69,16 @@ export function ReceiptPanel({
 
   return (
     <Root
-      className={`flex flex-col gap-3 border border-gray-400 p-4 ${sticky ? "sticky top-20 max-h-[calc(100dvh-6rem)]" : ""}`}
+      className={`flex flex-col gap-3 ${cardClass} ${sticky ? "sticky top-20 max-h-[calc(100dvh-6rem)]" : ""}`}
       aria-labelledby={titleId}
     >
       <div className="flex items-baseline justify-between gap-4">
-        <h2 id={titleId} className="text-xl font-bold">
+        <h2 id={titleId} className="text-std-20B-150 text-solid-gray-900">
           明細
         </h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-dns-14N-130 text-solid-gray-600">
           {receipts.length} 件・
-          <span className="font-semibold text-gray-900">
+          <span className="text-dns-16B-130 text-solid-gray-900 tabular-nums">
             {formatYen(total)}
           </span>
         </p>
@@ -83,7 +93,7 @@ export function ReceiptPanel({
       </ul>
 
       <input
-        className={`${inputClass} text-sm`}
+        className={inputClass}
         type="search"
         placeholder="店名・メモで検索"
         aria-label="店名・メモで検索"
@@ -92,33 +102,35 @@ export function ReceiptPanel({
       />
 
       {receipts.length === 0 ? (
-        <p className="text-sm text-gray-600">該当する明細はありません。</p>
+        <p className="text-dns-16N-130 text-solid-gray-600">
+          該当する明細はありません。
+        </p>
       ) : (
         <ul
-          className={`-mx-4 border-t border-gray-200 px-4 ${sticky ? "overflow-y-auto" : ""}`}
+          className={`-mx-4 border-t border-solid-gray-420 px-4 md:-mx-6 md:px-6 ${sticky ? "overflow-y-auto" : ""}`}
         >
           {receipts.map((receipt) => (
             <li
               key={receipt.id}
-              className="relative -mx-4 flex items-baseline gap-3 border-b border-gray-200 px-4 py-2 text-sm -outline-offset-2 hover:bg-gray-50 has-[button:focus-visible]:outline-2"
+              className="relative -mx-4 flex items-baseline gap-3 border-b border-solid-gray-200 px-4 py-3 text-dns-16N-130 hover:bg-solid-gray-50 has-[button:focus-visible]:focus-ring-inset md:-mx-6 md:px-6"
             >
-              <span className="w-22 shrink-0 text-gray-600 tabular-nums">
+              <span className="w-22 shrink-0 text-dns-14N-130 text-solid-gray-600 tabular-nums">
                 {receipt.date}
               </span>
               <span className="min-w-0 flex-1">
                 <button
                   type="button"
-                  className="block w-full cursor-pointer truncate text-left outline-none after:absolute after:inset-0"
+                  className="block w-full cursor-pointer truncate text-left text-solid-gray-900 underline-offset-[3px] outline-none after:absolute after:inset-0 hover:underline focus-visible:shadow-none"
                   onClick={() => onOpen(receipt)}
                 >
                   {receipt.storeName}
                 </button>
-                <span className="block text-xs text-gray-600">
+                <span className="mt-1 block truncate text-dns-14N-120 text-solid-gray-600">
                   {receipt.category}
                   {receipt.memo && `・${receipt.memo}`}
                 </span>
               </span>
-              <span className="shrink-0 tabular-nums">
+              <span className="shrink-0 font-bold text-solid-gray-900 tabular-nums">
                 {formatYen(receipt.totalAmount)}
               </span>
             </li>
