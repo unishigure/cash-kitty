@@ -1,3 +1,5 @@
+import { useId } from "react";
+import { Select } from "@/components/Select";
 import {
   type Category,
   categories,
@@ -68,6 +70,8 @@ export function ReceiptFields({
   draft: Draft;
   onChange: <K extends keyof Draft>(key: K, value: Draft[K]) => void;
 }) {
+  const categoryId = useId();
+
   return (
     <>
       <label className={labelClass}>
@@ -112,10 +116,10 @@ export function ReceiptFields({
           onChange={(event) => onChange("totalAmount", event.target.value)}
         />
       </label>
-      <label className={labelClass}>
+      <label className={labelClass} htmlFor={categoryId}>
         カテゴリー
-        <select
-          className={inputClass}
+        <Select
+          id={categoryId}
           value={draft.category}
           onChange={(event) =>
             onChange("category", event.target.value as Category)
@@ -126,7 +130,7 @@ export function ReceiptFields({
               {category}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className={labelClass}>
         メモ
