@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cardClass } from "@/lib/ui";
+import { cardClass } from "@/lib/styles";
 
 export function StatsSection({
   title,

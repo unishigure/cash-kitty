@@ -3,7 +3,7 @@ import { ChartTooltip, TooltipRow } from "@/components/charts/ChartTooltip";
 import { useElementWidth } from "@/hooks/useElementWidth";
 import { chartColors, columnPath, formatAxisYen, niceTicks } from "@/lib/chart";
 import { formatMonth, formatShortMonth, type YearMonth } from "@/lib/date";
-import { formatYen } from "@/lib/ui";
+import { formatYen } from "@/lib/format";
 
 const height = 240;
 const margin = { top: 28, right: 8, bottom: 28, left: 48 };

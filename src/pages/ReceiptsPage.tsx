@@ -25,7 +25,7 @@ import {
   replaceReceipt,
 } from "@/lib/receipt";
 import { parseReceiptFilter, receiptsHash } from "@/lib/route";
-import { errorStatus, type Status } from "@/lib/ui";
+import { errorStatus, type Status } from "@/lib/status";
 
 export function ReceiptsPage() {
   const [initialFilter] = useState(() => parseReceiptFilter(location.hash));

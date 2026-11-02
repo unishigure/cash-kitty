@@ -2,7 +2,7 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { Select } from "@/components/Select";
 import { parseDate, today, weekdays } from "@/lib/date";
-import { buttonClass, iconButtonClass } from "@/lib/ui";
+import { buttonClass, iconButtonClass } from "@/lib/styles";
 
 const minYear = 2000;
 const maxYear = new Date().getFullYear() + 1;

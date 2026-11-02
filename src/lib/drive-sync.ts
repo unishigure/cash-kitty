@@ -32,7 +32,7 @@ import {
   subscribeLocalChanges,
 } from "@/lib/receipt";
 import { createStore } from "@/lib/store";
-import { errorMessage } from "@/lib/ui";
+import { errorMessage } from "@/lib/status";
 
 export type DriveState = {
   status: "unconfigured" | "disconnected" | "connecting" | "connected";

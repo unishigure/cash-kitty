@@ -1,27 +1,3 @@
-export function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error);
-}
-
-export function formatYen(amount: number) {
-  return `¥${amount.toLocaleString()}`;
-}
-
-export type Status = {
-  tone: "neutral" | "info" | "success" | "error";
-  text: string;
-};
-
-export function errorStatus(error: unknown): Status {
-  console.error(error);
-  return {
-    tone: "error",
-    text:
-      error instanceof Error
-        ? `${error.name}: ${error.message}`
-        : String(error),
-  };
-}
-
 export const cardClass =
   "rounded-12 border border-solid-gray-420 bg-white p-4 md:p-6";
 

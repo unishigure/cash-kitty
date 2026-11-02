@@ -17,14 +17,9 @@ import {
 import { compressImage } from "@/lib/image";
 import { addReceipt } from "@/lib/receipt";
 import { checkModelAvailability, extractReceipt } from "@/lib/receipt-ai";
-import {
-  buttonClass,
-  cardClass,
-  errorStatus,
-  formatYen,
-  primaryButtonClass,
-  type Status,
-} from "@/lib/ui";
+import { buttonClass, cardClass, primaryButtonClass } from "@/lib/styles";
+import { errorStatus, type Status } from "@/lib/status";
+import { formatYen } from "@/lib/format";
 
 const canReadClipboard = typeof navigator.clipboard?.read === "function";
 

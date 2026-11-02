@@ -1,5 +1,5 @@
 import { type Category, categoryColor } from "@/lib/category";
-import { formatYen } from "@/lib/ui";
+import { formatYen } from "@/lib/format";
 
 export function CategoryBreakdown({
   data,

@@ -19,7 +19,7 @@ import {
   cardClass,
   dangerButtonClass,
   primaryButtonClass,
-} from "@/lib/ui";
+} from "@/lib/styles";
 
 const statusChips: Record<
   DriveState["status"],

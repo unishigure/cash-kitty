@@ -2,7 +2,7 @@ import { useId, useRef, useState } from "react";
 import { Calendar } from "@/components/Calendar";
 import { Icon } from "@/components/Icon";
 import { parseDate, toISODate } from "@/lib/date";
-import { iconButtonClass } from "@/lib/ui";
+import { iconButtonClass } from "@/lib/styles";
 
 type Parts = { year: string; month: string; day: string };
 

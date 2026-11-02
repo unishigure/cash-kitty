@@ -9,10 +9,10 @@ import type { Receipt } from "@/lib/receipt";
 import {
   buttonClass,
   dangerButtonClass,
-  errorMessage,
-  formatYen,
   primaryButtonClass,
-} from "@/lib/ui";
+} from "@/lib/styles";
+import { errorMessage } from "@/lib/status";
+import { formatYen } from "@/lib/format";
 
 function useReceiptImage(receipt: Receipt) {
   const [url, setUrl] = useState<string>();

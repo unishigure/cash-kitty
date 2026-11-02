@@ -9,12 +9,8 @@ import { ModalDialog } from "@/components/ModalDialog";
 import { Notice } from "@/components/Notice";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { type Receipt, updateReceipt } from "@/lib/receipt";
-import {
-  buttonClass,
-  errorStatus,
-  primaryButtonClass,
-  type Status,
-} from "@/lib/ui";
+import { buttonClass, primaryButtonClass } from "@/lib/styles";
+import { errorStatus, type Status } from "@/lib/status";
 
 export function ReceiptEditDialog({
   receipt,

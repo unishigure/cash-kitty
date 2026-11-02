@@ -4,7 +4,8 @@ import { Icon } from "@/components/Icon";
 import type { Category } from "@/lib/category";
 import type { Receipt } from "@/lib/receipt";
 import { sumAmount } from "@/lib/stats";
-import { cardClass, formatYen, inputClass } from "@/lib/ui";
+import { cardClass, inputClass } from "@/lib/styles";
+import { formatYen } from "@/lib/format";
 
 function FilterChip({
   label,

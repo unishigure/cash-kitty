@@ -4,7 +4,7 @@ import { FixedCostToggle } from "@/components/FixedCostToggle";
 import { Icon } from "@/components/Icon";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { hashPath } from "@/lib/route";
-import { sidePanelQuery } from "@/lib/ui";
+import { sidePanelQuery } from "@/lib/styles";
 import { ImportPage } from "@/pages/ImportPage";
 import { ReceiptsPage } from "@/pages/ReceiptsPage";
 import { SettingsPage } from "@/pages/SettingsPage";

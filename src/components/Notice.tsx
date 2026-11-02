@@ -1,4 +1,4 @@
-import type { Status } from "@/lib/ui";
+import type { Status } from "@/lib/status";
 
 const bannerClass =
   "block rounded-8 border-2 border-current bg-white py-3 pr-4 pl-6 text-std-16N-170 shadow-[inset_0.5rem_0_0_0_currentColor] *:text-solid-gray-900";

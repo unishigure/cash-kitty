@@ -40,7 +40,9 @@ import {
   sumAmount,
   totalOfMonth,
 } from "@/lib/stats";
-import { errorStatus, formatYen, type Status, sidePanelQuery } from "@/lib/ui";
+import { errorStatus, type Status } from "@/lib/status";
+import { formatYen } from "@/lib/format";
+import { sidePanelQuery } from "@/lib/styles";
 
 function elapsedDays(month: YearMonth) {
   const todayDate = today();
