@@ -33,7 +33,12 @@ import {
   replaceReceipt,
 } from "@/lib/receipt";
 import { receiptsHash } from "@/lib/route";
-import { categoryTotals, dailyTotals, totalOfMonth } from "@/lib/stats";
+import {
+  categoryTotals,
+  dailyTotals,
+  sumAmount,
+  totalOfMonth,
+} from "@/lib/stats";
 import { errorStatus, formatYen, type Status, sidePanelQuery } from "@/lib/ui";
 
 function elapsedDays(month: YearMonth) {
@@ -185,11 +190,7 @@ export function StatsPage() {
                 label={
                   allPeriods ? "全期間の支出" : `${formatMonth(month)}の支出`
                 }
-                value={formatYen(
-                  allPeriods
-                    ? allList.reduce((sum, r) => sum + r.totalAmount, 0)
-                    : thisTotal,
-                )}
+                value={formatYen(allPeriods ? sumAmount(allList) : thisTotal)}
               >
                 {(fixedCosts.exclude || (!allPeriods && isPartialMonth)) && (
                   <p className="text-dns-14N-130 text-solid-gray-600">

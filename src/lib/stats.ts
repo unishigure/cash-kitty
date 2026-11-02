@@ -1,10 +1,12 @@
 import { isDateInMonth, type YearMonth } from "@/lib/date";
 import type { Category, Receipt } from "@/lib/receipt";
 
+export function sumAmount(receipts: Receipt[]) {
+  return receipts.reduce((sum, r) => sum + r.totalAmount, 0);
+}
+
 export function totalOfMonth(receipts: Receipt[], month: YearMonth) {
-  return receipts
-    .filter((r) => isDateInMonth(r.date, month))
-    .reduce((sum, r) => sum + r.totalAmount, 0);
+  return sumAmount(receipts.filter((r) => isDateInMonth(r.date, month)));
 }
 
 export function dailyTotals(receipts: Receipt[]) {

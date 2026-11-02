@@ -2,6 +2,7 @@ import { useId } from "react";
 import { CategoryChip } from "@/components/CategoryChip";
 import { Icon } from "@/components/Icon";
 import type { Receipt } from "@/lib/receipt";
+import { sumAmount } from "@/lib/stats";
 import { cardClass, formatYen, inputClass } from "@/lib/ui";
 
 function FilterChip({
@@ -55,7 +56,7 @@ export function ReceiptPanel({
   onClearCategory?: () => void;
   onOpen: (receipt: Receipt) => void;
 }) {
-  const total = receipts.reduce((sum, r) => sum + r.totalAmount, 0);
+  const total = sumAmount(receipts);
   const titleId = useId();
   const Root = sticky ? "aside" : "section";
 
