@@ -70,19 +70,17 @@ export function Calendar({
   const year = focused.getFullYear();
   const month = focused.getMonth();
 
-  useEffect(() => {
+  function focusTabStop() {
     tableRef.current
       ?.querySelector<HTMLButtonElement>('button[tabindex="0"]')
       ?.focus();
-  }, []);
+  }
+
+  useEffect(focusTabStop, []);
 
   function moveFocus(date: Date) {
     setFocused(date);
-    requestAnimationFrame(() =>
-      tableRef.current
-        ?.querySelector<HTMLButtonElement>('button[tabindex="0"]')
-        ?.focus(),
-    );
+    requestAnimationFrame(focusTabStop);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLTableElement>) {
