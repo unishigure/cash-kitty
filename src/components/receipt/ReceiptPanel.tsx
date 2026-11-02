@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useRef } from "react";
 import { CategoryChip } from "@/components/receipt/CategoryChip";
 import { Icon } from "@/components/ui/Icon";
 import type { Category } from "@/lib/receipt/category";
@@ -60,6 +60,7 @@ export function ReceiptPanel({
 }) {
   const total = sumAmount(receipts);
   const titleId = useId();
+  const searchRef = useRef<HTMLInputElement>(null);
   const Root = sticky ? "aside" : "section";
 
   return (
@@ -87,14 +88,31 @@ export function ReceiptPanel({
         {category && <FilterChip label={category} onClear={onClearCategory} />}
       </ul>
 
-      <input
-        className={inputClass}
-        type="search"
-        placeholder="店名・メモで検索"
-        aria-label="店名・メモで検索"
-        value={query}
-        onChange={(event) => onQueryChange(event.target.value)}
-      />
+      <div className="relative">
+        <input
+          ref={searchRef}
+          className={`${inputClass} pr-12 [&::-webkit-search-cancel-button]:appearance-none`}
+          type="search"
+          placeholder="店名・メモで検索"
+          aria-label="店名・メモで検索"
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+        />
+        {query && (
+          <button
+            type="button"
+            className="absolute inset-y-0 right-1 my-auto grid size-10 cursor-pointer place-items-center rounded-full text-solid-gray-600 hover:bg-solid-gray-50 hover:text-solid-gray-900"
+            aria-label="検索語を消去"
+            title="検索語を消去"
+            onClick={() => {
+              onQueryChange("");
+              searchRef.current?.focus();
+            }}
+          >
+            <Icon name="close" className="size-5" strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
 
       {receipts.length === 0 ? (
         <p className="text-dns-16N-130 text-solid-gray-600">
