@@ -98,9 +98,7 @@ export function App() {
   return (
     <div className="flex min-h-dvh flex-col text-std-16N-170">
       <header className="sticky top-0 z-20 hidden border-b border-solid-gray-420 bg-white md:block">
-        <div
-          className={`mx-auto flex h-16 items-stretch gap-8 px-4 ${widthClass}`}
-        >
+        <div className="mx-auto flex h-16 max-w-240 items-stretch gap-8 px-4 lg:max-w-360">
           <p className="self-center text-std-20B-150 text-solid-gray-900">
             Cash Kitty
           </p>

@@ -18,6 +18,7 @@
     background-color: var(--color-white);
     color: var(--color-solid-gray-800);
     font-family: var(--font-sans);
+    scrollbar-gutter: stable;
   }
 
   :focus-visible {
