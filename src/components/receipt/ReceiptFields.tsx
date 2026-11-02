@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { DatePicker } from "@/components/DatePicker";
 import { Select } from "@/components/Select";
 import {
   type Category,
@@ -49,6 +50,9 @@ export function draftFromReceipt(receipt: Receipt): Draft {
 export function parseDraft(
   draft: Draft,
 ): { ok: true; input: ReceiptInput } | { ok: false; error: string } {
+  if (!draft.date) {
+    return { ok: false, error: "日付を正しく入力してください。" };
+  }
   const totalAmount = Number(draft.totalAmount);
   if (!Number.isInteger(totalAmount) || totalAmount < 0) {
     return { ok: false, error: "合計金額は 0 以上の整数で入力してください。" };
@@ -74,19 +78,17 @@ export function ReceiptFields({
 
   return (
     <>
-      <label className={labelClass}>
-        <span>
+      <fieldset>
+        <legend className="mb-1 text-std-16B-170 text-solid-gray-800">
           日付
           <Required />
-        </span>
-        <input
-          className={inputClass}
-          type="date"
+        </legend>
+        <DatePicker
           required
           value={draft.date}
-          onChange={(event) => onChange("date", event.target.value)}
+          onChange={(value) => onChange("date", value)}
         />
-      </label>
+      </fieldset>
       <label className={labelClass}>
         <span>
           店舗名
