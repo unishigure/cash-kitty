@@ -10,6 +10,14 @@ import { ReceiptsPage } from "@/pages/ReceiptsPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { StatsPage } from "@/pages/StatsPage";
 
+const statsRoute = {
+  hash: "#/stats",
+  label: "統計",
+  icon: "chart",
+  Page: StatsPage,
+  wide: true,
+} as const;
+
 const routes = [
   {
     hash: "#/import",
@@ -24,16 +32,8 @@ const routes = [
     Page: ReceiptsPage,
     coveredBySidePanel: true,
   },
-  {
-    hash: "#/stats",
-    label: "統計",
-    icon: "chart",
-    Page: StatsPage,
-    wide: true,
-  },
+  statsRoute,
 ] as const;
-
-const statsRoute = routes[2];
 
 const settingsRoute = {
   hash: "#/settings",
