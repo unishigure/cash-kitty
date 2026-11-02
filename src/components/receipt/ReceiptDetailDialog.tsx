@@ -57,7 +57,6 @@ export function ReceiptDetailDialog({
   const rows: [string, ReactNode][] = [
     ["日付", formatFullDate(receipt.date)],
     ["カテゴリー", <CategoryChip key="category" category={receipt.category} />],
-    ["メモ", receipt.memo || "—"],
   ];
 
   return (
@@ -98,11 +97,15 @@ export function ReceiptDetailDialog({
           {rows.map(([label, value]) => (
             <div key={label} className="contents">
               <dt className="text-dns-16B-130 text-solid-gray-700">{label}</dt>
-              <dd className="text-right wrap-anywhere whitespace-pre-wrap">
-                {value}
-              </dd>
+              <dd className="text-right">{value}</dd>
             </div>
           ))}
+          <dt className="col-span-2 text-dns-16B-130 text-solid-gray-700">
+            メモ
+          </dt>
+          <dd className="col-span-2 wrap-anywhere whitespace-pre-wrap">
+            {receipt.memo || "—"}
+          </dd>
         </dl>
 
         <div className="flex gap-2">
