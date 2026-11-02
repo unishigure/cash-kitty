@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ComponentProps, type ReactNode, useState } from "react";
 import { CategoryChip } from "@/components/CategoryChip";
 import { ChipLabel } from "@/components/ChipLabel";
 import { HelpPopover } from "@/components/HelpPopover";
@@ -31,6 +31,32 @@ const statusChips: Record<
   connected: { label: "接続済み", hue: "green" },
 };
 
+function ChoiceFieldset({
+  legend,
+  children,
+}: {
+  legend: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <fieldset className={`grid gap-3 ${cardClass}`}>
+      <legend className="float-left mb-1 flex w-full items-center gap-1 text-std-20B-150 text-solid-gray-900">
+        {legend}
+      </legend>
+      <div className="flex flex-wrap gap-x-6">{children}</div>
+    </fieldset>
+  );
+}
+
+function Choice({ children, ...props }: ComponentProps<"input">) {
+  return (
+    <label className="flex min-h-12 cursor-pointer items-center gap-2">
+      <input className="size-5 cursor-pointer accent-key-900" {...props} />
+      {children}
+    </label>
+  );
+}
+
 function ThemeSection() {
   const [theme, setThemeState] = useState(getTheme);
 
@@ -40,28 +66,19 @@ function ThemeSection() {
   }
 
   return (
-    <fieldset className={`grid gap-3 ${cardClass}`}>
-      <legend className="float-left mb-1 w-full text-std-20B-150 text-solid-gray-900">
-        テーマ
-      </legend>
-      <div className="flex flex-wrap gap-x-6">
-        {themes.map(({ value, label }) => (
-          <label
-            key={value}
-            className="flex min-h-12 cursor-pointer items-center gap-2"
-          >
-            <input
-              type="radio"
-              name="theme"
-              className="size-5 cursor-pointer accent-key-900"
-              checked={theme === value}
-              onChange={() => select(value)}
-            />
-            {label}
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <ChoiceFieldset legend="テーマ">
+      {themes.map(({ value, label }) => (
+        <Choice
+          key={value}
+          type="radio"
+          name="theme"
+          checked={theme === value}
+          onChange={() => select(value)}
+        >
+          {label}
+        </Choice>
+      ))}
+    </ChoiceFieldset>
   );
 }
 
@@ -77,31 +94,28 @@ function FixedCostSection() {
   }
 
   return (
-    <fieldset className={`grid gap-3 ${cardClass}`}>
-      <legend className="float-left mb-1 flex w-full items-center gap-1 text-std-20B-150 text-solid-gray-900">
-        固定費
-        <HelpPopover id="settings-fixed-cost-help" label="固定費の説明">
-          統計画面で「固定費を除く」を選ぶと、
-          ここで選んだカテゴリーを支出から除きます。
-        </HelpPopover>
-      </legend>
-      <div className="flex flex-wrap gap-x-6">
-        {categories.map((category) => (
-          <label
-            key={category}
-            className="flex min-h-12 cursor-pointer items-center gap-2"
-          >
-            <input
-              type="checkbox"
-              className="size-5 cursor-pointer accent-key-900"
-              checked={fixedCosts.categories.includes(category)}
-              onChange={(event) => toggle(category, event.target.checked)}
-            />
-            <CategoryChip category={category} />
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <ChoiceFieldset
+      legend={
+        <>
+          固定費
+          <HelpPopover id="settings-fixed-cost-help" label="固定費の説明">
+            統計画面で「固定費を除く」を選ぶと、
+            ここで選んだカテゴリーを支出から除きます。
+          </HelpPopover>
+        </>
+      }
+    >
+      {categories.map((category) => (
+        <Choice
+          key={category}
+          type="checkbox"
+          checked={fixedCosts.categories.includes(category)}
+          onChange={(event) => toggle(category, event.target.checked)}
+        >
+          <CategoryChip category={category} />
+        </Choice>
+      ))}
+    </ChoiceFieldset>
   );
 }
 
