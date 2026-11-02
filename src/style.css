@@ -14,6 +14,58 @@
 }
 
 @layer base {
+  :root {
+    color-scheme: light dark;
+
+    --color-white: light-dark(#ffffff, #141414);
+    --color-black: light-dark(#000000, #ffffff);
+    --color-solid-gray-50: light-dark(#f2f2f2, #262626);
+    --color-solid-gray-100: light-dark(#e6e6e6, #333333);
+    --color-solid-gray-200: light-dark(#cccccc, #404040);
+    --color-solid-gray-300: light-dark(#b3b3b3, #595959);
+    --color-solid-gray-420: light-dark(#949494, #6b6b6b);
+    --color-solid-gray-600: light-dark(#666666, #a6a6a6);
+    --color-solid-gray-700: light-dark(#4d4d4d, #bfbfbf);
+    --color-solid-gray-800: light-dark(#333333, #e0e0e0);
+    --color-solid-gray-900: light-dark(#1a1a1a, #f2f2f2);
+    --color-key-50: light-dark(#e8f1fe, #00234b);
+    --color-key-200: light-dark(#c5d7fb, #000f5c);
+    --color-key-300: light-dark(#9db7f9, #00118f);
+    --color-key-900: light-dark(#0017c1, #7096f8);
+    --color-key-1000: light-dark(#00118f, #9db7f9);
+    --color-key-1200: light-dark(#000060, #c5d7fb);
+    --color-blue-50: light-dark(#e8f1fe, #00234b);
+    --color-blue-200: light-dark(#c5d7fb, #00316a);
+    --color-blue-700: light-dark(#264af4, #7096f8);
+    --color-blue-800: light-dark(#0031d8, #c5d7fb);
+    --color-red-50: light-dark(#fdeeee, #3b0000);
+    --color-red-100: light-dark(#ffdada, #620000);
+    --color-red-1000: light-dark(#a90000, #ffbbbb);
+    --color-error-1: light-dark(#ec0000, #ff7171);
+    --color-error-2: light-dark(#ce0000, #ff9696);
+    --color-success-2: light-dark(#197a4b, #51b883);
+
+    --chart-series: light-dark(#264af4, #7096f8);
+    --chart-series-muted: light-dark(#9db7f9, #0031d8);
+    --chart-heat-empty: light-dark(#e6e6e6, #333333);
+    --chart-heat-1: light-dark(#c5d7fb, #00316a);
+    --chart-heat-2: light-dark(#7096f8, #0031d8);
+    --chart-heat-3: light-dark(#264af4, #4979f5);
+    --chart-heat-4: light-dark(#00118f, #c5d7fb);
+    --chart-grid: light-dark(#e6e6e6, #333333);
+    --chart-baseline: light-dark(#949494, #6b6b6b);
+    --chart-text: light-dark(#1a1a1a, #f2f2f2);
+    --chart-text-muted: light-dark(#666666, #a6a6a6);
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
   html {
     background-color: var(--color-white);
     color: var(--color-solid-gray-800);

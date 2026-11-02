@@ -43,7 +43,9 @@ export function MonthlyBarChart({
                 x2={width - margin.right}
                 y1={y(tick)}
                 y2={y(tick)}
-                stroke={tick === 0 ? chartColors.baseline : chartColors.grid}
+                style={{
+                  stroke: tick === 0 ? chartColors.baseline : chartColors.grid,
+                }}
               />
               <text
                 x={margin.left - 8}
@@ -51,7 +53,7 @@ export function MonthlyBarChart({
                 textAnchor="end"
                 dominantBaseline="middle"
                 fontSize={12}
-                fill={chartColors.textMuted}
+                style={{ fill: chartColors.textMuted }}
                 className="tabular-nums"
               >
                 {formatAxisYen(tick)}
@@ -74,11 +76,11 @@ export function MonthlyBarChart({
                       barWidth,
                       barHeight,
                     )}
-                    fill={
-                      isSelected
+                    style={{
+                      fill: isSelected
                         ? chartColors.series1
-                        : chartColors.series1Muted
-                    }
+                        : chartColors.series1Muted,
+                    }}
                     opacity={isHovered ? 0.8 : 1}
                   />
                 )}
@@ -89,7 +91,7 @@ export function MonthlyBarChart({
                     textAnchor="middle"
                     fontSize={12}
                     fontWeight={600}
-                    fill={chartColors.textPrimary}
+                    style={{ fill: chartColors.textPrimary }}
                   >
                     {formatAxisYen(datum.total)}
                   </text>
@@ -101,11 +103,11 @@ export function MonthlyBarChart({
                     textAnchor="middle"
                     fontSize={12}
                     fontWeight={isSelected ? 600 : 400}
-                    fill={
-                      isSelected
+                    style={{
+                      fill: isSelected
                         ? chartColors.textPrimary
-                        : chartColors.textMuted
-                    }
+                        : chartColors.textMuted,
+                    }}
                   >
                     {Number(datum.month.slice(5))}月
                   </text>

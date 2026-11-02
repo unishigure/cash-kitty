@@ -1,14 +1,17 @@
-// デジタル庁デザインシステムのカラートークン（blue / solid-gray）
 export const chartColors = {
-  series1: "#264af4",
-  series1Muted: "#9db7f9",
-  heatEmpty: "#e6e6e6",
-  heat: ["#c5d7fb", "#7096f8", "#264af4", "#00118f"],
-  surface: "#ffffff",
-  grid: "#e6e6e6",
-  baseline: "#949494",
-  textPrimary: "#1a1a1a",
-  textMuted: "#666666",
+  series1: "var(--chart-series)",
+  series1Muted: "var(--chart-series-muted)",
+  heatEmpty: "var(--chart-heat-empty)",
+  heat: [
+    "var(--chart-heat-1)",
+    "var(--chart-heat-2)",
+    "var(--chart-heat-3)",
+    "var(--chart-heat-4)",
+  ],
+  grid: "var(--chart-grid)",
+  baseline: "var(--chart-baseline)",
+  textPrimary: "var(--chart-text)",
+  textMuted: "var(--chart-text-muted)",
 };
 
 export function niceTicks(max: number, count = 4) {
