@@ -117,7 +117,7 @@ export function ImportPage() {
       }
       setStatus({
         tone: "error",
-        text: "エラー: クリップボードに画像がありません。",
+        text: "クリップボードに画像がありません。",
       });
     } catch (error) {
       setStatus(errorStatus(error));
@@ -132,7 +132,7 @@ export function ImportPage() {
     if (!selected.type.startsWith("image/")) {
       setStatus({
         tone: "error",
-        text: "エラー: 画像ファイルを選択してください。",
+        text: "画像ファイルを選択してください。",
       });
       return;
     }
@@ -148,7 +148,7 @@ export function ImportPage() {
     setImageReady(false);
     setStatus({
       tone: "error",
-      text: "エラー: 画像を読み込めません。別の画像を選択してください。",
+      text: "画像を読み込めません。別の画像を選択してください。",
     });
   }
 
@@ -192,7 +192,7 @@ export function ImportPage() {
     event.preventDefault();
     const parsed = parseDraft(draft);
     if (!parsed.ok) {
-      setStatus({ tone: "error", text: `エラー: ${parsed.error}` });
+      setStatus({ tone: "error", text: parsed.error });
       return;
     }
 

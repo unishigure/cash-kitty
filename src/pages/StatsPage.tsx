@@ -3,7 +3,7 @@ import { CategoryBreakdown } from "@/components/charts/CategoryBreakdown";
 import { DailyHeatmap } from "@/components/charts/DailyHeatmap";
 import { MonthlyBarChart } from "@/components/charts/MonthlyBarChart";
 import { MonthPicker } from "@/components/MonthPicker";
-import { noticeClass } from "@/components/Notice";
+import { Notice } from "@/components/Notice";
 import {
   type OpenedReceipt,
   ReceiptDialogs,
@@ -34,7 +34,7 @@ import {
 } from "@/lib/receipt";
 import { receiptsHash } from "@/lib/route";
 import { categoryTotals, dailyTotals, totalOfMonth } from "@/lib/stats";
-import { formatError, formatYen, sidePanelQuery } from "@/lib/ui";
+import { errorStatus, formatYen, type Status, sidePanelQuery } from "@/lib/ui";
 
 function elapsedDays(month: YearMonth) {
   const todayDate = today();
@@ -62,14 +62,14 @@ export function StatsPage() {
   const [allPeriods, setAllPeriods] = useState(false);
   const [allReceipts, setAllReceipts] = useState<Receipt[]>();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<Status>();
   const revision = useReceiptsRevision();
   const fixedCosts = useFixedCosts();
 
   useAsyncEffect(
     () => {
       setLoading(true);
-      setError("");
+      setError(undefined);
       return listReceiptsBetween(
         shiftMonth(month, -12),
         barChartEndMonth(month),
@@ -81,7 +81,7 @@ export function StatsPage() {
         setLoading(false);
       },
       onError: (error) => {
-        setError(formatError(error));
+        setError(errorStatus(error));
         setLoading(false);
       },
     },
@@ -92,7 +92,7 @@ export function StatsPage() {
     () => (allPeriods ? listAllReceipts() : undefined),
     {
       onLoad: setAllReceipts,
-      onError: (error) => setError(formatError(error)),
+      onError: (error) => setError(errorStatus(error)),
     },
     [allPeriods, revision],
   );
@@ -172,11 +172,7 @@ export function StatsPage() {
         onChange={selectMonth}
         onSelectAll={selectAllPeriods}
       />
-      {error && (
-        <p role="alert" className={noticeClass.error}>
-          <span>{error}</span>
-        </p>
-      )}
+      {error && <Notice status={error} />}
 
       {receipts && (
         <div
@@ -284,7 +280,7 @@ export function StatsPage() {
         onDeleted={(deleted) =>
           updateLists((list) => removeReceipt(list, deleted.id))
         }
-        onError={(error) => setError(formatError(error))}
+        onError={(error) => setError(errorStatus(error))}
       />
     </div>
   );

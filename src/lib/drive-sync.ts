@@ -32,6 +32,7 @@ import {
   subscribeLocalChanges,
 } from "@/lib/receipt";
 import { createStore } from "@/lib/store";
+import { errorMessage } from "@/lib/ui";
 
 export type DriveState = {
   status: "unconfigured" | "disconnected" | "connecting" | "connected";
@@ -52,10 +53,6 @@ let rerun = false;
 
 export const subscribeDrive = store.subscribe;
 export const getDriveState = store.get;
-
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error);
-}
 
 export function startDrive() {
   consumeAuthRedirect();

@@ -6,9 +6,15 @@ import {
   useDraft,
 } from "@/components/receipt/ReceiptFields";
 import { ModalDialog } from "@/components/ModalDialog";
+import { Notice } from "@/components/Notice";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { type Receipt, updateReceipt } from "@/lib/receipt";
-import { buttonClass, formatError, primaryButtonClass } from "@/lib/ui";
+import {
+  buttonClass,
+  errorStatus,
+  primaryButtonClass,
+  type Status,
+} from "@/lib/ui";
 
 export function ReceiptEditDialog({
   receipt,
@@ -22,13 +28,13 @@ export function ReceiptEditDialog({
   const dialogRef = useModalDialog();
   const [draft, , updateDraft] = useDraft(() => draftFromReceipt(receipt));
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState<Status>();
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const parsed = parseDraft(draft);
     if (!parsed.ok) {
-      setError(`エラー: ${parsed.error}`);
+      setStatus({ tone: "error", text: parsed.error });
       return;
     }
 
@@ -36,7 +42,7 @@ export function ReceiptEditDialog({
     try {
       onSaved(await updateReceipt(receipt.id, parsed.input));
     } catch (error) {
-      setError(formatError(error));
+      setStatus(errorStatus(error));
       setSaving(false);
     }
   }
@@ -59,11 +65,7 @@ export function ReceiptEditDialog({
             明細の編集
           </h2>
           <ReceiptFields draft={draft} onChange={updateDraft} />
-          {error && (
-            <p role="alert" className="text-dns-16N-130 text-error-1">
-              {error}
-            </p>
-          )}
+          {status && <Notice status={status} />}
           <div className="flex justify-end gap-2">
             <button
               className={buttonClass}

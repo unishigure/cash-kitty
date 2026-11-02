@@ -9,6 +9,7 @@ import type { Receipt } from "@/lib/receipt";
 import {
   buttonClass,
   dangerButtonClass,
+  errorMessage,
   formatYen,
   primaryButtonClass,
 } from "@/lib/ui";
@@ -27,8 +28,7 @@ function useReceiptImage(receipt: Receipt) {
       onLoad: (blob) => {
         if (blob) setUrl(URL.createObjectURL(blob));
       },
-      onError: (error) =>
-        setError(error instanceof Error ? error.message : String(error)),
+      onError: (error) => setError(errorMessage(error)),
     },
     [receipt],
   );

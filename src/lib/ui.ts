@@ -1,6 +1,5 @@
-export function formatError(error: unknown) {
-  console.error(error);
-  return `エラー: ${error instanceof Error ? `${error.name}: ${error.message}` : String(error)}`;
+export function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export function formatYen(amount: number) {
@@ -13,7 +12,14 @@ export type Status = {
 };
 
 export function errorStatus(error: unknown): Status {
-  return { tone: "error", text: formatError(error) };
+  console.error(error);
+  return {
+    tone: "error",
+    text:
+      error instanceof Error
+        ? `${error.name}: ${error.message}`
+        : String(error),
+  };
 }
 
 export const cardClass =

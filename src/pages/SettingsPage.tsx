@@ -173,7 +173,7 @@ export function SettingsPage() {
           )}
         </dl>
         {drive.error && (
-          <Notice status={{ tone: "error", text: `エラー: ${drive.error}` }} />
+          <Notice status={{ tone: "error", text: drive.error }} />
         )}
         <div className="flex flex-wrap justify-end gap-2">
           {connected ? (
