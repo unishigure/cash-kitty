@@ -23,4 +23,5 @@ if (import.meta.hot) {
   data.root.render(app);
 } else {
   createRoot(elem).render(app);
+  navigator.serviceWorker?.register("/sw.js");
 }

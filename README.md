@@ -27,3 +27,17 @@ BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
 
 - 承認済みの JavaScript 生成元
 - 承認済みのリダイレクト URI
+
+## スプラッシュ画像
+
+以下を変更した場合、iOS の起動画面を再生成する
+
+> [!WARNING]
+> 実行環境に Chrome が必要
+
+- `public/icon-512.png`
+- manifest の `background_color`
+
+```sh
+bun run splash
+```

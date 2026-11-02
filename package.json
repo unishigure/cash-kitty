@@ -8,7 +8,8 @@
     "fix": "bun lint --fix && bun fmt",
     "ci": "bun run --parallel --no-exit-on-error \"bun fmt --check\" \"bun lint\" \"bun check\"",
     "start": "NODE_ENV=production bun src/index.ts",
-    "build": "bun run build.ts"
+    "build": "bun run build.ts",
+    "splash": "bun scripts/splash.ts && bun fmt src/index.html"
   },
   "dependencies": {
     "@digital-go-jp/tailwind-theme-plugin": "latest",
