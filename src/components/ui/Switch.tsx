@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { Icon } from "@/components/Icon";
+import { Icon } from "@/components/ui/Icon";
 
 // https://design.digital.go.jp/dads/components/switch/ の on-off
 export function Switch({

@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
-import { DatePicker } from "@/components/DatePicker";
-import { Select } from "@/components/Select";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { Select } from "@/components/ui/Select";
 import { type Category, categories } from "@/lib/receipt/category";
 import type { Receipt, ReceiptInput } from "@/lib/receipt/receipt";
 import { inputClass } from "@/lib/ui/styles";

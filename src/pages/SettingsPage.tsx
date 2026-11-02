@@ -1,8 +1,8 @@
 import { type ComponentProps, type ReactNode, useState } from "react";
-import { CategoryChip } from "@/components/CategoryChip";
-import { ChipLabel } from "@/components/ChipLabel";
-import { HelpPopover } from "@/components/HelpPopover";
-import { Notice } from "@/components/Notice";
+import { CategoryChip } from "@/components/receipt/CategoryChip";
+import { ChipLabel } from "@/components/ui/ChipLabel";
+import { HelpPopover } from "@/components/ui/HelpPopover";
+import { Notice } from "@/components/ui/Notice";
 import { useDriveState } from "@/hooks/useDrive";
 import {
   connectDrive,

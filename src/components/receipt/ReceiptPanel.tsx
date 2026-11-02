@@ -1,6 +1,6 @@
 import { useId } from "react";
-import { CategoryChip } from "@/components/CategoryChip";
-import { Icon } from "@/components/Icon";
+import { CategoryChip } from "@/components/receipt/CategoryChip";
+import { Icon } from "@/components/ui/Icon";
 import type { Category } from "@/lib/receipt/category";
 import type { Receipt } from "@/lib/receipt/receipt";
 import { sumAmount } from "@/lib/receipt/stats";

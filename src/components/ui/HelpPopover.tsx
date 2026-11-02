@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Icon } from "@/components/Icon";
+import { Icon } from "@/components/ui/Icon";
 
 export function HelpPopover({
   id,

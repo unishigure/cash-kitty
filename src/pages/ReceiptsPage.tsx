@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { MonthPicker } from "@/components/MonthPicker";
-import { Notice } from "@/components/Notice";
 import {
   type OpenedReceipt,
   ReceiptDialogs,
 } from "@/components/receipt/ReceiptDialogs";
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
+import { MonthPicker } from "@/components/ui/MonthPicker";
+import { Notice } from "@/components/ui/Notice";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useReceiptsRevision } from "@/hooks/useDrive";
 import {

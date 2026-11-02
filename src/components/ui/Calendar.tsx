@@ -1,6 +1,6 @@
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
-import { Icon } from "@/components/Icon";
-import { Select } from "@/components/Select";
+import { Icon } from "@/components/ui/Icon";
+import { Select } from "@/components/ui/Select";
 import { buttonClass, iconButtonClass } from "@/lib/ui/styles";
 import { parseDate, today, weekdays } from "@/lib/utils/date";
 

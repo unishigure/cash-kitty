@@ -1,7 +1,7 @@
 import "@/style.css";
 import { useEffect, useSyncExternalStore } from "react";
-import { FixedCostToggle } from "@/components/FixedCostToggle";
-import { Icon } from "@/components/Icon";
+import { FixedCostToggle } from "@/components/stats/FixedCostToggle";
+import { Icon } from "@/components/ui/Icon";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { sidePanelQuery } from "@/lib/ui/styles";
 import { hashPath } from "@/lib/utils/route";

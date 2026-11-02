@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
-import { CategoryChip } from "@/components/CategoryChip";
-import { ModalDialog } from "@/components/ModalDialog";
+import { CategoryChip } from "@/components/receipt/CategoryChip";
+import { ModalDialog } from "@/components/ui/ModalDialog";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { loadReceiptImage } from "@/lib/drive/sync";

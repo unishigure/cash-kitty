@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from "react";
-import { Calendar } from "@/components/Calendar";
-import { Icon } from "@/components/Icon";
+import { Calendar } from "@/components/ui/Calendar";
+import { Icon } from "@/components/ui/Icon";
 import { iconButtonClass } from "@/lib/ui/styles";
 import { parseDate, toISODate } from "@/lib/utils/date";
 

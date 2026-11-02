@@ -6,13 +6,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { Notice } from "@/components/Notice";
 import {
   emptyDraft,
   parseDraft,
   ReceiptFields,
   useDraft,
 } from "@/components/receipt/ReceiptFields";
+import { Notice } from "@/components/ui/Notice";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { checkModelAvailability, extractReceipt } from "@/lib/receipt/ai";
 import { compressImage } from "@/lib/receipt/image";

@@ -2,15 +2,15 @@ import { useState } from "react";
 import { CategoryBreakdown } from "@/components/charts/CategoryBreakdown";
 import { DailyHeatmap } from "@/components/charts/DailyHeatmap";
 import { MonthlyBarChart } from "@/components/charts/MonthlyBarChart";
-import { MonthPicker } from "@/components/MonthPicker";
-import { Notice } from "@/components/Notice";
 import {
   type OpenedReceipt,
   ReceiptDialogs,
 } from "@/components/receipt/ReceiptDialogs";
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
-import { StatsSection } from "@/components/stats/StatsSection";
 import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
+import { StatsSection } from "@/components/stats/StatsSection";
+import { MonthPicker } from "@/components/ui/MonthPicker";
+import { Notice } from "@/components/ui/Notice";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useReceiptsRevision } from "@/hooks/useDrive";
 import { useMediaQuery } from "@/hooks/useMediaQuery";

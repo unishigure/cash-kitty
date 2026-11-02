@@ -1,12 +1,12 @@
 import { type SubmitEvent, useState } from "react";
-import { ModalDialog } from "@/components/ModalDialog";
-import { Notice } from "@/components/Notice";
 import {
   draftFromReceipt,
   parseDraft,
   ReceiptFields,
   useDraft,
 } from "@/components/receipt/ReceiptFields";
+import { ModalDialog } from "@/components/ui/ModalDialog";
+import { Notice } from "@/components/ui/Notice";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { type Receipt, updateReceipt } from "@/lib/receipt/receipt";
 import { errorStatus, type Status } from "@/lib/ui/status";

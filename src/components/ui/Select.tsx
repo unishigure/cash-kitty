@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { Icon } from "@/components/Icon";
+import { Icon } from "@/components/ui/Icon";
 
 export function Select({ className = "", ...props }: ComponentProps<"select">) {
   return (
