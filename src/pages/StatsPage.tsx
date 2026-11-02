@@ -181,7 +181,7 @@ export function StatsPage() {
 
       {receipts && (
         <div
-          className={`grid items-start gap-4 transition-opacity lg:grid-cols-[minmax(0,1fr)_22rem] ${loading ? "opacity-50" : ""}`}
+          className={`grid items-start gap-4 transition-opacity lg:grid-cols-[minmax(0,1fr)_24rem] xl:grid-cols-[minmax(0,1fr)_30rem] ${loading ? "opacity-50" : ""}`}
           aria-busy={loading}
         >
           <div className="flex min-w-0 flex-col gap-4">
