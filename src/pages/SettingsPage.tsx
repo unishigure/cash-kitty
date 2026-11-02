@@ -5,17 +5,16 @@ import { HelpPopover } from "@/components/HelpPopover";
 import { Notice } from "@/components/Notice";
 import { useDriveState } from "@/hooks/useDrive";
 import {
-  type Category,
-  type ChipHue,
-  categories,
-} from "@/lib/receipt/category";
-import { formatDateTime } from "@/lib/utils/date";
-import {
   connectDrive,
   type DriveState,
   disconnectDrive,
   requestSync,
 } from "@/lib/drive/sync";
+import {
+  type Category,
+  type ChipHue,
+  categories,
+} from "@/lib/receipt/category";
 import { setFixedCategories, useFixedCosts } from "@/lib/receipt/fixed-costs";
 import {
   buttonClass,
@@ -24,6 +23,7 @@ import {
   primaryButtonClass,
 } from "@/lib/ui/styles";
 import { getTheme, setTheme, type Theme, themes } from "@/lib/ui/theme";
+import { formatDateTime } from "@/lib/utils/date";
 
 const statusChips: Record<
   DriveState["status"],

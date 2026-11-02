@@ -7,7 +7,9 @@ import {
 } from "react";
 import { ChartTooltip, TooltipRow } from "@/components/charts/ChartTooltip";
 import { useElementWidth } from "@/hooks/useElementWidth";
+import { quartiles } from "@/lib/receipt/stats";
 import { chartColors } from "@/lib/ui/chart";
+import { formatYen } from "@/lib/ui/format";
 import {
   addDays,
   daysBetween,
@@ -19,8 +21,6 @@ import {
   today,
   type YearMonth,
 } from "@/lib/utils/date";
-import { formatYen } from "@/lib/ui/format";
-import { quartiles } from "@/lib/receipt/stats";
 
 const gap = 3;
 const labelWidth = 24;

@@ -15,6 +15,24 @@ import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useReceiptsRevision } from "@/hooks/useDrive";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import type { Category } from "@/lib/receipt/category";
+import { excludeFixedCosts, useFixedCosts } from "@/lib/receipt/fixed-costs";
+import {
+  filterReceipts,
+  listAllReceipts,
+  listReceiptsBetween,
+  type Receipt,
+  removeReceipt,
+  replaceReceipt,
+} from "@/lib/receipt/receipt";
+import {
+  categoryTotals,
+  dailyTotals,
+  sumAmount,
+  totalOfMonth,
+} from "@/lib/receipt/stats";
+import { formatYen } from "@/lib/ui/format";
+import { errorStatus, type Status } from "@/lib/ui/status";
+import { sidePanelQuery } from "@/lib/ui/styles";
 import {
   daysInMonth,
   formatFullDate,
@@ -24,25 +42,7 @@ import {
   toYearMonth,
   type YearMonth,
 } from "@/lib/utils/date";
-import { excludeFixedCosts, useFixedCosts } from "@/lib/receipt/fixed-costs";
-import { formatYen } from "@/lib/ui/format";
-import {
-  filterReceipts,
-  listAllReceipts,
-  listReceiptsBetween,
-  type Receipt,
-  removeReceipt,
-  replaceReceipt,
-} from "@/lib/receipt/receipt";
 import { receiptsHash } from "@/lib/utils/route";
-import {
-  categoryTotals,
-  dailyTotals,
-  sumAmount,
-  totalOfMonth,
-} from "@/lib/receipt/stats";
-import { errorStatus, type Status } from "@/lib/ui/status";
-import { sidePanelQuery } from "@/lib/ui/styles";
 
 function elapsedDays(month: YearMonth) {
   const todayDate = today();

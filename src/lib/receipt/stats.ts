@@ -1,6 +1,6 @@
 import type { Category } from "@/lib/receipt/category";
-import { isDateInMonth, type YearMonth } from "@/lib/utils/date";
 import type { Receipt } from "@/lib/receipt/receipt";
+import { isDateInMonth, type YearMonth } from "@/lib/utils/date";
 
 export function sumAmount(receipts: Receipt[]) {
   return receipts.reduce((sum, r) => sum + r.totalAmount, 0);

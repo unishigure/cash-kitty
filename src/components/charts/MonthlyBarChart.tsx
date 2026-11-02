@@ -7,12 +7,12 @@ import {
   formatAxisYen,
   niceTicks,
 } from "@/lib/ui/chart";
+import { formatYen } from "@/lib/ui/format";
 import {
   formatMonth,
   formatShortMonth,
   type YearMonth,
 } from "@/lib/utils/date";
-import { formatYen } from "@/lib/ui/format";
 
 const height = 240;
 const margin = { top: 28, right: 8, bottom: 28, left: 48 };
