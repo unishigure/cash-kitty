@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Icon } from "@/components/Icon";
 import { Notice } from "@/components/Notice";
 import { useDriveState } from "@/hooks/useDrive";
 import {
@@ -56,13 +57,30 @@ export function SettingsPage() {
       className={`flex flex-col gap-3 ${cardClass}`}
       aria-labelledby="settings-drive"
     >
-      <h2 id="settings-drive" className="text-std-20B-150 text-solid-gray-900">
-        Google Drive 連携
-      </h2>
-      <p className="text-dns-16N-130 text-solid-gray-700">
-        明細とレシート画像を Google Drive
-        のアプリ専用領域に保存し、端末間で同期します。
-      </p>
+      <div className="flex items-center gap-1">
+        <h2
+          id="settings-drive"
+          className="text-std-20B-150 text-solid-gray-900"
+        >
+          Google Drive 連携
+        </h2>
+        <button
+          type="button"
+          className="grid size-10 cursor-pointer place-items-center rounded-full text-solid-gray-700 [anchor-name:--settings-drive-help] hover:bg-solid-gray-50 focus-visible:focus-ring"
+          aria-label="Google Drive 連携の説明"
+          popoverTarget="settings-drive-help"
+        >
+          <Icon name="help" />
+        </button>
+        <p
+          id="settings-drive-help"
+          popover="auto"
+          className="m-0 mt-1 max-w-[min(20rem,calc(100vw-2rem))] rounded-8 border border-solid-gray-420 bg-white p-3 text-dns-16N-130 text-solid-gray-800 shadow-2 inset-auto [position-anchor:--settings-drive-help] [position-area:bottom] [position-try-fallbacks:flip-block]"
+        >
+          明細とレシート画像を Google Drive
+          のアプリ専用領域に保存し、端末間で同期します。
+        </p>
+      </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
         <dt className="text-solid-gray-600">状態</dt>
         <dd className="text-solid-gray-900">{statusLabels[drive.status]}</dd>
