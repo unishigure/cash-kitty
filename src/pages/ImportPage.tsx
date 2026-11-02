@@ -1,4 +1,11 @@
-import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
+import {
+  type ChangeEvent,
+  type SubmitEvent,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import { Notice } from "@/components/Notice";
 import {
   type Draft,
@@ -18,6 +25,8 @@ import {
   type Status,
 } from "@/lib/ui";
 
+const canReadClipboard = typeof navigator.clipboard?.read === "function";
+
 const legendClass =
   "float-left mb-1 w-full text-std-17B-170 text-solid-gray-900";
 
@@ -29,6 +38,7 @@ export function ImportPage() {
   });
   const [file, setFile] = useState<File>();
   const [fileInputKey, setFileInputKey] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [imageReady, setImageReady] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -76,10 +86,56 @@ export function ImportPage() {
   }
 
   function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    selectImage(event.target.files?.[0]);
+  }
+
+  function pasteImage(image: File) {
+    if (fileInputRef.current) {
+      const transfer = new DataTransfer();
+      transfer.items.add(image);
+      fileInputRef.current.files = transfer.files;
+    }
+    selectImage(image);
+  }
+
+  const handlePaste = useEffectEvent((event: ClipboardEvent) => {
+    if (analyzing || saving) return;
+    const image = [...(event.clipboardData?.files ?? [])].find((f) =>
+      f.type.startsWith("image/"),
+    );
+    if (!image) return;
+    event.preventDefault();
+    pasteImage(image);
+  });
+
+  useEffect(() => {
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, []);
+
+  async function pasteFromClipboard() {
+    try {
+      for (const item of await navigator.clipboard.read()) {
+        const type = item.types.find((t) => t.startsWith("image/"));
+        if (!type) continue;
+        const blob = await item.getType(type);
+        pasteImage(
+          new File([blob], `clipboard.${type.split("/")[1]}`, { type }),
+        );
+        return;
+      }
+      setStatus({
+        tone: "error",
+        text: "エラー: クリップボードに画像がありません。",
+      });
+    } catch (error) {
+      setStatus(errorStatus(error));
+    }
+  }
+
+  function selectImage(selected: File | undefined) {
     setImageReady(false);
     setPreviewUrl(undefined);
-
-    const selected = event.target.files?.[0];
     setFile(selected);
     if (!selected) return;
     if (!selected.type.startsWith("image/")) {
@@ -176,6 +232,7 @@ export function ImportPage() {
           </legend>
           <input
             key={fileInputKey}
+            ref={fileInputRef}
             id="receipt-image"
             className="w-full cursor-pointer rounded-8 border border-dashed border-solid-gray-600 bg-solid-gray-50 p-4 text-dns-16N-130 hover:border-black disabled:cursor-not-allowed file:mr-3 file:min-h-12 file:cursor-pointer file:rounded-8 file:border file:border-key-900 file:bg-white file:px-4 file:text-oln-16B-100 file:text-key-900 hover:file:bg-key-200 disabled:file:cursor-not-allowed"
             type="file"
@@ -183,6 +240,16 @@ export function ImportPage() {
             disabled={analyzing || saving}
             onChange={handleImageChange}
           />
+          {canReadClipboard && (
+            <button
+              className={`${buttonClass} justify-self-center`}
+              type="button"
+              disabled={analyzing || saving}
+              onClick={() => void pasteFromClipboard()}
+            >
+              クリップボードから貼り付け
+            </button>
+          )}
           {previewUrl && (
             <img
               className="max-h-120 max-w-full justify-self-center rounded-8 border border-solid-gray-200 object-contain"
