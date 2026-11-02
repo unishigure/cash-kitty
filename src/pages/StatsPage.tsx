@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CategoryBreakdown } from "@/components/charts/CategoryBreakdown";
 import { DailyHeatmap } from "@/components/charts/DailyHeatmap";
 import { MonthlyBarChart } from "@/components/charts/MonthlyBarChart";
@@ -11,6 +11,7 @@ import {
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
 import { StatsSection } from "@/components/stats/StatsSection";
 import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
+import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useReceiptsRevision } from "@/hooks/useDrive";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { excludeFixedCosts, useFixedCosts } from "@/lib/fixed-costs";
@@ -64,41 +65,36 @@ export function StatsPage() {
   const revision = useReceiptsRevision();
   const fixedCosts = useFixedCosts();
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError("");
+  useAsyncEffect(
+    () => {
+      setLoading(true);
+      setError("");
+      return listReceiptsBetween(
+        shiftMonth(month, -12),
+        barChartEndMonth(month),
+      );
+    },
+    {
+      onLoad: (list) => {
+        setReceipts(list);
+        setLoading(false);
+      },
+      onError: (error) => {
+        setError(formatError(error));
+        setLoading(false);
+      },
+    },
+    [month, revision],
+  );
 
-    listReceiptsBetween(shiftMonth(month, -12), barChartEndMonth(month))
-      .then((list) => {
-        if (!cancelled) setReceipts(list);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) setError(formatError(error));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [month, revision]);
-
-  useEffect(() => {
-    if (!allPeriods) return;
-    let cancelled = false;
-    listAllReceipts()
-      .then((list) => {
-        if (!cancelled) setAllReceipts(list);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) setError(formatError(error));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [allPeriods, revision]);
+  useAsyncEffect(
+    () => (allPeriods ? listAllReceipts() : undefined),
+    {
+      onLoad: setAllReceipts,
+      onError: (error) => setError(formatError(error)),
+    },
+    [allPeriods, revision],
+  );
 
   const previousMonth = shiftMonth(month, -1);
   const lastYearMonth = shiftMonth(month, -12);

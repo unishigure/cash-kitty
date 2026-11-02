@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { CategoryChip } from "@/components/CategoryChip";
+import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import { loadReceiptImage } from "@/lib/drive-sync";
 import { formatFullDate } from "@/lib/month";
@@ -15,27 +16,26 @@ function useReceiptImage(receipt: Receipt) {
   const [url, setUrl] = useState<string>();
   const [error, setError] = useState<string>();
 
+  useAsyncEffect(
+    () => {
+      setUrl(undefined);
+      setError(undefined);
+      return loadReceiptImage(receipt);
+    },
+    {
+      onLoad: (blob) => {
+        if (blob) setUrl(URL.createObjectURL(blob));
+      },
+      onError: (error) =>
+        setError(error instanceof Error ? error.message : String(error)),
+    },
+    [receipt],
+  );
+
   useEffect(() => {
-    let cancelled = false;
-    let objectUrl: string | undefined;
-    setUrl(undefined);
-    setError(undefined);
-    loadReceiptImage(receipt)
-      .then((blob) => {
-        if (cancelled || !blob) return;
-        objectUrl = URL.createObjectURL(blob);
-        setUrl(objectUrl);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setError(error instanceof Error ? error.message : String(error));
-        }
-      });
-    return () => {
-      cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [receipt]);
+    if (!url) return;
+    return () => URL.revokeObjectURL(url);
+  }, [url]);
 
   return { url, error };
 }

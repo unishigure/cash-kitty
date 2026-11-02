@@ -6,6 +6,7 @@ import {
   ReceiptDialogs,
 } from "@/components/receipt/ReceiptDialogs";
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
+import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useReceiptsRevision } from "@/hooks/useDrive";
 import {
   formatFullDate,
@@ -39,24 +40,20 @@ export function ReceiptsPage() {
   const [query, setQuery] = useState("");
   const revision = useReceiptsRevision();
 
-  useEffect(() => {
-    let cancelled = false;
-    setStatus({ tone: "neutral", text: "読み込み中…" });
-
-    (allPeriods ? listAllReceipts() : listReceiptsByMonth(month))
-      .then((list) => {
-        if (cancelled) return;
+  useAsyncEffect(
+    () => {
+      setStatus({ tone: "neutral", text: "読み込み中…" });
+      return allPeriods ? listAllReceipts() : listReceiptsByMonth(month);
+    },
+    {
+      onLoad: (list) => {
         setReceipts(list);
         setStatus(undefined);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) setStatus(errorStatus(error));
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [month, allPeriods, revision]);
+      },
+      onError: (error) => setStatus(errorStatus(error)),
+    },
+    [month, allPeriods, revision],
+  );
 
   useEffect(() => {
     history.replaceState(

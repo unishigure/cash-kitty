@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { Notice } from "@/components/Notice";
+import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import {
   type Draft,
   emptyDraft,
@@ -45,12 +46,10 @@ export function ImportPage() {
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    checkModelAvailability()
-      .then((availability) => {
-        if (cancelled) return;
+  useAsyncEffect(
+    checkModelAvailability,
+    {
+      onLoad: (availability) => {
         if (availability === "unsupported" || availability === "unavailable") {
           setStatus({
             tone: "info",
@@ -66,15 +65,11 @@ export function ImportPage() {
               ? "レシート画像を選択してください。"
               : "レシート画像を選択してください。初回の読み取り時にモデルをダウンロードします。",
         });
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) setStatus(errorStatus(error));
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      },
+      onError: (error) => setStatus(errorStatus(error)),
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!previewUrl) return;
