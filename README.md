@@ -14,10 +14,9 @@ bun run dev
 ## Google Drive 連携
 
 設定画面から接続すると、明細とレシート画像を Google Drive に保存して端末間で同期\
-保存先は Drive のアプリ専用領域（`appDataFolder`）で、形式は旧版と共通
+保存先は Drive のアプリ専用領域（`appDataFolder`）
 
-`.env.example` を `.env` にコピーし、Google OAuth のクライアント ID を設定\
-旧版と同じ ID なら、旧版のデータをそのまま利用可能
+`.env.example` を `.env` にコピーし、Google OAuth のクライアント ID を設定
 
 ```sh
 BUN_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
