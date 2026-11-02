@@ -16,11 +16,10 @@ export const categoryHues = {
   その他: "gray",
 } satisfies Record<Category, string>;
 
-export function categoryColor(
-  category: Category,
-  part?: "bg" | "border" | "text",
-) {
-  return `var(--category-${categoryHues[category]}${part ? `-${part}` : ""})`;
+export type ChipHue = (typeof categoryHues)[Category];
+
+export function categoryColor(category: Category) {
+  return `var(--category-${categoryHues[category]})`;
 }
 
 export const chartColors = {

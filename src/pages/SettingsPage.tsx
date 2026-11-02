@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { ChipLabel } from "@/components/ChipLabel";
 import { Icon } from "@/components/Icon";
 import { Notice } from "@/components/Notice";
 import { useDriveState } from "@/hooks/useDrive";
+import type { ChipHue } from "@/lib/chart";
 import {
   connectDrive,
   type DriveState,
@@ -16,20 +18,20 @@ import {
   primaryButtonClass,
 } from "@/lib/ui";
 
-const statusLabels: Record<DriveState["status"], string> = {
-  unconfigured: "利用不可（BUN_PUBLIC_GOOGLE_CLIENT_ID が未設定）",
-  disconnected: "未接続",
-  connecting: "接続中…",
-  connected: "接続済み",
+const statusChips: Record<
+  DriveState["status"],
+  { label: string; hue: ChipHue }
+> = {
+  unconfigured: { label: "利用不可", hue: "red" },
+  disconnected: { label: "未接続", hue: "gray" },
+  connecting: { label: "接続中…", hue: "blue" },
+  connected: { label: "接続済み", hue: "green" },
 };
 
 function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString("ja-JP", {
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const date = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 function ThemeSection() {
@@ -118,13 +120,22 @@ export function SettingsPage() {
             のアプリ専用領域に保存し、端末間で同期します。
           </p>
         </div>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+        <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">
           <dt className="text-solid-gray-600">状態</dt>
-          <dd className="text-solid-gray-900">{statusLabels[drive.status]}</dd>
+          <dd className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-solid-gray-900">
+            <ChipLabel hue={statusChips[drive.status].hue}>
+              {statusChips[drive.status].label}
+            </ChipLabel>
+            {drive.status === "unconfigured" && (
+              <span className="text-dns-14N-130 text-solid-gray-600">
+                BUN_PUBLIC_GOOGLE_CLIENT_ID が未設定
+              </span>
+            )}
+          </dd>
           {connected && (
             <>
               <dt className="text-solid-gray-600">最終同期</dt>
-              <dd className="text-solid-gray-900">
+              <dd className="text-right text-solid-gray-900 tabular-nums">
                 {drive.syncing
                   ? "同期中…"
                   : drive.lastSyncedAt
