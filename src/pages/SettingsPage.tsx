@@ -100,17 +100,9 @@ export function SettingsPage() {
       {drive.error && (
         <Notice status={{ tone: "error", text: `エラー: ${drive.error}` }} />
       )}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-end gap-2">
         {connected ? (
           <>
-            <button
-              type="button"
-              className={buttonClass}
-              disabled={drive.syncing}
-              onClick={() => void requestSync()}
-            >
-              今すぐ同期
-            </button>
             <button
               type="button"
               className={dangerButtonClass}
@@ -118,6 +110,14 @@ export function SettingsPage() {
               onClick={() => void handleDisconnect()}
             >
               接続を解除
+            </button>
+            <button
+              type="button"
+              className={buttonClass}
+              disabled={drive.syncing}
+              onClick={() => void requestSync()}
+            >
+              今すぐ同期
             </button>
           </>
         ) : (
