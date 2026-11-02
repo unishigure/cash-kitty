@@ -1,5 +1,4 @@
-import { categoryColor } from "@/lib/chart";
-import type { Category } from "@/lib/receipt";
+import { type Category, categoryColor } from "@/lib/category";
 import { formatYen } from "@/lib/ui";
 
 export function CategoryBreakdown({
@@ -8,8 +7,8 @@ export function CategoryBreakdown({
   onSelect,
 }: {
   data: { category: Category; total: number; count: number }[];
-  selected?: string;
-  onSelect?: (category: string) => void;
+  selected?: Category;
+  onSelect?: (category: Category) => void;
 }) {
   const total = data.reduce((sum, d) => sum + d.total, 0);
   const max = data[0]?.total ?? 0;

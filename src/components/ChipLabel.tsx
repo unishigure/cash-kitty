@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ChipHue } from "@/lib/chart";
+import type { ChipHue } from "@/lib/category";
 
 // https://design.digital.go.jp/dads/components/chip-label/ の filled-1
 export function ChipLabel({

@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { CategoryChip } from "@/components/CategoryChip";
 import { Icon } from "@/components/Icon";
+import type { Category } from "@/lib/category";
 import type { Receipt } from "@/lib/receipt";
 import { sumAmount } from "@/lib/stats";
 import { cardClass, formatYen, inputClass } from "@/lib/ui";
@@ -48,7 +49,7 @@ export function ReceiptPanel({
   receipts: Receipt[];
   periodLabel: string;
   dateLabel?: string;
-  category?: string;
+  category?: Category;
   allPeriods: boolean;
   query: string;
   onQueryChange: (query: string) => void;

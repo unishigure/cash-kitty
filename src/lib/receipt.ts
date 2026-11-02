@@ -1,23 +1,6 @@
+import { type Category, toCategory } from "@/lib/category";
 import { isDateInMonth, type YearMonth } from "@/lib/date";
 import { createSignal } from "@/lib/store";
-
-export const categories = [
-  "食費",
-  "日用品",
-  "衣服",
-  "趣味",
-  "交通",
-  "交際",
-  "医療",
-  "住居",
-  "光熱費",
-  "通信",
-  "税金",
-  "貯蓄",
-  "その他",
-] as const;
-
-export type Category = (typeof categories)[number];
 
 export type Receipt = {
   id: string;
@@ -44,24 +27,6 @@ export type ReceiptInput = Pick<
 export type ReceiptImage = { blob: Blob; mimeType: string };
 
 export type Deletion = Pick<Receipt, "id" | "fileId" | "imageFileId">;
-
-const legacyCategories: Record<string, Category> = {
-  外食: "食費",
-  娯楽: "趣味",
-  交通費: "交通",
-  交際費: "交際",
-  医療費: "医療",
-  住居費: "住居",
-  通信費: "通信",
-};
-
-export function toCategory(value: unknown): Category {
-  if (typeof value !== "string") return "その他";
-  if ((categories as readonly string[]).includes(value)) {
-    return value as Category;
-  }
-  return legacyCategories[value] ?? "その他";
-}
 
 const dbName = "cash-kitty-v2";
 const dbVersion = 2;
@@ -342,7 +307,7 @@ function matchesQuery(receipt: Receipt, query: string) {
 export type ReceiptConditions = {
   month?: YearMonth;
   date?: string;
-  category?: string;
+  category?: Category;
   query: string;
 };
 

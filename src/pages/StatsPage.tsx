@@ -11,6 +11,7 @@ import {
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
 import { StatsSection } from "@/components/stats/StatsSection";
 import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
+import type { Category } from "@/lib/category";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useReceiptsRevision } from "@/hooks/useDrive";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -59,7 +60,7 @@ function barChartEndMonth(month: YearMonth) {
 export function StatsPage() {
   const [month, setMonth] = useState(() => toYearMonth(today()));
   const [selectedDate, setSelectedDate] = useState<string>();
-  const [selectedCategory, setSelectedCategory] = useState<string>();
+  const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [query, setQuery] = useState("");
   const [opened, setOpened] = useState<OpenedReceipt>();
   const showsSidePanel = useMediaQuery(sidePanelQuery);
@@ -160,7 +161,7 @@ export function StatsPage() {
     setSelectedDate((current) => (current !== date ? date : undefined));
   }
 
-  function selectCategory(category: string) {
+  function selectCategory(category: Category) {
     if (!showsSidePanel) {
       location.hash = receiptsHash({ month, all: allPeriods, category });
       return;

@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
-import { type Category, categories, type Receipt } from "@/lib/receipt";
+import { type Category, categories } from "@/lib/category";
+import type { Receipt } from "@/lib/receipt";
 import { createStore } from "@/lib/store";
 
 const fixedCategoriesKey = "cash-kitty-v2.fixed-categories";

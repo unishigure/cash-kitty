@@ -1,10 +1,11 @@
+import { type Category, isCategory } from "@/lib/category";
 import { toYearMonth, type YearMonth } from "@/lib/date";
 
 export type ReceiptFilter = {
   month?: YearMonth;
   all?: boolean;
   date?: string;
-  category?: string;
+  category?: Category;
 };
 
 export function hashPath(hash: string) {
@@ -25,11 +26,12 @@ export function parseReceiptFilter(hash: string): ReceiptFilter {
   const params = new URLSearchParams(hash.split("?")[1] ?? "");
   const month = params.get("month");
   const date = params.get("date");
+  const category = params.get("category");
   return {
     month:
       month && /^\d{4}-\d{2}$/.test(month) ? toYearMonth(month) : undefined,
     all: params.get("all") === "1",
     date: date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined,
-    category: params.get("category") ?? undefined,
+    category: isCategory(category) ? category : undefined,
   };
 }
