@@ -7,8 +7,8 @@ import {
   ReceiptDialogs,
 } from "@/components/receipt/ReceiptDialogs";
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
-import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
 import { StatsSection } from "@/components/stats/StatsSection";
+import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
 import { MonthPicker } from "@/components/ui/MonthPicker";
 import { Notice } from "@/components/ui/Notice";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
