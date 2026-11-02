@@ -31,6 +31,7 @@ import {
   type Receipt,
   subscribeLocalChanges,
 } from "@/lib/receipt";
+import { createStore } from "@/lib/store";
 
 export type DriveState = {
   status: "unconfigured" | "disconnected" | "connecting" | "connected";
@@ -41,26 +42,16 @@ export type DriveState = {
 
 const downloadConcurrency = 6;
 
-let state: DriveState = { status: "disconnected", syncing: false };
-const listeners = new Set<() => void>();
+const store = createStore<DriveState>({
+  status: "disconnected",
+  syncing: false,
+});
+const setState = store.update;
 let running: Promise<void> | undefined;
 let rerun = false;
 
-export function subscribeDrive(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
-
-export function getDriveState() {
-  return state;
-}
-
-function setState(patch: Partial<DriveState>) {
-  state = { ...state, ...patch };
-  for (const listener of listeners) listener();
-}
+export const subscribeDrive = store.subscribe;
+export const getDriveState = store.get;
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
@@ -132,7 +123,7 @@ async function withToken<T>(
 }
 
 export function requestSync(onExpired: OnExpired = "disconnect") {
-  if (state.status !== "connected") return Promise.resolve();
+  if (store.get().status !== "connected") return Promise.resolve();
   if (running) {
     rerun = true;
     return running;
@@ -253,7 +244,7 @@ export async function loadReceiptImage(receipt: Receipt) {
   if (local) return local;
   const { imageFileId } = receipt;
   if (!imageFileId) return undefined;
-  if (state.status !== "connected") {
+  if (store.get().status !== "connected") {
     throw new Error(
       "画像は Google Drive に保存されています。設定から接続してください。",
     );

@@ -1,4 +1,5 @@
 import { isDateInMonth, type YearMonth } from "@/lib/date";
+import { createSignal } from "@/lib/store";
 
 export const categories = [
   "食費",
@@ -151,22 +152,11 @@ function modifyReceipt(
   };
 }
 
-const localListeners = new Set<() => void>();
-const remoteListeners = new Set<() => void>();
+const localChanges = createSignal();
+const remoteChanges = createSignal();
 
-export function subscribeLocalChanges(listener: () => void) {
-  localListeners.add(listener);
-  return () => localListeners.delete(listener);
-}
-
-export function subscribeRemoteChanges(listener: () => void) {
-  remoteListeners.add(listener);
-  return () => remoteListeners.delete(listener);
-}
-
-function notify(listeners: Set<() => void>) {
-  for (const listener of listeners) listener();
-}
+export const subscribeLocalChanges = localChanges.subscribe;
+export const subscribeRemoteChanges = remoteChanges.subscribe;
 
 export async function addReceipt(input: ReceiptInput, image?: ReceiptImage) {
   const now = new Date().toISOString();
@@ -183,7 +173,7 @@ export async function addReceipt(input: ReceiptInput, image?: ReceiptImage) {
     if (image) tx.objectStore("images").put(image.blob, receipt.id);
     return () => undefined;
   });
-  notify(localListeners);
+  localChanges.notify();
   return receipt;
 }
 
@@ -203,7 +193,7 @@ export async function updateReceipt(id: string, input: ReceiptInput) {
     return () => next;
   });
   if (!updated) throw new Error("明細が見つかりません。");
-  notify(localListeners);
+  localChanges.notify();
   return updated;
 }
 
@@ -240,7 +230,7 @@ export async function deleteReceipt(id: string) {
     });
     return () => undefined;
   });
-  notify(localListeners);
+  localChanges.notify();
 }
 
 export async function getLocalImage(id: string) {
@@ -292,7 +282,7 @@ export async function applyRemoteReceipts(receipts: Receipt[]) {
     }
     return () => undefined;
   });
-  notify(remoteListeners);
+  remoteChanges.notify();
 }
 
 export async function applyRemoteDeletions(ids: string[]) {
@@ -308,7 +298,7 @@ export async function applyRemoteDeletions(ids: string[]) {
     }
     return () => detached;
   });
-  notify(remoteListeners);
+  remoteChanges.notify();
   return detached;
 }
 
@@ -335,7 +325,7 @@ export async function forgetDriveReceipts() {
     tx.objectStore("deletions").clear();
     return () => undefined;
   });
-  notify(remoteListeners);
+  remoteChanges.notify();
 }
 
 function normalizeForSearch(text: string) {

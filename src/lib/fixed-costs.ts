@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { type Category, categories, type Receipt } from "@/lib/receipt";
+import { createStore } from "@/lib/store";
 
 const fixedCategoriesKey = "cash-kitty-v2.fixed-categories";
 const excludeFixedKey = "cash-kitty-v2.exclude-fixed";
@@ -24,37 +25,25 @@ type FixedCosts = {
   exclude: boolean;
 };
 
-let state: FixedCosts = {
+const store = createStore<FixedCosts>({
   categories: loadFixedCategories(),
   exclude: localStorage.getItem(excludeFixedKey) === "true",
-};
-
-const listeners = new Set<() => void>();
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-function update(next: Partial<FixedCosts>) {
-  state = { ...state, ...next };
-  for (const listener of listeners) listener();
-}
+});
 
 export function useFixedCosts() {
-  return useSyncExternalStore(subscribe, () => state);
+  return useSyncExternalStore(store.subscribe, store.get);
 }
 
 export function setFixedCategories(next: readonly Category[]) {
   const ordered = categories.filter((category) => next.includes(category));
   localStorage.setItem(fixedCategoriesKey, ordered.join(","));
-  update({ categories: ordered });
+  store.update({ categories: ordered });
 }
 
 export function setExcludeFixed(exclude: boolean) {
   if (exclude) localStorage.setItem(excludeFixedKey, "true");
   else localStorage.removeItem(excludeFixedKey);
-  update({ exclude });
+  store.update({ exclude });
 }
 
 export function excludeFixedCosts(
