@@ -8,8 +8,13 @@ export type ReceiptFilter = {
   category?: Category;
 };
 
+function splitHash(hash: string) {
+  const [path = "", search = ""] = hash.split("?");
+  return { path, search };
+}
+
 export function hashPath(hash: string) {
-  return hash.split("?")[0] ?? "";
+  return splitHash(hash).path;
 }
 
 export function receiptsHash({ month, all, date, category }: ReceiptFilter) {
@@ -23,7 +28,7 @@ export function receiptsHash({ month, all, date, category }: ReceiptFilter) {
 }
 
 export function parseReceiptFilter(hash: string): ReceiptFilter {
-  const params = new URLSearchParams(hash.split("?")[1] ?? "");
+  const params = new URLSearchParams(splitHash(hash).search);
   const month = params.get("month");
   const date = params.get("date");
   const category = params.get("category");
