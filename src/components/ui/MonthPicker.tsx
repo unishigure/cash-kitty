@@ -30,7 +30,7 @@ export function MonthPicker({
       </button>
       <div className="relative min-w-0 flex-1">
         <input
-          className={inputClass}
+          className={`${inputClass} min-w-0 [&::-webkit-date-and-time-value]:min-w-0`}
           type="month"
           aria-label={
             onSelectAll ? "表示する月（空にすると全期間）" : "表示する月"
