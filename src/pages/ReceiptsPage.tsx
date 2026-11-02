@@ -6,6 +6,7 @@ import {
   ReceiptDialogs,
 } from "@/components/receipt/ReceiptDialogs";
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
+import { useReceiptsRevision } from "@/hooks/useDrive";
 import {
   formatFullDate,
   formatMonth,
@@ -35,6 +36,7 @@ export function ReceiptsPage() {
   const [status, setStatus] = useState<Status>();
   const [opened, setOpened] = useState<OpenedReceipt>();
   const [query, setQuery] = useState("");
+  const revision = useReceiptsRevision();
 
   useEffect(() => {
     let cancelled = false;
@@ -53,7 +55,7 @@ export function ReceiptsPage() {
     return () => {
       cancelled = true;
     };
-  }, [month, allPeriods]);
+  }, [month, allPeriods, revision]);
 
   useEffect(() => {
     history.replaceState(

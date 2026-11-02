@@ -37,7 +37,7 @@ export function ReceiptEditDialog({
 
     setSaving(true);
     try {
-      onSaved(await updateReceipt(receipt, parsed.input));
+      onSaved(await updateReceipt(receipt.id, parsed.input));
     } catch (error) {
       setError(formatError(error));
       setSaving(false);

@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { useModalDialog } from "@/hooks/useModalDialog";
+import { loadReceiptImage } from "@/lib/drive-sync";
 import { formatFullDate } from "@/lib/month";
 import type { Receipt } from "@/lib/receipt";
 import {
@@ -7,6 +9,35 @@ import {
   formatYen,
   primaryButtonClass,
 } from "@/lib/ui";
+
+function useReceiptImage(receipt: Receipt) {
+  const [url, setUrl] = useState<string>();
+  const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    let cancelled = false;
+    let objectUrl: string | undefined;
+    setUrl(undefined);
+    setError(undefined);
+    loadReceiptImage(receipt)
+      .then((blob) => {
+        if (cancelled || !blob) return;
+        objectUrl = URL.createObjectURL(blob);
+        setUrl(objectUrl);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setError(error instanceof Error ? error.message : String(error));
+        }
+      });
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [receipt]);
+
+  return { url, error };
+}
 
 export function ReceiptDetailDialog({
   receipt,
@@ -20,6 +51,7 @@ export function ReceiptDetailDialog({
   onClose: () => void;
 }) {
   const dialogRef = useModalDialog();
+  const image = useReceiptImage(receipt);
 
   const rows = [
     ["日付", formatFullDate(receipt.date)],
@@ -47,6 +79,19 @@ export function ReceiptDetailDialog({
             {formatYen(receipt.totalAmount)}
           </p>
         </div>
+
+        {image.url && (
+          <a href={image.url} target="_blank" rel="noopener">
+            <img
+              className="mx-auto max-h-80 max-w-full rounded-8 border border-solid-gray-200 object-contain"
+              src={image.url}
+              alt={`${receipt.storeName}のレシート画像`}
+            />
+          </a>
+        )}
+        {image.error && (
+          <p className="text-dns-14N-130 text-solid-gray-600">{image.error}</p>
+        )}
 
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 border-t border-solid-gray-420 pt-4">
           {rows.map(([label, value]) => (

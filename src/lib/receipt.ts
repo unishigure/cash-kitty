@@ -5,12 +5,12 @@ export const categories = [
   "日用品",
   "衣服",
   "趣味",
-  "交通費",
-  "交際費",
+  "交通",
+  "交際",
   "医療",
   "住居",
   "光熱費",
-  "通信費",
+  "通信",
   "税金",
   "貯蓄",
   "その他",
@@ -28,8 +28,11 @@ export type Receipt = {
   fullText?: string;
   createdAt: string;
   updatedAt: string;
+  imageMimeType?: string;
   fileId?: string;
+  imageFileId?: string;
   driveModifiedTime?: string;
+  dirty?: boolean;
 };
 
 export type ReceiptInput = Pick<
@@ -37,20 +40,49 @@ export type ReceiptInput = Pick<
   "date" | "storeName" | "totalAmount" | "category" | "memo" | "fullText"
 >;
 
+export type ReceiptImage = { blob: Blob; mimeType: string };
+
+export type Deletion = Pick<Receipt, "id" | "fileId" | "imageFileId">;
+
+const legacyCategories: Record<string, Category> = {
+  外食: "食費",
+  娯楽: "趣味",
+  交通費: "交通",
+  交際費: "交際",
+  医療費: "医療",
+  住居費: "住居",
+  通信費: "通信",
+};
+
+export function toCategory(value: unknown): Category {
+  if (typeof value !== "string") return "その他";
+  if ((categories as readonly string[]).includes(value)) {
+    return value as Category;
+  }
+  return legacyCategories[value] ?? "その他";
+}
+
 const dbName = "cash-kitty-v2";
-const dbVersion = 1;
-const storeName = "receipts";
+const dbVersion = 2;
+
+type StoreName = "receipts" | "images" | "deletions";
 
 let dbPromise: Promise<IDBDatabase> | undefined;
 
 function openDb() {
   dbPromise ??= new Promise((resolve, reject) => {
     const request = indexedDB.open(dbName, dbVersion);
-    request.onupgradeneeded = () => {
-      const store = request.result.createObjectStore(storeName, {
-        keyPath: "id",
-      });
-      store.createIndex("date", "date");
+    request.onupgradeneeded = (event) => {
+      const db = request.result;
+      if (event.oldVersion < 1) {
+        const store = db.createObjectStore("receipts", { keyPath: "id" });
+        store.createIndex("date", "date");
+      }
+      if (event.oldVersion < 2) {
+        db.createObjectStore("images");
+        db.createObjectStore("deletions", { keyPath: "id" });
+        renameLegacyCategories(request.transaction);
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => {
@@ -61,39 +93,117 @@ function openDb() {
   return dbPromise;
 }
 
-async function withStore<T>(
+function renameLegacyCategories(tx: IDBTransaction | null) {
+  const receipts = tx?.objectStore("receipts");
+  const request = receipts?.openCursor();
+  if (!request) return;
+  request.onsuccess = () => {
+    const cursor = request.result;
+    if (!cursor) return;
+    const receipt = cursor.value as Receipt;
+    const category = toCategory(receipt.category);
+    if (category !== receipt.category) cursor.update({ ...receipt, category });
+    cursor.continue();
+  };
+}
+
+async function transact<T>(
+  names: StoreName[],
   mode: IDBTransactionMode,
-  run: (store: IDBObjectStore) => IDBRequest<T>,
+  run: (tx: IDBTransaction) => () => T,
 ) {
   const db = await openDb();
   return new Promise<T>((resolve, reject) => {
-    const tx = db.transaction(storeName, mode);
-    const request = run(tx.objectStore(storeName));
-    tx.oncomplete = () => resolve(request.result);
+    const tx = db.transaction(names, mode);
+    const result = run(tx);
+    tx.oncomplete = () => resolve(result());
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error);
   });
 }
 
-export async function addReceipt(input: ReceiptInput) {
+function withStore<T>(
+  name: StoreName,
+  mode: IDBTransactionMode,
+  run: (store: IDBObjectStore) => IDBRequest<T>,
+) {
+  return transact([name], mode, (tx) => {
+    const request = run(tx.objectStore(name));
+    return () => request.result;
+  });
+}
+
+function modifyReceipt(
+  tx: IDBTransaction,
+  id: string,
+  update: (current: Receipt | undefined) => Receipt | "delete" | "keep",
+) {
+  const receipts = tx.objectStore("receipts");
+  const request = receipts.get(id);
+  request.onsuccess = () => {
+    const next = update(request.result as Receipt | undefined);
+    if (next === "delete") {
+      receipts.delete(id);
+      tx.objectStore("images").delete(id);
+    } else if (next !== "keep") {
+      receipts.put(next);
+    }
+  };
+}
+
+const localListeners = new Set<() => void>();
+const remoteListeners = new Set<() => void>();
+
+export function subscribeLocalChanges(listener: () => void) {
+  localListeners.add(listener);
+  return () => localListeners.delete(listener);
+}
+
+export function subscribeRemoteChanges(listener: () => void) {
+  remoteListeners.add(listener);
+  return () => remoteListeners.delete(listener);
+}
+
+function notify(listeners: Set<() => void>) {
+  for (const listener of listeners) listener();
+}
+
+export async function addReceipt(input: ReceiptInput, image?: ReceiptImage) {
   const now = new Date().toISOString();
   const receipt: Receipt = {
     ...input,
     id: crypto.randomUUID(),
     createdAt: now,
     updatedAt: now,
+    imageMimeType: image?.mimeType,
+    dirty: true,
   };
-  await withStore("readwrite", (store) => store.add(receipt));
+  await transact(["receipts", "images"], "readwrite", (tx) => {
+    tx.objectStore("receipts").add(receipt);
+    if (image) tx.objectStore("images").put(image.blob, receipt.id);
+    return () => undefined;
+  });
+  notify(localListeners);
   return receipt;
 }
 
-export async function updateReceipt(receipt: Receipt, input: ReceiptInput) {
-  const updated: Receipt = {
-    ...receipt,
-    ...input,
-    updatedAt: new Date().toISOString(),
-  };
-  await withStore("readwrite", (store) => store.put(updated));
+export async function updateReceipt(id: string, input: ReceiptInput) {
+  const updated = await transact(["receipts", "images"], "readwrite", (tx) => {
+    let next: Receipt | undefined;
+    modifyReceipt(tx, id, (current) => {
+      if (!current) return "keep";
+      next = {
+        ...current,
+        ...input,
+        updatedAt: new Date().toISOString(),
+        dirty: true,
+      };
+      return next;
+    });
+    return () => next;
+  });
+  if (!updated) throw new Error("明細が見つかりません。");
+  notify(localListeners);
   return updated;
 }
 
@@ -102,7 +212,7 @@ export function compareReceiptsOldestFirst(a: Receipt, b: Receipt) {
 }
 
 export async function listReceiptsBetween(from: YearMonth, to: YearMonth) {
-  const receipts = await withStore("readonly", (store) =>
+  const receipts = await withStore("receipts", "readonly", (store) =>
     store.index("date").getAll(IDBKeyRange.bound(`${from}-01`, `${to}-31`)),
   );
   return (receipts as Receipt[]).sort(compareReceiptsOldestFirst);
@@ -113,12 +223,119 @@ export function listReceiptsByMonth(month: YearMonth) {
 }
 
 export async function listAllReceipts() {
-  const receipts = await withStore("readonly", (store) => store.getAll());
+  const receipts = await withStore("receipts", "readonly", (store) =>
+    store.getAll(),
+  );
   return (receipts as Receipt[]).sort(compareReceiptsOldestFirst);
 }
 
 export async function deleteReceipt(id: string) {
-  await withStore("readwrite", (store) => store.delete(id));
+  await transact(["receipts", "images", "deletions"], "readwrite", (tx) => {
+    modifyReceipt(tx, id, (current) => {
+      if (current?.fileId || current?.imageFileId) {
+        const { fileId, imageFileId } = current;
+        tx.objectStore("deletions").put({ id, fileId, imageFileId });
+      }
+      return "delete";
+    });
+    return () => undefined;
+  });
+  notify(localListeners);
+}
+
+export async function getLocalImage(id: string) {
+  const blob = await withStore("images", "readonly", (store) => store.get(id));
+  return blob instanceof Blob ? blob : undefined;
+}
+
+export async function putLocalImage(id: string, blob: Blob) {
+  await withStore("images", "readwrite", (store) => store.put(blob, id));
+}
+
+export async function listDeletions() {
+  const deletions = await withStore("deletions", "readonly", (store) =>
+    store.getAll(),
+  );
+  return deletions as Deletion[];
+}
+
+export async function clearDeletion(id: string) {
+  await withStore("deletions", "readwrite", (store) => store.delete(id));
+}
+
+export async function markPushed(
+  pushed: Receipt,
+  patch: Pick<Receipt, "fileId" | "imageFileId" | "driveModifiedTime">,
+) {
+  return transact(["receipts", "images"], "readwrite", (tx) => {
+    let stillStored = false;
+    modifyReceipt(tx, pushed.id, (current) => {
+      if (!current) return "keep";
+      stillStored = true;
+      return {
+        ...current,
+        ...patch,
+        dirty: current.updatedAt !== pushed.updatedAt,
+      };
+    });
+    return () => stillStored;
+  });
+}
+
+export async function applyRemoteReceipts(receipts: Receipt[]) {
+  if (!receipts.length) return;
+  await transact(["receipts", "images"], "readwrite", (tx) => {
+    for (const remote of receipts) {
+      modifyReceipt(tx, remote.id, (current) =>
+        current?.dirty ? "keep" : remote,
+      );
+    }
+    return () => undefined;
+  });
+  notify(remoteListeners);
+}
+
+export async function applyRemoteDeletions(ids: string[]) {
+  if (!ids.length) return [];
+  const detached = await transact(["receipts", "images"], "readwrite", (tx) => {
+    const detached: string[] = [];
+    for (const id of ids) {
+      modifyReceipt(tx, id, (current) => {
+        if (!current?.dirty) return "delete";
+        detached.push(id);
+        return { ...current, fileId: undefined, driveModifiedTime: undefined };
+      });
+    }
+    return () => detached;
+  });
+  notify(remoteListeners);
+  return detached;
+}
+
+export async function forgetDriveReceipts() {
+  await transact(["receipts", "images", "deletions"], "readwrite", (tx) => {
+    const receipts = tx.objectStore("receipts");
+    const request = receipts.getAll();
+    request.onsuccess = () => {
+      for (const receipt of request.result as Receipt[]) {
+        if (!receipt.fileId && !receipt.imageFileId) continue;
+        if (receipt.dirty) {
+          receipts.put({
+            ...receipt,
+            fileId: undefined,
+            imageFileId: undefined,
+            driveModifiedTime: undefined,
+          });
+        } else {
+          receipts.delete(receipt.id);
+          tx.objectStore("images").delete(receipt.id);
+        }
+      }
+    };
+    tx.objectStore("deletions").clear();
+    return () => undefined;
+  });
+  notify(remoteListeners);
 }
 
 function normalizeForSearch(text: string) {

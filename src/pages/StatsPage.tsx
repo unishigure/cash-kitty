@@ -11,6 +11,7 @@ import {
 import { ReceiptPanel } from "@/components/receipt/ReceiptPanel";
 import { StatsSection } from "@/components/stats/StatsSection";
 import { ComparisonTile, StatTile } from "@/components/stats/StatTile";
+import { useReceiptsRevision } from "@/hooks/useDrive";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import {
   daysInMonth,
@@ -59,6 +60,7 @@ export function StatsPage() {
   const [allReceipts, setAllReceipts] = useState<Receipt[]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const revision = useReceiptsRevision();
 
   useEffect(() => {
     let cancelled = false;
@@ -79,7 +81,7 @@ export function StatsPage() {
     return () => {
       cancelled = true;
     };
-  }, [month]);
+  }, [month, revision]);
 
   useEffect(() => {
     if (!allPeriods) return;
@@ -94,7 +96,7 @@ export function StatsPage() {
     return () => {
       cancelled = true;
     };
-  }, [allPeriods]);
+  }, [allPeriods, revision]);
 
   const previousMonth = shiftMonth(month, -1);
   const lastYearMonth = shiftMonth(month, -12);

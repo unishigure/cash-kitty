@@ -1,11 +1,12 @@
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
+import { Notice } from "@/components/Notice";
 import {
   type Draft,
   emptyDraft,
   parseDraft,
   ReceiptFields,
 } from "@/components/receipt/ReceiptFields";
-import { Notice } from "@/components/Notice";
+import { compressImage } from "@/lib/image";
 import { addReceipt } from "@/lib/receipt";
 import { checkModelAvailability, extractReceipt } from "@/lib/receipt-ai";
 import {
@@ -150,7 +151,8 @@ export function ImportPage() {
 
     setSaving(true);
     try {
-      const receipt = await addReceipt(parsed.input);
+      const image = file && imageReady ? await compressImage(file) : undefined;
+      const receipt = await addReceipt(parsed.input, image);
       reset();
       setStatus({
         tone: "success",
