@@ -22,8 +22,8 @@ const statusChips: Record<
   DriveState["status"],
   { label: string; hue: ChipHue }
 > = {
-  unconfigured: { label: "利用不可", hue: "red" },
-  disconnected: { label: "未接続", hue: "gray" },
+  unconfigured: { label: "利用不可", hue: "gray" },
+  disconnected: { label: "未接続", hue: "red" },
   connecting: { label: "接続中…", hue: "blue" },
   connected: { label: "接続済み", hue: "green" },
 };

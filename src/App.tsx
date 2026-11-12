@@ -1,5 +1,6 @@
 import "@/style.css";
 import { useEffect, useSyncExternalStore } from "react";
+import { SettingsLink } from "@/components/settings/SettingsLink";
 import { FixedCostToggle } from "@/components/stats/FixedCostToggle";
 import { Icon } from "@/components/ui/Icon";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -114,14 +115,11 @@ export function App() {
           </nav>
           <div className="-mr-2 ml-auto flex items-center gap-2">
             {current === statsRoute && <FixedCostToggle />}
-            <a
+            <SettingsLink
               href={settingsRoute.hash}
-              className="flex size-12 items-center justify-center rounded-8 text-solid-gray-800 hover:bg-solid-gray-50 focus-visible:focus-ring aria-[current=page]:text-key-900"
-              aria-label={settingsRoute.label}
-              aria-current={current === settingsRoute ? "page" : undefined}
-            >
-              <Icon name="gear" />
-            </a>
+              label={settingsRoute.label}
+              current={current === settingsRoute}
+            />
           </div>
         </div>
       </header>

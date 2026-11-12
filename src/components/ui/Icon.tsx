@@ -11,6 +11,9 @@ const paths = {
   chevronDown: "M5 9l7 7 7-7",
   check: "M5 12l5 5 9-10",
   close: "M6 6l12 12M18 6L6 18",
+  cloud: "M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z",
+  cloudOff:
+    "M2 2l20 20M5.78 5.78A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.31-.19M21.53 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7 7 0 0 0 10 5.07",
 };
 
 export type IconName = keyof typeof paths;
