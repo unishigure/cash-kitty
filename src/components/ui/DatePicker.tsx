@@ -88,6 +88,7 @@ export function DatePicker({
         {fields.map(({ key, label, width, maxLength }) => (
           <label key={key} className="flex items-center">
             <input
+              name={key}
               className={`h-full ${width} rounded-8 text-std-16N-170 focus:border-solid-gray-600 border border-transparent bg-transparent pr-3 text-right tabular-nums disabled:cursor-not-allowed`}
               type="text"
               inputMode="numeric"

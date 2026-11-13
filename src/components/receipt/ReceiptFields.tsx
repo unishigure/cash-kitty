@@ -103,6 +103,7 @@ export function ReceiptFields({
           <Required />
         </span>
         <input
+          name="storeName"
           className={inputClass}
           type="text"
           required
@@ -116,6 +117,7 @@ export function ReceiptFields({
           <Required />
         </span>
         <input
+          name="totalAmount"
           className={`${inputClass} text-right tabular-nums`}
           type="number"
           inputMode="numeric"
@@ -145,6 +147,7 @@ export function ReceiptFields({
       <label className={labelClass}>
         メモ
         <textarea
+          name="memo"
           className={`${inputClass} resize-y`}
           rows={2}
           value={draft.memo}

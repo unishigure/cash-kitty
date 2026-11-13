@@ -92,6 +92,7 @@ export function ReceiptPanel({
       <div className="relative">
         <input
           ref={searchRef}
+          name="q"
           className={`${inputClass} pr-12 [&::-webkit-search-cancel-button]:appearance-none`}
           type="search"
           placeholder="店名・メモで検索"

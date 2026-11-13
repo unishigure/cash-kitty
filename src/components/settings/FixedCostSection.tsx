@@ -31,6 +31,8 @@ export function FixedCostSection() {
         <Choice
           key={category}
           type="checkbox"
+          name="fixedCostCategories"
+          value={category}
           checked={fixedCosts.categories.includes(category)}
           onChange={(event) => toggle(category, event.target.checked)}
         >

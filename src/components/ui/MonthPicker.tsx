@@ -30,6 +30,7 @@ export function MonthPicker({
       </button>
       <div className="relative min-w-0 flex-1">
         <input
+          name="month"
           className={`${inputClass} block min-w-0 appearance-none [&::-webkit-date-and-time-value]:min-w-0 [&::-webkit-date-and-time-value]:text-left`}
           type="month"
           aria-label={

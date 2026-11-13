@@ -106,6 +106,7 @@ export function Calendar({
     <div className="grid w-max max-w-full">
       <div className="flex gap-2 p-4">
         <Select
+          name="year"
           aria-label="年"
           value={year}
           onChange={(event) =>
