@@ -1,4 +1,5 @@
 import { useId } from "react";
+
 import { Icon } from "@/components/ui/Icon";
 
 // https://design.digital.go.jp/dads/components/switch/ の on-off
@@ -17,7 +18,7 @@ export function Switch({
     <span className="inline-flex items-center gap-2">
       <label
         htmlFor={id}
-        className="cursor-pointer text-dns-16N-130 whitespace-nowrap text-solid-gray-800 select-none"
+        className="text-dns-16N-130 text-solid-gray-800 cursor-pointer whitespace-nowrap select-none"
       >
         {label}
       </label>
@@ -30,10 +31,10 @@ export function Switch({
         onClick={() => onChange(!checked)}
       >
         <span
-          className="block w-14 rounded-full border-2 border-solid-gray-600 bg-white p-1 group-hover:border-black group-hover:shadow-[0_0_0_4px_var(--color-solid-gray-420)] group-active:shadow-[0_0_0_6px_var(--color-solid-gray-600)] group-aria-checked:border-key-900 group-aria-checked:bg-key-50 group-aria-checked:group-hover:border-key-1100 forced-colors:border-[ButtonText] forced-colors:group-aria-checked:border-[Highlight]"
+          className="border-solid-gray-600 group-aria-checked:border-key-900 group-aria-checked:bg-key-50 group-aria-checked:group-hover:border-key-1100 block w-14 rounded-full border-2 bg-white p-1 group-hover:border-black group-hover:shadow-[0_0_0_4px_var(--color-solid-gray-420)] group-active:shadow-[0_0_0_6px_var(--color-solid-gray-600)] forced-colors:border-[ButtonText] forced-colors:group-aria-checked:border-[Highlight]"
           aria-hidden="true"
         >
-          <span className="block size-6 rounded-full bg-solid-gray-800 text-white group-hover:bg-black group-aria-checked:ml-auto group-aria-checked:bg-key-900 group-aria-checked:group-hover:bg-key-1100 forced-colors:bg-[ButtonText] forced-colors:group-aria-checked:bg-[Highlight]">
+          <span className="bg-solid-gray-800 group-aria-checked:bg-key-900 group-aria-checked:group-hover:bg-key-1100 block size-6 rounded-full text-white group-hover:bg-black group-aria-checked:ml-auto forced-colors:bg-[ButtonText] forced-colors:group-aria-checked:bg-[Highlight]">
             {checked && (
               <Icon name="check" className="size-6 p-1" strokeWidth={3} />
             )}

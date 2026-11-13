@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot, type Root } from "react-dom/client";
+
 import { App } from "@/App";
 import { startDrive } from "@/lib/drive/sync";
 import { applyTheme } from "@/lib/ui/theme";

@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { CategoryBreakdown } from "@/components/charts/CategoryBreakdown";
 import { DailyHeatmap } from "@/components/charts/DailyHeatmap";
 import { MonthlyBarChart } from "@/components/charts/MonthlyBarChart";

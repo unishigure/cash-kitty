@@ -1,4 +1,5 @@
 import { useId, useRef, useState } from "react";
+
 import { Calendar } from "@/components/ui/Calendar";
 import { Icon } from "@/components/ui/Icon";
 import { iconButtonClass } from "@/lib/ui/styles";
@@ -82,12 +83,12 @@ export function DatePicker({
   return (
     <div className="flex w-fit items-center gap-4 [anchor-name:--date-picker]">
       <div
-        className={`flex h-12 w-fit rounded-8 border bg-white p-0.5 pr-4 hover:border-solid-gray-900 focus-within:border-black has-disabled:border-solid-gray-300 has-disabled:bg-solid-gray-50 has-disabled:text-solid-gray-420 ${invalid ? "border-error-1" : "border-solid-gray-600"}`}
+        className={`rounded-8 hover:border-solid-gray-900 has-disabled:border-solid-gray-300 has-disabled:bg-solid-gray-50 has-disabled:text-solid-gray-420 flex h-12 w-fit border bg-white p-0.5 pr-4 focus-within:border-black ${invalid ? "border-error-1" : "border-solid-gray-600"}`}
       >
         {fields.map(({ key, label, width, maxLength }) => (
           <label key={key} className="flex items-center">
             <input
-              className={`h-full ${width} rounded-8 border border-transparent bg-transparent pr-3 text-right text-std-16N-170 tabular-nums focus:border-solid-gray-600 disabled:cursor-not-allowed`}
+              className={`h-full ${width} rounded-8 text-std-16N-170 focus:border-solid-gray-600 border border-transparent bg-transparent pr-3 text-right tabular-nums disabled:cursor-not-allowed`}
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
@@ -103,7 +104,7 @@ export function DatePicker({
                 })
               }
             />
-            <span className="px-1 text-std-16N-170">{label}</span>
+            <span className="text-std-16N-170 px-1">{label}</span>
           </label>
         ))}
       </div>
@@ -123,7 +124,7 @@ export function DatePicker({
         popover="auto"
         role="dialog"
         aria-label="カレンダー"
-        className="m-0 mt-2 max-w-[calc(100vw-1rem)] overflow-x-auto rounded-8 border border-solid-gray-420 bg-white p-0 text-solid-gray-800 shadow-1 inset-auto [position-anchor:--date-picker] [position-area:bottom_span-right] [position-try-fallbacks:bottom,flip-block,top]"
+        className="rounded-8 border-solid-gray-420 text-solid-gray-800 shadow-1 inset-auto m-0 mt-2 max-w-[calc(100vw-1rem)] overflow-x-auto border bg-white p-0 [position-anchor:--date-picker] [position-area:bottom_span-right] [position-try-fallbacks:bottom,flip-block,top]"
         onToggle={(event) => setOpen(event.newState === "open")}
       >
         {open && (

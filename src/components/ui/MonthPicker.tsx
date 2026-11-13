@@ -44,7 +44,7 @@ export function MonthPicker({
         />
         {!month && (
           <span
-            className="pointer-events-none absolute inset-y-px left-px flex items-center rounded-l-8 bg-white pl-4"
+            className="rounded-l-8 pointer-events-none absolute inset-y-px left-px flex items-center bg-white pl-4"
             style={{ right: "2.5rem" }}
             aria-hidden="true"
           >

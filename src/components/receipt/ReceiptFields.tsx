@@ -1,7 +1,8 @@
 import { useId, useState } from "react";
+
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Select } from "@/components/ui/Select";
-import { type Category, categories } from "@/lib/receipt/category";
+import { categories, type Category } from "@/lib/receipt/category";
 import type { Receipt, ReceiptInput } from "@/lib/receipt/receipt";
 import { inputClass } from "@/lib/ui/styles";
 import { today } from "@/lib/utils/date";
@@ -10,7 +11,7 @@ const labelClass = "grid gap-1 text-std-16B-170 text-solid-gray-800";
 
 function Required() {
   return (
-    <span className="ml-1 text-dns-14N-130 font-normal text-error-1">
+    <span className="text-dns-14N-130 text-error-1 ml-1 font-normal">
       ※必須
     </span>
   );
@@ -86,7 +87,7 @@ export function ReceiptFields({
   return (
     <>
       <fieldset>
-        <legend className="mb-1 text-std-16B-170 text-solid-gray-800">
+        <legend className="text-std-16B-170 text-solid-gray-800 mb-1">
           日付
           <Required />
         </legend>

@@ -52,7 +52,7 @@ export function SettingsLink({
       {indicator && (
         <a
           href={href}
-          className="hidden min-h-8 items-center gap-1 rounded-8 border px-[calc(7/16*1rem)] text-oln-14N-100 whitespace-nowrap hover:underline focus-visible:focus-ring md:inline-flex"
+          className="rounded-8 text-oln-14N-100 focus-visible:focus-ring hidden min-h-8 items-center gap-1 border px-[calc(7/16*1rem)] whitespace-nowrap hover:underline md:inline-flex"
           style={{
             backgroundColor: `var(--category-${indicator.hue}-bg)`,
             borderColor: `var(--category-${indicator.hue}-border)`,
@@ -67,14 +67,14 @@ export function SettingsLink({
       )}
       <a
         href={href}
-        className="relative flex size-12 items-center justify-center rounded-8 text-solid-gray-800 hover:bg-solid-gray-50 focus-visible:focus-ring aria-[current=page]:text-key-900"
+        className="rounded-8 text-solid-gray-800 hover:bg-solid-gray-50 focus-visible:focus-ring aria-[current=page]:text-key-900 relative flex size-12 items-center justify-center"
         aria-label={indicator?.attention ? `${label}（${status}）` : label}
         aria-current={current ? "page" : undefined}
       >
         <Icon name="gear" />
         {indicator?.attention && (
           <span
-            className="absolute top-2.5 right-2.5 size-3 rounded-full border-2 border-white bg-error-1"
+            className="bg-error-1 absolute top-2.5 right-2.5 size-3 rounded-full border-2 border-white"
             aria-hidden="true"
           />
         )}

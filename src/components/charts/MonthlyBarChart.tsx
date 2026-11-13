@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { ChartTooltip, TooltipRow } from "@/components/charts/ChartTooltip";
 import { useElementWidth } from "@/hooks/useElementWidth";
 import {
@@ -131,7 +132,7 @@ export function MonthlyBarChart({
         <button
           key={datum.month}
           type="button"
-          className="absolute cursor-pointer rounded-4"
+          className="rounded-4 absolute cursor-pointer"
           style={{
             left: centerX(index) - band / 2,
             top: margin.top,

@@ -1,3 +1,7 @@
+[fmt]
+sortPackageJson = true
+sortImports = true
+sortTailwindcss = true
 
 [serve.static]
 plugins = ["bun-plugin-tailwind"]

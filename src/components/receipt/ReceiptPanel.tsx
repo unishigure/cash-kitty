@@ -1,4 +1,5 @@
 import { useId, useRef } from "react";
+
 import { CategoryChip } from "@/components/receipt/CategoryChip";
 import { Icon } from "@/components/ui/Icon";
 import type { Category } from "@/lib/receipt/category";
@@ -16,13 +17,13 @@ function FilterChip({
 }) {
   return (
     <li
-      className={`flex min-h-8 items-center gap-1 rounded-full border border-key-900 bg-key-50 text-dns-14B-120 text-key-1000 ${onClear ? "pr-1 pl-3" : "px-3"}`}
+      className={`border-key-900 bg-key-50 text-dns-14B-120 text-key-1000 flex min-h-8 items-center gap-1 rounded-full border ${onClear ? "pr-1 pl-3" : "px-3"}`}
     >
       {label}
       {onClear && (
         <button
           type="button"
-          className="grid size-6 cursor-pointer place-items-center rounded-full hover:bg-key-200"
+          className="hover:bg-key-200 grid size-6 cursor-pointer place-items-center rounded-full"
           aria-label={`${label}の絞り込みを解除`}
           onClick={onClear}
         >
@@ -101,7 +102,7 @@ export function ReceiptPanel({
         {query && (
           <button
             type="button"
-            className="absolute inset-y-0 right-1 my-auto grid size-10 cursor-pointer place-items-center rounded-full text-solid-gray-600 hover:bg-solid-gray-50 hover:text-solid-gray-900"
+            className="text-solid-gray-600 hover:bg-solid-gray-50 hover:text-solid-gray-900 absolute inset-y-0 right-1 my-auto grid size-10 cursor-pointer place-items-center rounded-full"
             aria-label="検索語を消去"
             title="検索語を消去"
             onClick={() => {
@@ -120,32 +121,32 @@ export function ReceiptPanel({
         </p>
       ) : (
         <ul
-          className={`-mx-4 border-t border-solid-gray-420 px-4 md:-mx-6 md:px-6 ${sticky ? "overflow-y-auto" : ""}`}
+          className={`border-solid-gray-420 -mx-4 border-t px-4 md:-mx-6 md:px-6 ${sticky ? "overflow-y-auto" : ""}`}
         >
           {receipts.map((receipt) => (
             <li
               key={receipt.id}
-              className="relative -mx-4 flex items-baseline gap-3 border-b border-solid-gray-200 px-4 py-3 text-dns-16N-130 hover:bg-solid-gray-50 has-[button:focus-visible]:focus-ring-inset md:-mx-6 md:px-6"
+              className="border-solid-gray-200 text-dns-16N-130 hover:bg-solid-gray-50 has-[button:focus-visible]:focus-ring-inset relative -mx-4 flex items-baseline gap-3 border-b px-4 py-3 md:-mx-6 md:px-6"
             >
-              <span className="w-22 shrink-0 text-dns-14N-130 text-solid-gray-600 tabular-nums">
+              <span className="text-dns-14N-130 text-solid-gray-600 w-22 shrink-0 tabular-nums">
                 {receipt.date}
               </span>
               <span className="min-w-0 flex-1">
                 <button
                   type="button"
-                  className="block w-full cursor-pointer truncate text-left text-solid-gray-900 underline-offset-[3px] outline-none after:absolute after:inset-0 hover:underline focus-visible:shadow-none"
+                  className="text-solid-gray-900 block w-full cursor-pointer truncate text-left underline-offset-[3px] outline-none after:absolute after:inset-0 hover:underline focus-visible:shadow-none"
                   onClick={() => onOpen(receipt)}
                 >
                   {receipt.storeName}
                 </button>
-                <span className="mt-2 flex items-center gap-2 text-dns-14N-120 text-solid-gray-600">
+                <span className="text-dns-14N-120 text-solid-gray-600 mt-2 flex items-center gap-2">
                   <CategoryChip category={receipt.category} size="sm" />
                   {receipt.memo && (
                     <span className="truncate">{receipt.memo}</span>
                   )}
                 </span>
               </span>
-              <span className="shrink-0 font-bold text-solid-gray-900 tabular-nums">
+              <span className="text-solid-gray-900 shrink-0 font-bold tabular-nums">
                 {formatYen(receipt.totalAmount)}
               </span>
             </li>

@@ -1,4 +1,5 @@
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+
 import { Icon } from "@/components/ui/Icon";
 import { Select } from "@/components/ui/Select";
 import { buttonClass, iconButtonClass } from "@/lib/ui/styles";
@@ -127,7 +128,7 @@ export function Calendar({
           >
             <Icon name="chevronLeft" className="size-5" />
           </button>
-          <p className="w-14 text-center text-std-16N-170" aria-live="polite">
+          <p className="text-std-16N-170 w-14 text-center" aria-live="polite">
             {month + 1}月
           </p>
           <button
@@ -154,7 +155,7 @@ export function Calendar({
               <th
                 key={weekday}
                 scope="col"
-                className="size-12 p-0 text-center text-std-16B-170 text-solid-gray-700"
+                className="text-std-16B-170 text-solid-gray-700 size-12 p-0 text-center"
               >
                 {weekday}
               </th>
@@ -170,10 +171,10 @@ export function Calendar({
                   <td key={date.getTime()} className="p-0">
                     {date.getMonth() === month && (
                       <button
-                        className={`m-1 grid size-10 cursor-pointer place-items-center rounded-full text-std-16N-170 tabular-nums underline-offset-[3px] ${
+                        className={`text-std-16N-170 m-1 grid size-10 cursor-pointer place-items-center rounded-full tabular-nums underline-offset-[3px] ${
                           isSelected
                             ? "bg-key-900 text-white"
-                            : "hover:border hover:border-black hover:bg-solid-gray-50 hover:underline active:bg-solid-gray-100"
+                            : "hover:bg-solid-gray-50 active:bg-solid-gray-100 hover:border hover:border-black hover:underline"
                         }`}
                         type="button"
                         tabIndex={isSameDay(date, focused) ? 0 : -1}
@@ -195,7 +196,7 @@ export function Calendar({
 
       <div className="flex items-center justify-between gap-4 p-4">
         <button
-          className="min-h-10 cursor-pointer rounded-8 px-3 text-oln-16B-100 text-key-900 underline underline-offset-[3px] hover:bg-key-50 hover:decoration-[3px]"
+          className="rounded-8 text-oln-16B-100 text-key-900 hover:bg-key-50 min-h-10 cursor-pointer px-3 underline underline-offset-[3px] hover:decoration-[3px]"
           type="button"
           onClick={() => onSelect(undefined)}
         >

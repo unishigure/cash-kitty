@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+
 import { Icon } from "@/components/ui/Icon";
 
 const toneClass = {
@@ -33,7 +34,7 @@ export function HelpPopover({
       <span
         id={id}
         popover="auto"
-        className="m-0 mt-1 max-w-[min(20rem,calc(100vw-2rem))] rounded-8 border border-solid-gray-420 bg-white p-3 text-dns-16N-130 font-normal text-solid-gray-800 shadow-2 inset-auto [position-area:bottom] [position-try-fallbacks:flip-block]"
+        className="rounded-8 border-solid-gray-420 text-dns-16N-130 text-solid-gray-800 shadow-2 inset-auto m-0 mt-1 max-w-[min(20rem,calc(100vw-2rem))] border bg-white p-3 font-normal [position-area:bottom] [position-try-fallbacks:flip-block]"
         style={{ positionAnchor: anchor }}
       >
         {children}

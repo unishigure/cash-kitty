@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
+
 import { CategoryChip } from "@/components/receipt/CategoryChip";
 import { ModalDialog } from "@/components/ui/ModalDialog";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
@@ -74,7 +75,7 @@ export function ReceiptDetailDialog({
           >
             {receipt.storeName}
           </h2>
-          <p className="text-right text-std-32B-150 text-solid-gray-900 tabular-nums">
+          <p className="text-std-32B-150 text-solid-gray-900 text-right tabular-nums">
             {formatYen(receipt.totalAmount)}
           </p>
         </div>
@@ -82,7 +83,7 @@ export function ReceiptDetailDialog({
         {image.url && (
           <a href={image.url} target="_blank" rel="noopener">
             <img
-              className="mx-auto max-h-80 max-w-full rounded-8 border border-solid-gray-200 object-contain"
+              className="rounded-8 border-solid-gray-200 mx-auto max-h-80 max-w-full border object-contain"
               src={image.url}
               alt={`${receipt.storeName}のレシート画像`}
             />
@@ -92,14 +93,14 @@ export function ReceiptDetailDialog({
           <p className="text-dns-14N-130 text-solid-gray-600">{image.error}</p>
         )}
 
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 border-t border-solid-gray-420 pt-4">
+        <dl className="border-solid-gray-420 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 border-t pt-4">
           {rows.map(([label, value]) => (
             <div key={label} className="contents">
               <dt className="text-dns-16B-130 text-solid-gray-700">{label}</dt>
               <dd className="text-right">{value}</dd>
             </div>
           ))}
-          <dt className="col-span-2 text-dns-16B-130 text-solid-gray-700">
+          <dt className="text-dns-16B-130 text-solid-gray-700 col-span-2">
             メモ
           </dt>
           <dd className="col-span-2 wrap-anywhere whitespace-pre-wrap">

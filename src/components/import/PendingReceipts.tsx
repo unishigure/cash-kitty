@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useObjectUrl } from "@/hooks/useObjectUrl";
 import { loadReceiptImage } from "@/lib/drive/sync";
@@ -29,7 +30,7 @@ function PendingThumbnail({ receipt }: { receipt: Receipt }) {
   );
 
   return (
-    <div className="grid aspect-3/4 place-items-center overflow-hidden rounded-8 border border-solid-gray-200 bg-solid-gray-50">
+    <div className="rounded-8 border-solid-gray-200 bg-solid-gray-50 grid aspect-3/4 place-items-center overflow-hidden border">
       {url ? (
         <img
           className="size-full object-cover"
@@ -37,7 +38,7 @@ function PendingThumbnail({ receipt }: { receipt: Receipt }) {
           alt={`${formatFullDate(receipt.date)} に撮影したレシート`}
         />
       ) : (
-        <span className="p-2 text-center text-dns-14N-130 text-solid-gray-600">
+        <span className="text-dns-14N-130 text-solid-gray-600 p-2 text-center">
           {failed ? "画像を読み込めません" : "読み込み中…"}
         </span>
       )}

@@ -5,6 +5,7 @@ import {
   useEffectEvent,
   useRef,
 } from "react";
+
 import { useObjectUrl } from "@/hooks/useObjectUrl";
 import { errorStatus, type Status } from "@/lib/ui/status";
 import { buttonClass, cardClass, cardLegendClass } from "@/lib/ui/styles";
@@ -95,7 +96,7 @@ export function ReceiptImagePicker({
       <input
         ref={inputRef}
         id="receipt-image"
-        className="w-full cursor-pointer rounded-8 border border-dashed border-solid-gray-600 bg-solid-gray-50 p-4 text-dns-16N-130 hover:border-black disabled:cursor-not-allowed file:mr-3 file:min-h-12 file:cursor-pointer file:rounded-8 file:border file:border-key-900 file:bg-white file:px-4 file:text-oln-16B-100 file:text-key-900 hover:file:bg-key-200 disabled:file:cursor-not-allowed"
+        className="rounded-8 border-solid-gray-600 bg-solid-gray-50 text-dns-16N-130 file:rounded-8 file:border-key-900 file:text-oln-16B-100 file:text-key-900 hover:file:bg-key-200 w-full cursor-pointer border border-dashed p-4 file:mr-3 file:min-h-12 file:cursor-pointer file:border file:bg-white file:px-4 hover:border-black disabled:cursor-not-allowed disabled:file:cursor-not-allowed"
         type="file"
         accept="image/*"
         disabled={disabled}
@@ -113,7 +114,7 @@ export function ReceiptImagePicker({
       )}
       {previewUrl && (
         <img
-          className="max-h-120 max-w-full justify-self-center rounded-8 border border-solid-gray-200 object-contain"
+          className="rounded-8 border-solid-gray-200 max-h-120 max-w-full justify-self-center border object-contain"
           src={previewUrl}
           alt="選択したレシートのプレビュー"
           hidden={!ready}
