@@ -32,7 +32,9 @@ export function isCategory(value: unknown): value is Category {
 
 export function toCategory(value: unknown): Category {
   if (isCategory(value)) return value;
-  if (typeof value !== "string") return "その他";
+  if (typeof value !== "string" || !Object.hasOwn(legacyCategories, value)) {
+    return "その他";
+  }
   return legacyCategories[value] ?? "その他";
 }
 
