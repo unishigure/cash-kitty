@@ -88,46 +88,50 @@ export function ReceiptImagePicker({
   }
 
   return (
-    <fieldset className={`grid gap-4 ${cardClass}`}>
-      <legend className={`flex items-center gap-1 ${cardLegendClass}`}>
-        <label htmlFor="receipt-image">レシート画像</label>
-        {notice}
-      </legend>
-      <input
-        ref={inputRef}
-        id="receipt-image"
-        className="rounded-8 border-solid-gray-600 bg-solid-gray-50 text-dns-16N-130 file:rounded-8 file:border-key-900 file:text-oln-16B-100 file:text-key-900 hover:file:bg-key-200 w-full cursor-pointer border border-dashed p-4 file:mr-3 file:min-h-12 file:cursor-pointer file:border file:bg-white file:px-4 hover:border-black disabled:cursor-not-allowed disabled:file:cursor-not-allowed"
-        type="file"
-        accept="image/*"
-        disabled={disabled}
-        onChange={handleImageChange}
-      />
-      {canReadClipboard && (
-        <button
-          className={`${buttonClass} justify-self-center`}
-          type="button"
+    <div className={cardClass}>
+      <fieldset className="grid min-w-0 gap-4">
+        <legend className={cardLegendClass}>
+          <span className="flex items-center gap-1">
+            <label htmlFor="receipt-image">レシート画像</label>
+            {notice}
+          </span>
+        </legend>
+        <input
+          ref={inputRef}
+          id="receipt-image"
+          className="rounded-8 border-solid-gray-600 bg-solid-gray-50 text-dns-16N-130 file:rounded-8 file:border-key-900 file:text-oln-16B-100 file:text-key-900 hover:file:bg-key-200 w-full cursor-pointer border border-dashed p-4 file:mr-3 file:min-h-12 file:cursor-pointer file:border file:bg-white file:px-4 hover:border-black disabled:cursor-not-allowed disabled:file:cursor-not-allowed"
+          type="file"
+          accept="image/*"
           disabled={disabled}
-          onClick={() => void pasteFromClipboard()}
-        >
-          クリップボードから貼り付け
-        </button>
-      )}
-      {previewUrl && (
-        <img
-          className="rounded-8 border-solid-gray-200 max-h-120 max-w-full justify-self-center border object-contain"
-          src={previewUrl}
-          alt="選択したレシートのプレビュー"
-          hidden={!ready}
-          onLoad={onLoad}
-          onError={() =>
-            onError({
-              tone: "error",
-              text: "画像を読み込めません。別の画像を選択してください。",
-            })
-          }
+          onChange={handleImageChange}
         />
-      )}
-      {children}
-    </fieldset>
+        {canReadClipboard && (
+          <button
+            className={`${buttonClass} justify-self-center`}
+            type="button"
+            disabled={disabled}
+            onClick={() => void pasteFromClipboard()}
+          >
+            クリップボードから貼り付け
+          </button>
+        )}
+        {previewUrl && (
+          <img
+            className="rounded-8 border-solid-gray-200 max-h-120 max-w-full justify-self-center border object-contain"
+            src={previewUrl}
+            alt="選択したレシートのプレビュー"
+            hidden={!ready}
+            onLoad={onLoad}
+            onError={() =>
+              onError({
+                tone: "error",
+                text: "画像を読み込めません。別の画像を選択してください。",
+              })
+            }
+          />
+        )}
+        {children}
+      </fieldset>
+    </div>
   );
 }

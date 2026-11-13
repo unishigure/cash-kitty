@@ -264,11 +264,11 @@ export function ImportPage() {
           )}
         </ReceiptImagePicker>
 
-        <form onSubmit={handleSubmit}>
-          <fieldset
-            className={`grid gap-4 disabled:opacity-60 ${cardClass}`}
-            disabled={busy}
-          >
+        <form
+          className={`has-[fieldset:disabled]:opacity-60 ${cardClass}`}
+          onSubmit={handleSubmit}
+        >
+          <fieldset className="grid min-w-0 gap-4" disabled={busy}>
             <legend className={cardLegendClass}>内容の確認</legend>
             <ReceiptFields draft={draft} onChange={updateDraft} />
             <div className="flex justify-end gap-2">

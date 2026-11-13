@@ -10,12 +10,14 @@ export function ChoiceFieldset({
   children: ReactNode;
 }) {
   return (
-    <fieldset className={`grid gap-3 ${cardClass}`}>
-      <legend className="text-std-20B-150 text-solid-gray-900 float-left mb-1 flex w-full items-center gap-1">
-        {legend}
-      </legend>
-      <div className="flex flex-wrap gap-x-6">{children}</div>
-    </fieldset>
+    <div className={cardClass}>
+      <fieldset className="min-w-0">
+        <legend className="text-std-20B-150 text-solid-gray-900 mb-4 w-full">
+          <span className="flex items-center gap-1">{legend}</span>
+        </legend>
+        <div className="flex flex-wrap gap-x-6">{children}</div>
+      </fieldset>
+    </div>
   );
 }
 
