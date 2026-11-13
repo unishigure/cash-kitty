@@ -7,6 +7,7 @@ import {
   ReceiptFields,
   useDraft,
 } from "@/components/receipt/ReceiptFields";
+import { HelpPopover } from "@/components/ui/HelpPopover";
 import { Notice } from "@/components/ui/Notice";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { useReceiptsRevision } from "@/hooks/useDrive";
@@ -33,6 +34,7 @@ import {
 
 export function ImportPage() {
   const [modelReady, setModelReady] = useState(false);
+  const [modelUnavailable, setModelUnavailable] = useState(false);
   const [status, setStatus] = useState<Status>({
     tone: "info",
     text: "AI 読み取りの対応状況を確認中…",
@@ -55,10 +57,8 @@ export function ImportPage() {
     {
       onLoad: (availability) => {
         if (availability === "unsupported" || availability === "unavailable") {
-          setStatus({
-            tone: "info",
-            text: "この環境では AI 読み取りを利用できません。手動で登録、または写真のみ保存できます。保存した写真は AI 対応端末でまとめて読み取れます。",
-          });
+          setModelUnavailable(true);
+          setStatus({ tone: "neutral", text: "" });
           return;
         }
         setModelReady(true);
@@ -255,6 +255,20 @@ export function ImportPage() {
           onChange={selectImage}
           onLoad={handlePreviewLoad}
           onError={setStatus}
+          notice={
+            modelUnavailable && (
+              <HelpPopover
+                id="import-ai-unavailable"
+                label="AI 読み取りを利用できません"
+                tone="warning"
+              >
+                この環境では AI 読み取りを利用できません。
+                <br />
+                手動で登録、または写真のみ保存できます。保存した写真は AI
+                対応端末でまとめて読み取れます。
+              </HelpPopover>
+            )
+          }
         >
           {imageReady && (
             <div className="flex flex-wrap justify-end gap-2">

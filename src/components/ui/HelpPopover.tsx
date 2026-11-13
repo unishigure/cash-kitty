@@ -1,13 +1,20 @@
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 
+const toneClass = {
+  help: "text-solid-gray-700",
+  warning: "text-warning-orange-1",
+} as const;
+
 export function HelpPopover({
   id,
   label,
+  tone = "help",
   children,
 }: {
   id: string;
   label: string;
+  tone?: keyof typeof toneClass;
   children: ReactNode;
 }) {
   const anchor = `--${id}`;
@@ -16,12 +23,12 @@ export function HelpPopover({
     <>
       <button
         type="button"
-        className="grid size-10 cursor-pointer place-items-center rounded-full text-solid-gray-700 hover:bg-solid-gray-50 focus-visible:focus-ring"
+        className={`grid size-10 cursor-pointer place-items-center rounded-full ${toneClass[tone]} hover:bg-solid-gray-50 focus-visible:focus-ring`}
         style={{ anchorName: anchor }}
         aria-label={label}
         popoverTarget={id}
       >
-        <Icon name="help" />
+        <Icon name={tone} />
       </button>
       <span
         id={id}
