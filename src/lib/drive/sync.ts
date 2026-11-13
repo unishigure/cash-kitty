@@ -22,6 +22,7 @@ import {
   setLoginHint,
   signOut,
 } from "@/lib/drive/auth";
+import { isReceiptImageType, UnsupportedImageError } from "@/lib/receipt/image";
 import {
   applyRemoteDeletions,
   applyRemoteReceipts,
@@ -225,13 +226,8 @@ async function push(token: string, receipt: Receipt) {
   let { imageFileId } = receipt;
   if (!imageFileId) {
     const image = await getLocalImage(receipt.id);
-    if (image) {
-      imageFileId = await uploadImage(
-        token,
-        receipt,
-        image,
-        receipt.imageMimeType ?? image.type,
-      );
+    if (image && isReceiptImageType(image.type)) {
+      imageFileId = await uploadImage(token, receipt, image, image.type);
     }
   }
   const file = await saveReceiptFile(token, { ...receipt, imageFileId });
@@ -267,7 +263,7 @@ async function mapConcurrent<T, R>(
 
 export async function loadReceiptImage(receipt: Receipt) {
   const local = await getLocalImage(receipt.id);
-  if (local) return local;
+  if (local) return checkImageType(local);
   const { imageFileId } = receipt;
   if (!imageFileId) return undefined;
   if (store.get().status !== "connected") {
@@ -279,6 +275,12 @@ export async function loadReceiptImage(receipt: Receipt) {
     (token) => downloadFile(token, imageFileId),
     "defer",
   );
+  checkImageType(blob);
   await putLocalImage(receipt.id, blob);
+  return blob;
+}
+
+function checkImageType(blob: Blob) {
+  if (!isReceiptImageType(blob.type)) throw new UnsupportedImageError();
   return blob;
 }

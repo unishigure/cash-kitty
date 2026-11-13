@@ -1,4 +1,5 @@
 import { toCategory } from "@/lib/receipt/category";
+import { isReceiptImageType } from "@/lib/receipt/image";
 import type { Receipt } from "@/lib/receipt/receipt";
 
 const driveApi = "https://www.googleapis.com/drive/v3";
@@ -113,6 +114,7 @@ function parseReceipt(
   const amount = Number(raw.totalAmount);
   const date = (optionalText(raw.date) ?? createdAt).slice(0, 10);
   if (!datePattern.test(date)) return undefined;
+  const imageMimeType = optionalText(raw.imageMimeType);
   return {
     id: isUrlSafeId(raw.id) ? raw.id : file.id,
     date,
@@ -123,7 +125,9 @@ function parseReceipt(
     fullText: optionalText(raw.fullText),
     createdAt,
     updatedAt: optionalText(raw.updatedAt) ?? createdAt,
-    imageMimeType: optionalText(raw.imageMimeType),
+    imageMimeType: isReceiptImageType(imageMimeType)
+      ? imageMimeType
+      : undefined,
     fileId: file.id,
     imageFileId: isUrlSafeId(raw.imageFileId) ? raw.imageFileId : undefined,
     driveModifiedTime: file.modifiedTime,
@@ -180,6 +184,9 @@ export async function uploadImage(
   blob: Blob,
   mimeType: string,
 ) {
+  if (!isReceiptImageType(mimeType)) {
+    throw new Error(`対応していない画像形式です: ${mimeType}`);
+  }
   const metadata = {
     name: `image-${receipt.id}`,
     parents: ["appDataFolder"],
