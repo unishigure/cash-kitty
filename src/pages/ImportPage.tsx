@@ -15,7 +15,6 @@ import { useReceiptsRevision } from "@/hooks/useDrive";
 import { loadReceiptImage } from "@/lib/drive/sync";
 import { checkModelAvailability, extractReceipt } from "@/lib/receipt/ai";
 import { compressImage } from "@/lib/receipt/image";
-import { processPendingReceipts } from "@/lib/receipt/pending";
 import {
   addPendingReceipt,
   addReceipt,
@@ -45,13 +44,12 @@ export function ImportPage() {
   const [imageReady, setImageReady] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [processing, setProcessing] = useState(false);
   const [draft, setDraft, updateDraft] = useDraft(emptyDraft);
   const [pending, setPending] = useState<Receipt[]>([]);
   const [pendingRevision, setPendingRevision] = useState(0);
   const [editingPending, setEditingPending] = useState<Receipt>();
   const revision = useReceiptsRevision();
-  const busy = analyzing || saving || processing;
+  const busy = analyzing || saving;
 
   useAsyncEffect(
     checkModelAvailability,
@@ -63,13 +61,14 @@ export function ImportPage() {
           return;
         }
         setModelReady(true);
-        setStatus({
-          tone: "info",
-          text:
-            availability === "available"
-              ? "レシート画像を選択してください。"
-              : "レシート画像を選択してください。初回の読み取り時にモデルをダウンロードします。",
-        });
+        setStatus(
+          availability === "available"
+            ? { tone: "neutral", text: "" }
+            : {
+                tone: "info",
+                text: "初回の読み取り時にモデルをダウンロードします。",
+              },
+        );
       },
       onError: (error) => setStatus(errorStatus(error)),
     },
@@ -142,7 +141,7 @@ export function ImportPage() {
       reloadPending();
       setStatus({
         tone: "success",
-        text: "写真を保存しました。AI 対応端末でまとめて読み取れます。",
+        text: "写真を保存しました。AI 対応端末で読み取れます。",
       });
     } catch (error) {
       setStatus(errorStatus(error));
@@ -177,38 +176,6 @@ export function ImportPage() {
       setStatus({ tone: "success", text: "写真を削除しました。" });
     } catch (error) {
       setStatus(errorStatus(error));
-    }
-  }
-
-  async function extractAllPending() {
-    reset();
-    setProcessing(true);
-    try {
-      const { processed, failed } = await processPendingReceipts((progress) => {
-        setStatus({
-          tone: "info",
-          text:
-            progress.phase === "download"
-              ? `モデルをダウンロード中: ${Math.round(progress.ratio * 100)}%`
-              : `読み取り中…（${progress.done + 1} / ${progress.total} 件）`,
-        });
-      });
-      setStatus(
-        failed
-          ? {
-              tone: "error",
-              text: `${processed} 件を登録し、${failed} 件は読み取れませんでした。読み取れなかった写真は手動で入力してください。`,
-            }
-          : {
-              tone: "success",
-              text: `${processed} 件を登録しました。明細から内容を確認できます。`,
-            },
-      );
-    } catch (error) {
-      setStatus(errorStatus(error));
-    } finally {
-      setProcessing(false);
-      reloadPending();
     }
   }
 
@@ -266,7 +233,7 @@ export function ImportPage() {
                 この環境では AI 読み取りを利用できません。
                 <br />
                 手動で登録、または写真のみ保存できます。保存した写真は AI
-                対応端末でまとめて読み取れます。
+                対応端末で読み取れます。
               </HelpPopover>
             )
           }
@@ -318,9 +285,7 @@ export function ImportPage() {
 
       <PendingReceipts
         receipts={pending}
-        canExtract={modelReady}
         disabled={busy}
-        onExtractAll={() => void extractAllPending()}
         onEdit={(receipt) => void editPending(receipt)}
         onDelete={(receipt) => void removePending(receipt)}
       />
