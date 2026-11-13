@@ -4,45 +4,41 @@ import {
   useEffect,
   useEffectEvent,
   useRef,
-  useState,
 } from "react";
+import { useObjectUrl } from "@/hooks/useObjectUrl";
 import { errorStatus, type Status } from "@/lib/ui/status";
 import { buttonClass, cardClass, cardLegendClass } from "@/lib/ui/styles";
 
 const canReadClipboard = typeof navigator.clipboard?.read === "function";
 
 export function ReceiptImagePicker({
+  file,
   ready,
   disabled,
   onChange,
   onLoad,
   onError,
+  notice,
   children,
 }: {
+  file: File | undefined;
   ready: boolean;
   disabled: boolean;
   onChange: (file: File | undefined) => void;
   onLoad: () => void;
   onError: (status: Status) => void;
+  notice?: ReactNode;
   children?: ReactNode;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>();
-
-  useEffect(() => {
-    if (!previewUrl) return;
-    return () => URL.revokeObjectURL(previewUrl);
-  }, [previewUrl]);
+  const isImage = file?.type.startsWith("image/") ?? false;
+  const previewUrl = useObjectUrl(isImage ? file : undefined);
 
   function selectImage(selected: File | undefined) {
-    setPreviewUrl(undefined);
     onChange(selected);
-    if (!selected) return;
-    if (!selected.type.startsWith("image/")) {
+    if (selected && !selected.type.startsWith("image/")) {
       onError({ tone: "error", text: "画像ファイルを選択してください。" });
-      return;
     }
-    setPreviewUrl(URL.createObjectURL(selected));
   }
 
   function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
@@ -92,8 +88,9 @@ export function ReceiptImagePicker({
 
   return (
     <fieldset className={`grid gap-4 ${cardClass}`}>
-      <legend className={cardLegendClass}>
+      <legend className={`flex items-center gap-1 ${cardLegendClass}`}>
         <label htmlFor="receipt-image">レシート画像</label>
+        {notice}
       </legend>
       <input
         ref={inputRef}

@@ -134,6 +134,7 @@ export function ImportPage() {
       <div className="grid items-start gap-4 md:grid-cols-2">
         <ReceiptImagePicker
           key={pickerKey}
+          file={file}
           ready={imageReady}
           disabled={analyzing || saving}
           onChange={selectImage}
