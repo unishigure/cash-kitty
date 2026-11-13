@@ -3,6 +3,7 @@ import {
   downloadFile,
   downloadReceipt,
   type DriveFile,
+  getUserEmail,
   listReceiptFiles,
   saveReceiptFile,
   UnauthorizedError,
@@ -16,6 +17,8 @@ import {
   getAuthRedirectError,
   getValidToken,
   googleClientId,
+  hasLoginHint,
+  setLoginHint,
   signOut,
 } from "@/lib/drive/auth";
 import {
@@ -57,6 +60,7 @@ export const getDriveState = store.get;
 export function startDrive() {
   consumeAuthRedirect();
   subscribeLocalChanges(() => void requestSync());
+  document.addEventListener("visibilitychange", reconnectOnResume);
 
   if (!googleClientId) {
     setState({ status: "unconfigured" });
@@ -69,6 +73,18 @@ export function startDrive() {
     setState({ status: "connected" });
     void requestSync("redirect");
   } else if (canSilentReconnect()) {
+    setState({ status: "connecting" });
+    beginAuthRedirect("silent");
+  }
+}
+
+function reconnectOnResume() {
+  if (
+    document.visibilityState === "visible" &&
+    store.get().status === "connected" &&
+    !getValidToken() &&
+    canSilentReconnect()
+  ) {
     setState({ status: "connecting" });
     beginAuthRedirect("silent");
   }
@@ -90,17 +106,22 @@ export async function disconnectDrive() {
   });
 }
 
-type OnExpired = "redirect" | "disconnect";
+type OnExpired = "redirect" | "defer";
 
 async function withToken<T>(
   op: (token: string) => Promise<T>,
   onExpired: OnExpired,
 ) {
   const reauth = () => {
-    if (onExpired === "redirect" && canSilentReconnect()) {
-      setState({ status: "connecting" });
-      beginAuthRedirect("silent");
-      return new Promise<never>(() => {});
+    if (canSilentReconnect()) {
+      if (onExpired === "redirect") {
+        setState({ status: "connecting" });
+        beginAuthRedirect("silent");
+        return new Promise<never>(() => {});
+      }
+      throw new Error(
+        "Google Drive の認証の有効期限が切れました。アプリを開き直すと自動で再接続します。",
+      );
     }
     setState({ status: "disconnected" });
     throw new Error(
@@ -119,7 +140,7 @@ async function withToken<T>(
   }
 }
 
-export function requestSync(onExpired: OnExpired = "disconnect") {
+export function requestSync(onExpired: OnExpired = "defer") {
   if (store.get().status !== "connected") return Promise.resolve();
   if (running) {
     rerun = true;
@@ -144,6 +165,11 @@ export function requestSync(onExpired: OnExpired = "disconnect") {
 }
 
 async function syncOnce(token: string) {
+  if (!hasLoginHint()) {
+    const email = await getUserEmail(token).catch(() => undefined);
+    if (email) setLoginHint(email);
+  }
+
   for (const deletion of await listDeletions()) {
     if (deletion.imageFileId) await deleteFile(token, deletion.imageFileId);
     if (deletion.fileId) await deleteFile(token, deletion.fileId);
@@ -248,7 +274,7 @@ export async function loadReceiptImage(receipt: Receipt) {
   }
   const blob = await withToken(
     (token) => downloadFile(token, imageFileId),
-    "disconnect",
+    "defer",
   );
   await putLocalImage(receipt.id, blob);
   return blob;
