@@ -35,6 +35,18 @@ async function driveFetch(
   return response;
 }
 
+const idPattern = /^[\w-]+$/;
+
+export function isUrlSafeId(value: unknown): value is string {
+  return typeof value === "string" && idPattern.test(value);
+}
+
+function fileUrl(base: string, fileId: string) {
+  if (!isUrlSafeId(fileId))
+    throw new Error(`不正なファイル ID です: ${fileId}`);
+  return `${base}/files/${encodeURIComponent(fileId)}`;
+}
+
 function receiptFileName(receipt: Receipt) {
   return `${receiptPrefix}${receipt.date.slice(0, 7)}-${receipt.id}.json`;
 }
@@ -75,7 +87,7 @@ export async function getUserEmail(token: string) {
 export async function downloadReceipt(token: string, file: DriveFile) {
   const response = await driveFetch(
     token,
-    `${driveApi}/files/${file.id}?alt=media`,
+    `${fileUrl(driveApi, file.id)}?alt=media`,
   );
   const raw: unknown = await response.json().catch(() => undefined);
   return raw && typeof raw === "object"
@@ -91,12 +103,19 @@ function optionalText(value: unknown) {
   return typeof value === "string" && value ? value : undefined;
 }
 
-function parseReceipt(raw: Record<string, unknown>, file: DriveFile): Receipt {
+const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseReceipt(
+  raw: Record<string, unknown>,
+  file: DriveFile,
+): Receipt | undefined {
   const createdAt = text(raw.createdAt);
   const amount = Number(raw.totalAmount);
+  const date = (optionalText(raw.date) ?? createdAt).slice(0, 10);
+  if (!datePattern.test(date)) return undefined;
   return {
-    id: optionalText(raw.id) ?? file.id,
-    date: (optionalText(raw.date) ?? createdAt).slice(0, 10),
+    id: isUrlSafeId(raw.id) ? raw.id : file.id,
+    date,
     storeName: text(raw.storeName),
     totalAmount: Number.isFinite(amount) ? amount : 0,
     category: toCategory(raw.category),
@@ -106,7 +125,7 @@ function parseReceipt(raw: Record<string, unknown>, file: DriveFile): Receipt {
     updatedAt: optionalText(raw.updatedAt) ?? createdAt,
     imageMimeType: optionalText(raw.imageMimeType),
     fileId: file.id,
-    imageFileId: optionalText(raw.imageFileId),
+    imageFileId: isUrlSafeId(raw.imageFileId) ? raw.imageFileId : undefined,
     driveModifiedTime: file.modifiedTime,
     pending: raw.pending === true || undefined,
   };
@@ -142,7 +161,7 @@ export async function saveReceiptFile(token: string, receipt: Receipt) {
       };
   const response = await driveFetch(
     token,
-    `${uploadApi}/files${receipt.fileId ? `/${receipt.fileId}` : ""}?uploadType=multipart&fields=id,modifiedTime`,
+    `${receipt.fileId ? fileUrl(uploadApi, receipt.fileId) : `${uploadApi}/files`}?uploadType=multipart&fields=id,modifiedTime`,
     {
       method: receipt.fileId ? "PATCH" : "POST",
       ...multipartBody(
@@ -178,7 +197,7 @@ export async function uploadImage(
 export async function downloadFile(token: string, fileId: string) {
   const response = await driveFetch(
     token,
-    `${driveApi}/files/${fileId}?alt=media`,
+    `${fileUrl(driveApi, fileId)}?alt=media`,
   );
   return response.blob();
 }
@@ -186,7 +205,7 @@ export async function downloadFile(token: string, fileId: string) {
 export async function deleteFile(token: string, fileId: string) {
   await driveFetch(
     token,
-    `${driveApi}/files/${fileId}`,
+    fileUrl(driveApi, fileId),
     { method: "DELETE" },
     [404],
   );

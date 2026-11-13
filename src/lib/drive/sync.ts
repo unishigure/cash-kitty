@@ -4,6 +4,7 @@ import {
   downloadReceipt,
   type DriveFile,
   getUserEmail,
+  isUrlSafeId,
   listReceiptFiles,
   saveReceiptFile,
   UnauthorizedError,
@@ -171,8 +172,10 @@ async function syncOnce(token: string) {
   }
 
   for (const deletion of await listDeletions()) {
-    if (deletion.imageFileId) await deleteFile(token, deletion.imageFileId);
-    if (deletion.fileId) await deleteFile(token, deletion.fileId);
+    if (isUrlSafeId(deletion.imageFileId)) {
+      await deleteFile(token, deletion.imageFileId);
+    }
+    if (isUrlSafeId(deletion.fileId)) await deleteFile(token, deletion.fileId);
     await clearDeletion(deletion.id);
   }
 
