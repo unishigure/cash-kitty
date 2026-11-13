@@ -33,6 +33,7 @@ export function DriveSection() {
   const drive = useDriveState();
   const [disconnecting, setDisconnecting] = useState(false);
   const connected = drive.status === "connected";
+  const canDisconnect = connected || drive.account !== undefined;
 
   async function handleDisconnect() {
     if (
@@ -79,6 +80,14 @@ export function DriveSection() {
             </span>
           )}
         </dd>
+        {drive.account && (
+          <>
+            <dt className="text-solid-gray-600">アカウント</dt>
+            <dd className="text-solid-gray-900 text-right wrap-anywhere">
+              {drive.account}
+            </dd>
+          </>
+        )}
         {connected && (
           <>
             <dt className="text-solid-gray-600">最終同期</dt>
@@ -94,25 +103,25 @@ export function DriveSection() {
       </dl>
       {drive.error && <Notice status={{ tone: "error", text: drive.error }} />}
       <div className="flex flex-wrap justify-end gap-2">
+        {canDisconnect && (
+          <button
+            type="button"
+            className={dangerButtonClass}
+            disabled={disconnecting}
+            onClick={() => void handleDisconnect()}
+          >
+            接続を解除
+          </button>
+        )}
         {connected ? (
-          <>
-            <button
-              type="button"
-              className={dangerButtonClass}
-              disabled={disconnecting}
-              onClick={() => void handleDisconnect()}
-            >
-              接続を解除
-            </button>
-            <button
-              type="button"
-              className={buttonClass}
-              disabled={drive.syncing}
-              onClick={() => void requestSync("redirect")}
-            >
-              今すぐ同期
-            </button>
-          </>
+          <button
+            type="button"
+            className={buttonClass}
+            disabled={drive.syncing}
+            onClick={() => void requestSync("redirect")}
+          >
+            今すぐ同期
+          </button>
         ) : (
           <button
             type="button"

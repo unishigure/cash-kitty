@@ -4,6 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { SettingsLink } from "@/components/settings/SettingsLink";
 import { FixedCostToggle } from "@/components/stats/FixedCostToggle";
 import { Icon } from "@/components/ui/Icon";
+import { PageErrorBoundary } from "@/components/ui/PageErrorBoundary";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { sidePanelQuery } from "@/lib/ui/styles";
 import { hashPath } from "@/lib/utils/route";
@@ -128,7 +129,9 @@ export function App() {
       <main
         className={`mx-auto flex w-full flex-1 flex-col gap-4 px-4 py-6 md:py-10 ${widthClass}`}
       >
-        <current.Page />
+        <PageErrorBoundary key={current.hash}>
+          <current.Page />
+        </PageErrorBoundary>
       </main>
 
       <nav

@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { useObjectUrl } from "@/hooks/useObjectUrl";
+import { isReceiptImageType } from "@/lib/receipt/image";
 import { errorStatus, type Status } from "@/lib/ui/status";
 import { buttonClass, cardClass, cardLegendClass } from "@/lib/ui/styles";
 
@@ -32,13 +33,16 @@ export function ReceiptImagePicker({
   children?: ReactNode;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const isImage = file?.type.startsWith("image/") ?? false;
+  const isImage = isReceiptImageType(file?.type);
   const previewUrl = useObjectUrl(isImage ? file : undefined);
 
   function selectImage(selected: File | undefined) {
     onChange(selected);
-    if (selected && !selected.type.startsWith("image/")) {
-      onError({ tone: "error", text: "画像ファイルを選択してください。" });
+    if (selected && !isReceiptImageType(selected.type)) {
+      onError({
+        tone: "error",
+        text: "JPEG や PNG などの画像ファイルを選択してください。",
+      });
     }
   }
 
@@ -58,7 +62,7 @@ export function ReceiptImagePicker({
   const handlePaste = useEffectEvent((event: ClipboardEvent) => {
     if (disabled) return;
     const image = [...(event.clipboardData?.files ?? [])].find((f) =>
-      f.type.startsWith("image/"),
+      isReceiptImageType(f.type),
     );
     if (!image) return;
     event.preventDefault();
@@ -73,7 +77,7 @@ export function ReceiptImagePicker({
   async function pasteFromClipboard() {
     try {
       for (const item of await navigator.clipboard.read()) {
-        const type = item.types.find((t) => t.startsWith("image/"));
+        const type = item.types.find(isReceiptImageType);
         if (!type) continue;
         const blob = await item.getType(type);
         pasteImage(
