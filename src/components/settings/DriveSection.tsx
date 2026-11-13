@@ -108,7 +108,7 @@ export function DriveSection() {
               type="button"
               className={buttonClass}
               disabled={drive.syncing}
-              onClick={() => void requestSync()}
+              onClick={() => void requestSync("redirect")}
             >
               今すぐ同期
             </button>

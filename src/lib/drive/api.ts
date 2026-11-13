@@ -61,6 +61,17 @@ export async function listReceiptFiles(token: string) {
   return files;
 }
 
+export async function getUserEmail(token: string) {
+  const response = await driveFetch(
+    token,
+    `${driveApi}/about?fields=user(emailAddress)`,
+  );
+  const body = (await response.json()) as {
+    user?: { emailAddress?: string };
+  };
+  return body.user?.emailAddress;
+}
+
 export async function downloadReceipt(token: string, file: DriveFile) {
   const response = await driveFetch(
     token,

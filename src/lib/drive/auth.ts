@@ -9,6 +9,10 @@ const revokeEndpoint = "https://oauth2.googleapis.com/revoke";
 const tokenKey = "cash-kitty-v2.token";
 const silentReconnectKey = "cash-kitty-v2.silent-reconnect";
 const pendingKey = "cash-kitty-v2.auth-pending";
+const loginHintKey = "cash-kitty-v2.login-hint";
+const silentFailuresKey = "cash-kitty-v2.silent-failures";
+
+const maxSilentFailures = 3;
 
 export const googleClientId = readClientId();
 
@@ -79,12 +83,13 @@ export function consumeAuthRedirect() {
     };
     localStorage.setItem(tokenKey, JSON.stringify(token));
     localStorage.setItem(silentReconnectKey, "1");
+    localStorage.removeItem(silentFailuresKey);
     redirectOutcome = { mode: pending.mode, ok: true };
     return;
   }
 
   const error = params.get("error") ?? "unknown";
-  if (pending.mode === "silent") localStorage.removeItem(silentReconnectKey);
+  if (pending.mode === "silent") recordSilentFailure();
   redirectOutcome = {
     mode: pending.mode,
     ok: false,
@@ -93,6 +98,24 @@ export function consumeAuthRedirect() {
         ? "Google Drive へのアクセスが許可されませんでした。"
         : `認証に失敗しました（${error}）。`,
   };
+}
+
+function recordSilentFailure() {
+  const failures = Number(localStorage.getItem(silentFailuresKey)) + 1;
+  if (failures >= maxSilentFailures) {
+    localStorage.removeItem(silentReconnectKey);
+    localStorage.removeItem(silentFailuresKey);
+  } else {
+    localStorage.setItem(silentFailuresKey, String(failures));
+  }
+}
+
+export function hasLoginHint() {
+  return localStorage.getItem(loginHintKey) !== null;
+}
+
+export function setLoginHint(email: string) {
+  localStorage.setItem(loginHintKey, email);
 }
 
 export function getAuthRedirectError() {
@@ -125,6 +148,10 @@ export function beginAuthRedirect(mode: AuthMode) {
     state: nonce,
     include_granted_scopes: "true",
   });
+  // 複数の Google アカウントにログインしていると、login_hint なしの
+  // prompt=none は interaction_required で失敗する
+  const loginHint = localStorage.getItem(loginHintKey);
+  if (loginHint) params.set("login_hint", loginHint);
   if (mode === "silent") params.set("prompt", "none");
   location.assign(`${authEndpoint}?${params}`);
 }
@@ -139,4 +166,6 @@ export function signOut() {
   }
   clearToken();
   localStorage.removeItem(silentReconnectKey);
+  localStorage.removeItem(silentFailuresKey);
+  localStorage.removeItem(loginHintKey);
 }
