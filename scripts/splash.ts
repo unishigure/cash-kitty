@@ -1,4 +1,5 @@
 import path from "node:path";
+
 import { Image, WebView } from "bun";
 
 const root = path.join(import.meta.dir, "..");

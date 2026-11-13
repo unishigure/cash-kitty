@@ -1,12 +1,13 @@
 import { useState } from "react";
+
 import { ChipLabel } from "@/components/ui/ChipLabel";
 import { HelpPopover } from "@/components/ui/HelpPopover";
 import { Notice } from "@/components/ui/Notice";
 import { useDriveState } from "@/hooks/useDrive";
 import {
   connectDrive,
-  type DriveState,
   disconnectDrive,
+  type DriveState,
   requestSync,
 } from "@/lib/drive/sync";
 import type { ChipHue } from "@/lib/receipt/category";
@@ -68,7 +69,7 @@ export function DriveSection() {
       </div>
       <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">
         <dt className="text-solid-gray-600">状態</dt>
-        <dd className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-solid-gray-900">
+        <dd className="text-solid-gray-900 flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
           <ChipLabel hue={statusChips[drive.status].hue}>
             {statusChips[drive.status].label}
           </ChipLabel>
@@ -81,7 +82,7 @@ export function DriveSection() {
         {connected && (
           <>
             <dt className="text-solid-gray-600">最終同期</dt>
-            <dd className="text-right text-solid-gray-900 tabular-nums">
+            <dd className="text-solid-gray-900 text-right tabular-nums">
               {drive.syncing
                 ? "同期中…"
                 : drive.lastSyncedAt

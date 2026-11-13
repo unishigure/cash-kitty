@@ -19,7 +19,7 @@ export function ChartTooltip({
   );
   return (
     <div
-      className="pointer-events-none absolute z-10 grid gap-0.5 rounded-8 border border-solid-gray-420 bg-white px-3 py-2 text-dns-14N-130 shadow-2"
+      className="rounded-8 border-solid-gray-420 text-dns-14N-130 shadow-2 pointer-events-none absolute z-10 grid gap-0.5 border bg-white px-3 py-2"
       style={{ left, top: y, width: tooltipWidth }}
     >
       {children}
@@ -44,10 +44,10 @@ export function TooltipRow({
           style={{ backgroundColor: color }}
         />
       )}
-      <span className="font-bold whitespace-nowrap text-solid-gray-900 tabular-nums">
+      <span className="text-solid-gray-900 font-bold whitespace-nowrap tabular-nums">
         {value}
       </span>
-      <span className="whitespace-nowrap text-solid-gray-600">{label}</span>
+      <span className="text-solid-gray-600 whitespace-nowrap">{label}</span>
     </div>
   );
 }

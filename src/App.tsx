@@ -1,5 +1,6 @@
 import "@/style.css";
 import { useEffect, useSyncExternalStore } from "react";
+
 import { SettingsLink } from "@/components/settings/SettingsLink";
 import { FixedCostToggle } from "@/components/stats/FixedCostToggle";
 import { Icon } from "@/components/ui/Icon";
@@ -99,10 +100,10 @@ export function App() {
   }, [current, requested]);
 
   return (
-    <div className="flex min-h-dvh flex-col text-std-16N-170">
-      <header className="sticky top-0 z-20 border-b border-solid-gray-420 bg-white">
+    <div className="text-std-16N-170 flex min-h-dvh flex-col">
+      <header className="border-solid-gray-420 sticky top-0 z-20 border-b bg-white">
         <div className="mx-auto flex h-14 max-w-240 items-stretch gap-4 px-4 md:h-16 md:gap-8 lg:max-w-360">
-          <p className="self-center text-std-20B-150 whitespace-nowrap text-solid-gray-900">
+          <p className="text-std-20B-150 text-solid-gray-900 self-center whitespace-nowrap">
             <span className="text-key-900">Cash</span> Kitty
           </p>
           <nav className="hidden gap-2 md:flex" aria-label="メイン">
@@ -110,7 +111,7 @@ export function App() {
               routes={available}
               current={current}
               iconClassName="size-5"
-              className="-mb-px flex items-center gap-1.5 border-b-4 border-transparent px-3 pt-1 text-solid-gray-800 underline-offset-[3px] hover:underline aria-[current=page]:border-key-900 aria-[current=page]:font-bold aria-[current=page]:text-key-900"
+              className="text-solid-gray-800 aria-[current=page]:border-key-900 aria-[current=page]:text-key-900 -mb-px flex items-center gap-1.5 border-b-4 border-transparent px-3 pt-1 underline-offset-[3px] hover:underline aria-[current=page]:font-bold"
             />
           </nav>
           <div className="-mr-2 ml-auto flex items-center gap-2">
@@ -131,13 +132,13 @@ export function App() {
       </main>
 
       <nav
-        className="sticky bottom-0 z-20 grid grid-cols-3 border-t border-solid-gray-420 bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="border-solid-gray-420 sticky bottom-0 z-20 grid grid-cols-3 border-t bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
         aria-label="メイン"
       >
         <NavLinks
           routes={available}
           current={current}
-          className="-mt-px flex h-16 flex-col items-center justify-center gap-0.5 border-t-4 border-transparent text-dns-14N-120 text-solid-gray-700 focus-visible:focus-ring-inset aria-[current=page]:border-key-900 aria-[current=page]:font-bold aria-[current=page]:text-key-900"
+          className="text-dns-14N-120 text-solid-gray-700 focus-visible:focus-ring-inset aria-[current=page]:border-key-900 aria-[current=page]:text-key-900 -mt-px flex h-16 flex-col items-center justify-center gap-0.5 border-t-4 border-transparent aria-[current=page]:font-bold"
         />
       </nav>
     </div>

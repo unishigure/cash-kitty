@@ -1,5 +1,7 @@
 import path from "node:path";
+
 import { file, Glob, serve } from "bun";
+
 import index from "@/index.html";
 
 const publicDir = path.join(import.meta.dir, "../public");

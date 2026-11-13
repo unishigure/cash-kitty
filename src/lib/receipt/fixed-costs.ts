@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
-import { type Category, categories } from "@/lib/receipt/category";
+
+import { categories, type Category } from "@/lib/receipt/category";
 import type { Receipt } from "@/lib/receipt/receipt";
 import { createStore } from "@/lib/utils/store";
 

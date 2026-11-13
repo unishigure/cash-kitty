@@ -1,7 +1,7 @@
 import { CategoryChip } from "@/components/receipt/CategoryChip";
 import { Choice, ChoiceFieldset } from "@/components/settings/ChoiceFieldset";
 import { HelpPopover } from "@/components/ui/HelpPopover";
-import { type Category, categories } from "@/lib/receipt/category";
+import { categories, type Category } from "@/lib/receipt/category";
 import { setFixedCategories, useFixedCosts } from "@/lib/receipt/fixed-costs";
 
 export function FixedCostSection() {

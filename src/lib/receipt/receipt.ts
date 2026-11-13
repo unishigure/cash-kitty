@@ -1,6 +1,6 @@
 import type { Category } from "@/lib/receipt/category";
 import { transact, withStore } from "@/lib/receipt/db";
-import { isDateInMonth, type YearMonth } from "@/lib/utils/date";
+import { isDateInMonth, today, type YearMonth } from "@/lib/utils/date";
 import { createSignal } from "@/lib/utils/store";
 
 export type Receipt = {
@@ -18,6 +18,7 @@ export type Receipt = {
   imageFileId?: string;
   driveModifiedTime?: string;
   dirty?: boolean;
+  pending?: boolean;
 };
 
 export type ReceiptInput = Pick<
@@ -53,7 +54,11 @@ const remoteChanges = createSignal();
 export const subscribeLocalChanges = localChanges.subscribe;
 export const subscribeRemoteChanges = remoteChanges.subscribe;
 
-export async function addReceipt(input: ReceiptInput, image?: ReceiptImage) {
+export async function addReceipt(
+  input: ReceiptInput,
+  image?: ReceiptImage,
+  pending?: boolean,
+) {
   const now = new Date().toISOString();
   const receipt: Receipt = {
     ...input,
@@ -62,6 +67,7 @@ export async function addReceipt(input: ReceiptInput, image?: ReceiptImage) {
     updatedAt: now,
     imageMimeType: image?.mimeType,
     dirty: true,
+    pending: pending || undefined,
   };
   await transact(["receipts", "images"], "readwrite", (tx) => {
     tx.objectStore("receipts").add(receipt);
@@ -70,6 +76,20 @@ export async function addReceipt(input: ReceiptInput, image?: ReceiptImage) {
   });
   localChanges.notify();
   return receipt;
+}
+
+export function addPendingReceipt(image: ReceiptImage) {
+  return addReceipt(
+    {
+      date: today(),
+      storeName: "",
+      totalAmount: 0,
+      category: "その他",
+      memo: "",
+    },
+    image,
+    true,
+  );
 }
 
 export async function updateReceipt(id: string, input: ReceiptInput) {
@@ -82,6 +102,7 @@ export async function updateReceipt(id: string, input: ReceiptInput) {
         ...input,
         updatedAt: new Date().toISOString(),
         dirty: true,
+        pending: undefined,
       };
       return next;
     });
@@ -96,22 +117,39 @@ export function compareReceiptsOldestFirst(a: Receipt, b: Receipt) {
   return a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt);
 }
 
+function sortConfirmed(receipts: Receipt[]) {
+  return receipts
+    .filter((receipt) => !receipt.pending)
+    .sort(compareReceiptsOldestFirst);
+}
+
 export async function listReceiptsBetween(from: YearMonth, to: YearMonth) {
   const receipts = await withStore("receipts", "readonly", (store) =>
     store.index("date").getAll(IDBKeyRange.bound(`${from}-01`, `${to}-31`)),
   );
-  return (receipts as Receipt[]).sort(compareReceiptsOldestFirst);
+  return sortConfirmed(receipts as Receipt[]);
 }
 
 export function listReceiptsByMonth(month: YearMonth) {
   return listReceiptsBetween(month, month);
 }
 
-export async function listAllReceipts() {
+export async function listStoredReceipts() {
   const receipts = await withStore("receipts", "readonly", (store) =>
     store.getAll(),
   );
-  return (receipts as Receipt[]).sort(compareReceiptsOldestFirst);
+  return receipts as Receipt[];
+}
+
+export async function listAllReceipts() {
+  return sortConfirmed(await listStoredReceipts());
+}
+
+export async function listPendingReceipts() {
+  const receipts = await listStoredReceipts();
+  return receipts
+    .filter((receipt) => receipt.pending)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
 export async function deleteReceipt(id: string) {

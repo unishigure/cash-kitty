@@ -20,7 +20,7 @@ export function CategoryBreakdown({
   }
 
   return (
-    <table className="-mx-2 w-[calc(100%+1rem)] border-collapse text-dns-16N-130">
+    <table className="text-dns-16N-130 -mx-2 w-[calc(100%+1rem)] border-collapse">
       <thead className="sr-only">
         <tr>
           <th>カテゴリー</th>
@@ -33,7 +33,7 @@ export function CategoryBreakdown({
         {data.map((d) => (
           <tr
             key={d.category}
-            className={`${onSelect ? "relative has-[button:focus-visible]:focus-ring-inset" : ""} ${
+            className={`${onSelect ? "has-[button:focus-visible]:focus-ring-inset relative" : ""} ${
               d.category === selected
                 ? "bg-key-50 font-bold"
                 : onSelect
@@ -54,7 +54,7 @@ export function CategoryBreakdown({
               ) : (
                 d.category
               )}
-              <span className="ml-1 text-dns-14N-120 font-normal text-solid-gray-600">
+              <span className="text-dns-14N-120 text-solid-gray-600 ml-1 font-normal">
                 {d.count}件
               </span>
             </th>
@@ -71,7 +71,7 @@ export function CategoryBreakdown({
             <td className="w-0 py-2 pl-3 text-right whitespace-nowrap tabular-nums">
               {formatYen(d.total)}
             </td>
-            <td className="w-0 py-2 pr-2 pl-3 text-right font-normal whitespace-nowrap text-solid-gray-600 tabular-nums">
+            <td className="text-solid-gray-600 w-0 py-2 pr-2 pl-3 text-right font-normal whitespace-nowrap tabular-nums">
               {((d.total / total) * 100).toFixed(1)}%
             </td>
           </tr>

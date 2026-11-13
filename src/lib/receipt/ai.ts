@@ -1,4 +1,4 @@
-import { type Category, categories } from "@/lib/receipt/category";
+import { categories, type Category } from "@/lib/receipt/category";
 
 export const modelOptions: LanguageModelCreateCoreOptions = {
   expectedInputs: [{ type: "text", languages: ["ja"] }, { type: "image" }],
@@ -34,7 +34,7 @@ export async function checkModelAvailability(): Promise<
 }
 
 export async function extractReceipt(
-  image: File,
+  image: Blob,
   onDownloadProgress: (ratio: number) => void,
 ): Promise<ExtractedReceipt> {
   const session = await LanguageModel.create({

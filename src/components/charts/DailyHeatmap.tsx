@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
+
 import { ChartTooltip, TooltipRow } from "@/components/charts/ChartTooltip";
 import { useElementWidth } from "@/hooks/useElementWidth";
 import { quartiles } from "@/lib/receipt/stats";
@@ -148,7 +149,7 @@ export function DailyHeatmap({
       </p>
       <div className="flex min-w-0">
         <div
-          className="relative shrink-0 text-[11px] text-solid-gray-600"
+          className="text-solid-gray-600 relative shrink-0 text-[11px]"
           style={{
             width: labelWidth,
             height: gridHeight,
@@ -183,7 +184,7 @@ export function DailyHeatmap({
                   key={month}
                   className={`absolute top-0 text-xs leading-none ${
                     month === selectedMonth
-                      ? "font-bold text-solid-gray-900"
+                      ? "text-solid-gray-900 font-bold"
                       : "text-solid-gray-600"
                   }`}
                   style={{ left: x }}
@@ -233,7 +234,7 @@ export function DailyHeatmap({
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-1 text-dns-14N-120 text-solid-gray-600">
+      <div className="text-dns-14N-120 text-solid-gray-600 flex items-center justify-end gap-1">
         少
         {[chartColors.heatEmpty, ...chartColors.heat].map((color) => (
           <span
