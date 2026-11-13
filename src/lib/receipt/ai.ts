@@ -34,7 +34,7 @@ export async function checkModelAvailability(): Promise<
 }
 
 export async function extractReceipt(
-  image: File,
+  image: Blob,
   onDownloadProgress: (ratio: number) => void,
 ): Promise<ExtractedReceipt> {
   const session = await LanguageModel.create({

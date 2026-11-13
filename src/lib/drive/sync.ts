@@ -24,8 +24,8 @@ import {
   clearDeletion,
   forgetDriveReceipts,
   getLocalImage,
-  listAllReceipts,
   listDeletions,
+  listStoredReceipts,
   markPushed,
   putLocalImage,
   type Receipt,
@@ -152,7 +152,7 @@ async function syncOnce(token: string) {
 
   const [files, local] = await Promise.all([
     listReceiptFiles(token),
-    listAllReceipts(),
+    listStoredReceipts(),
   ]);
   const fileIds = new Set(files.map((file) => file.id));
   const localByFileId = new Map(

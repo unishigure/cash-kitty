@@ -97,6 +97,7 @@ function parseReceipt(raw: Record<string, unknown>, file: DriveFile): Receipt {
     fileId: file.id,
     imageFileId: optionalText(raw.imageFileId),
     driveModifiedTime: file.modifiedTime,
+    pending: raw.pending === true || undefined,
   };
 }
 
