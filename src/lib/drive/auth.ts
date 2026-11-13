@@ -9,7 +9,7 @@ const revokeEndpoint = "https://oauth2.googleapis.com/revoke";
 const tokenKey = "cash-kitty-v2.token";
 const silentReconnectKey = "cash-kitty-v2.silent-reconnect";
 const pendingKey = "cash-kitty-v2.auth-pending";
-const loginHintKey = "cash-kitty-v2.login-hint";
+const linkedAccountKey = "cash-kitty-v2.login-hint";
 const silentFailuresKey = "cash-kitty-v2.silent-failures";
 
 const maxSilentFailures = 3;
@@ -110,12 +110,12 @@ function recordSilentFailure() {
   }
 }
 
-export function hasLoginHint() {
-  return localStorage.getItem(loginHintKey) !== null;
+export function getLinkedAccount() {
+  return localStorage.getItem(linkedAccountKey) ?? undefined;
 }
 
-export function setLoginHint(email: string) {
-  localStorage.setItem(loginHintKey, email);
+export function setLinkedAccount(email: string) {
+  localStorage.setItem(linkedAccountKey, email);
 }
 
 export function getAuthRedirectError() {
@@ -150,7 +150,7 @@ export function beginAuthRedirect(mode: AuthMode) {
   });
   // 複数の Google アカウントにログインしていると、login_hint なしの
   // prompt=none は interaction_required で失敗する
-  const loginHint = localStorage.getItem(loginHintKey);
+  const loginHint = localStorage.getItem(linkedAccountKey);
   if (loginHint) params.set("login_hint", loginHint);
   if (mode === "silent") params.set("prompt", "none");
   location.assign(`${authEndpoint}?${params}`);
@@ -167,5 +167,5 @@ export function signOut() {
   clearToken();
   localStorage.removeItem(silentReconnectKey);
   localStorage.removeItem(silentFailuresKey);
-  localStorage.removeItem(loginHintKey);
+  localStorage.removeItem(linkedAccountKey);
 }

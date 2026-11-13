@@ -16,10 +16,10 @@ import {
   clearToken,
   consumeAuthRedirect,
   getAuthRedirectError,
+  getLinkedAccount,
   getValidToken,
   googleClientId,
-  hasLoginHint,
-  setLoginHint,
+  setLinkedAccount,
   signOut,
 } from "@/lib/drive/auth";
 import { isReceiptImageType, UnsupportedImageError } from "@/lib/receipt/image";
@@ -42,6 +42,7 @@ import { createStore } from "@/lib/utils/store";
 export type DriveState = {
   status: "unconfigured" | "disconnected" | "connecting" | "connected";
   syncing: boolean;
+  account?: string;
   lastSyncedAt?: string;
   error?: string;
 };
@@ -51,10 +52,12 @@ const downloadConcurrency = 6;
 const store = createStore<DriveState>({
   status: "disconnected",
   syncing: false,
+  account: getLinkedAccount(),
 });
 const setState = store.update;
 let running: Promise<void> | undefined;
 let rerun = false;
+let verifiedToken: string | undefined;
 
 export const subscribeDrive = store.subscribe;
 export const getDriveState = store.get;
@@ -103,9 +106,32 @@ export async function disconnectDrive() {
   await forgetDriveReceipts();
   setState({
     status: "disconnected",
+    account: undefined,
     lastSyncedAt: undefined,
     error: undefined,
   });
+}
+
+class AccountMismatchError extends Error {
+  override name = "AccountMismatchError";
+}
+
+async function verifyAccount(token: string) {
+  if (token === verifiedToken) return;
+  const email = await getUserEmail(token);
+  const linked = getLinkedAccount();
+  if (linked && linked.toLowerCase() !== email.toLowerCase()) {
+    clearToken();
+    setState({ status: "disconnected" });
+    throw new AccountMismatchError(
+      `この端末は ${linked} の Google Drive と同期しています（今回の接続: ${email}）。別のアカウントに切り替えるには、先に接続を解除してください。`,
+    );
+  }
+  if (!linked) {
+    setLinkedAccount(email);
+    setState({ account: email });
+  }
+  verifiedToken = token;
 }
 
 type OnExpired = "redirect" | "defer";
@@ -134,6 +160,7 @@ async function withToken<T>(
   const token = getValidToken();
   if (!token) return reauth();
   try {
+    await verifyAccount(token);
     return await op(token);
   } catch (error) {
     if (!(error instanceof UnauthorizedError)) throw error;
@@ -167,11 +194,6 @@ export function requestSync(onExpired: OnExpired = "defer") {
 }
 
 async function syncOnce(token: string) {
-  if (!hasLoginHint()) {
-    const email = await getUserEmail(token).catch(() => undefined);
-    if (email) setLoginHint(email);
-  }
-
   for (const deletion of await listDeletions()) {
     if (isUrlSafeId(deletion.imageFileId)) {
       await deleteFile(token, deletion.imageFileId);

@@ -82,7 +82,9 @@ export async function getUserEmail(token: string) {
   const body = (await response.json()) as {
     user?: { emailAddress?: string };
   };
-  return body.user?.emailAddress;
+  const email = body.user?.emailAddress;
+  if (!email) throw new Error("Google アカウントを確認できませんでした。");
+  return email;
 }
 
 export async function downloadReceipt(token: string, file: DriveFile) {
